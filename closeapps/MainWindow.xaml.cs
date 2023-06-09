@@ -21,6 +21,9 @@ namespace closeapps
     /// </summary>
     public partial class MainWindow : Window
     {
+        private Task CheckAppsRunning;
+        private bool CheckingAppsRunning = false;
+
         public MainWindow()
         {
             InitializeComponent();
@@ -35,8 +38,14 @@ namespace closeapps
             appslist.Children.Add(new AppToClose("mbam"));
             appslist.Children.Add(new AppToClose("action"));
             appslist.Children.Add(new AppToClose("dsclock"));
+            appslist.Children.Add(new AppToClose("msedge"));
+            appslist.Children.Add(new AppToClose("dsetime"));
+            appslist.Children.Add(new AppToClose("hMailServer"));
+            appslist.Children.Add(new AppToClose("ScpService"));
+            appslist.Children.Add(new AppToClose("SRService"));
 
             CloseSelectedApps.Click += CloseSelectedApps_Click;
+            CheckAppsRunning = CheckRunning();
 
             CloseSelectedApps.Focus();
         }
@@ -63,5 +72,36 @@ namespace closeapps
             }
             
         }
+
+        private Task CheckRunning()
+        {
+            var Options = new TaskContinuationOptions();
+            Task CheckIfRunning = Task.Run(()=>{
+
+                CheckingAppsRunning = true;
+
+                while(CheckingAppsRunning)
+                {
+                    var index = 0;
+                    var count = appslist.Children.Count;
+
+                    while(index<count)
+                    {
+                        try
+                        {
+
+                        }
+                        catch () { }
+                    }
+
+
+                    Task.Delay(2500).Wait();
+                }
+
+            });
+
+            return CheckIfRunning;
+        }
+
     }
 }

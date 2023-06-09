@@ -10,6 +10,11 @@ namespace closeapps
     {
         public TextBox Appname;
         public CheckBox InUse;
+        protected bool? _IsRunning = false;
+        public bool? IsRunning
+        {
+            get { return _IsRunning; }
+        }
         public bool Active
         {
             get

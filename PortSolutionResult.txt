@@ -1,0 +1,89 @@
+==========
+References
+==========
+closeapps
+System.Windows
+System.Windows.Controls
+System.Diagnostics
+System.Collections.Generic
+System.IO
+System
+System.Threading.Tasks
+System.Windows.Markup
+System.Diagnostics.CodeAnalysis
+System.CodeDom.Compiler
+System.ComponentModel
+System.Configuration
+System.Data
+System.Linq
+System.Text
+System.Windows.Data
+System.Windows.Documents
+System.Windows.Input
+System.Windows.Media
+System.Windows.Media.Imaging
+System.Windows.Navigation
+System.Windows.Shapes
+System.Windows.Automation
+System.Windows.Controls.Primitives
+System.Windows.Controls.Ribbon
+System.Windows.Ink
+System.Windows.Media.Animation
+System.Windows.Media.Effects
+System.Windows.Media.Media3D
+System.Windows.Media.TextFormatting
+System.Windows.Shell
+System.Reflection
+project.all
+
+===============
+DownloadedFiles
+===============
+project.all.json
+system.configuration.json
+
+==============
+ProjectResults
+==============
+----------------------
+Showing results for: C:\Users\Arthonor\source\repos\telpe\quicksite_closeapps\closeapps\closeapps.csproj
+----------------------
+---------------------------
+Target Versions:
+---------------------------
+net7.0
+---------------------------
+Source Versions:
+---------------------------
+net48
+---------------------------
+Upgrade packages:
+---------------------------
+---------------------------
+Action packages:
+---------------------------
+
+----------------------
+Showing results for: C:\Users\Arthonor\source\repos\telpe\quicksite_closeapps\closeapps\closeapps.csproj
+----------------------
+---------------------------
+Target Versions:
+---------------------------
+net7.0
+---------------------------
+Source Versions:
+---------------------------
+net48
+---------------------------
+Upgrade packages:
+---------------------------
+---------------------------
+Action packages:
+---------------------------
+
+
+===========
+BuildErrors
+===========
+
+

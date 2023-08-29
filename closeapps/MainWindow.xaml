@@ -5,17 +5,23 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:closeapps"
         mc:Ignorable="d"
-        Title="MainWindow" Height="480" Width="300">
+        Title="MainWindow" Height="500" Width="300">
     <Grid Margin="10">
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition MaxWidth="280" />
 		</Grid.ColumnDefinitions>
 		<Grid.RowDefinitions>
-			<RowDefinition Height="390" />
-			<RowDefinition Height="40" />
+			<RowDefinition Height="*" />
+			<RowDefinition Height="auto" />
 		</Grid.RowDefinitions>
-		<StackPanel x:Name="appslist" HorizontalAlignment="Left" Grid.Row="0"/>
-		<Button x:Name="CloseSelectedApps" Grid.Row="1" HorizontalAlignment="Left" Width="70" Height="22">Close Apps</Button>
+		<ScrollViewer HorizontalAlignment="Left" Grid.Row="0" Width="260">
+			<StackPanel x:Name="appslist" Height="auto"/>
+		</ScrollViewer>
+		<StackPanel Grid.Row="1" HorizontalAlignment="Left">
+			<Button x:Name="AddAppButton">Add App</Button>
+			<Button x:Name="CloseSelectedAppsButton"  Width="70" Height="22">Close Apps</Button>	
+		</StackPanel>
+		
 		<StackPanel x:Name="ConsolePanel" HorizontalAlignment="Right" Grid.Row="0"/>
 	</Grid>
 </Window>

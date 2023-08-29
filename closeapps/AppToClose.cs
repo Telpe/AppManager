@@ -9,39 +9,39 @@ namespace closeapps
     public class AppToClose : DockPanel
     {
         public TextBox Appname;
-        public CheckBox InUse;
+        public CheckBox SelectedBox;
         protected bool? _IsRunning = false;
         public bool? IsRunning
         {
             get { return _IsRunning; }
         }
-        public bool Active
+        public bool Selected
         {
             get
             {
-                return (bool)InUse.IsChecked;
+                return (bool)SelectedBox.IsChecked;
             }
             set
             {
-                InUse.IsChecked = value;
+                SelectedBox.IsChecked = value;
             }
         }
         
 
-        public AppToClose(string appname)
+        public AppToClose(string appname, bool selected = true)
         {
             Appname = new TextBox
             {
                 Text = appname
             };
             
-            InUse = new CheckBox
+            SelectedBox = new CheckBox
             {
-                IsChecked = true
+                IsChecked = selected
             };
 
             this.Children.Add(Appname);
-            this.Children.Add(InUse);
+            this.Children.Add(SelectedBox);
         }
     }
 }

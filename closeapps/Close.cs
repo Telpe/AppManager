@@ -32,25 +32,25 @@ namespace closeapps
 
         private string ComposeArguments()
         {
-            string args = "";
+            StringBuilder args = new StringBuilder();
 
             if ((bool)Options.ForceKill)
             {
-                args += "/F ";
+                args.Append("/F ");
             }
             if ((bool)Options.IncludeChildren)
             {
-                args += "/T ";
+                args.Append("/T ");
             }
-            
-            args += "/IM " + AppName;
+
+            args.Append("/IM " + AppName);
             
             if ((bool)Options.IncludeTasksLikeGiven)
             {
-                args += "*";
+                args.Append('*');
             }
 
-            return args;
+            return String.Concat( args );
         }
 
         public void DoClose()

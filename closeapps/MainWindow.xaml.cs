@@ -19,6 +19,7 @@ using System.Windows.Shapes;
 using System.Text.Json.Serialization;
 using System.ComponentModel;
 using System.CodeDom.Compiler;
+using System.Reflection;
 
 namespace closeapps
 {
@@ -41,39 +42,51 @@ namespace closeapps
 
             LoadAppsList();
 
-            CloseSelectedAppsButton.Click += CloseSelectedAppsButton_Click;
-            CheckAppsRunning = CheckRunning(ManagedAppsToArray());
+            EnableButtons();
+        }
 
+        private void EnableButtons()
+        {
+            CloseSelectedAppsButton.Click += CloseSelectedAppsButton_Click;
             AddAppButton.Click += AddAppButton_Click;
+
 
             CloseSelectedAppsButton.Focus();
         }
 
         private void LoadAppsList()
         {
-            
-                if (ManagedAppsFileExist())
-                {
-                    AppManaged[] appsList = LoadAppsListFromFile();
-                    AddAppsListToList(appsList);
-                }
-                else
-                {
-                    AddAppsListToList(AppsListLoaded);
-                }
-                
+
+            if (ManagedAppsFileExists())
+            {
+                AppToClose[] apps = LoadAppsListFromFile();
+                AddAppsListToList(apps);
+            }
+            else
+            {
+                AddAppsListToList(AppsListLoaded);
+            }
+
+            AddAppsListHeader();
+
+            CheckAppsRunning = CheckRunning();
         }
 
-        private AppManaged[] LoadAppsListFromFile()
+        private void AddAppsListHeader()
+        {
+            AppsHeader.Children.Add(new AppToClose() { AppName = "All Apps", IsSelected = false, IsSimilarIncluded=false, IsChildrenIncluded=true, IsExitForced=false });
+        }
+
+        private AppToClose[] LoadAppsListFromFile()
         {
             string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
             string filePath = System.IO.Path.Combine(documentsPath, "ManagedAppsLists.json");
             string fileText = File.ReadAllText(filePath);
-            AppManaged[] apps = JsonConvert.DeserializeObject<AppManaged[]>(fileText);
+            AppToClose[] apps = JsonConvert.DeserializeObject<AppToClose[]>(fileText);
             return apps;
         }
 
-        private bool ManagedAppsFileExist()
+        private bool ManagedAppsFileExists()
         {
             string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
             string filePath = System.IO.Path.Combine(documentsPath, "ManagedAppsLists.json");
@@ -83,37 +96,45 @@ namespace closeapps
         private void AddAppButton_Click(object sender, RoutedEventArgs e)
         {
 
-            AddAppToList(new AppToClose(""));
+            AddAppToList(new AppToClose());
         }
 
-        private void AddAppsListToList(string[] appName) 
+        private void AddAppsListToList(string[] appNames)
         {
-            for(int i = 0; i < appName.Length; i++)
+            for (int i = 0; i < appNames.Length; i++)
             {
-                AddAppToList(new AppToClose(appName[i]));
+                AddAppToList(appNames[i]);
             }
         }
 
-        private void AddAppsListToList(AppManaged[] apps)
+        private void AddAppsListToList(AppToClose[] apps)
         {
             for (int i = 0; i < apps.Length; i++)
             {
-                AddAppToList(new AppToClose(apps[i].Name, apps[i].Selected));
+                AddAppToList(apps[i]);
             }
+        }
+
+        private void AddAppToList(string name, bool selected = true)
+        {
+            AddAppToList(new AppToClose() { AppName = name, IsSelected=selected });
         }
 
         private void AddAppToList(AppToClose appToManage)
         {
-            appslist.Children.Add(appToManage);
+            AppsList.Children.Add(appToManage);
+            appToManage.AppNameBox.MinWidth = 32;
         }
 
-        public static Task StoreAppsList(AppManaged[] appManagedList) 
+        public Task StoreAppsList()
         {
+
             Task work = Task.Run(() =>
             {
+
                 string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
                 string filePath = System.IO.Path.Combine(documentsPath, "ManagedAppsLists.json");
-                string asJson = JsonConvert.SerializeObject(appManagedList, Formatting.Indented);
+                string asJson = JsonConvert.SerializeObject(AppsManagedToModels(), Formatting.Indented);
                 File.WriteAllText(filePath, asJson);
 
                 Debug.WriteLine("Done saving");
@@ -121,28 +142,38 @@ namespace closeapps
             return work;
         }
 
-        private AppManaged[] ManagedAppsToArray()
+        public AppManagedModel[] AppsManagedToModels()
         {
-            List<AppManaged> apps = new List<AppManaged>();
-            int amount = appslist.Children.Count;
-            for (int i = 0; i < amount; i++)
+            AppManagedModel[] apps = new AppManagedModel[AppsList.Children.Count];
+
+            AppToClose app;
+            int i = 0, index = 0;
+            while ( i < AppsList.Children.Count )
             {
-                if( 0 < ((AppToClose)appslist.Children[i]).Appname.Text.Length)
+                try
                 {
-                    apps.Add(new AppManaged()
+                    app = (AppToClose)AppsList.Children[i];
+                    if (0 < app.AppName.Length)
                     {
-                        Name = ((AppToClose)appslist.Children[i]).Appname.Text,
-                        Selected = (bool)((AppToClose)appslist.Children[i]).SelectedBox.IsChecked
-                    });
+                        apps[index] = (AppManagedModel)app;
+                        index++;
+                    }
                 }
+                catch { }
+
+                i++;
             }
 
-            AppManaged[] AppManagedList;
-            AppManagedList = apps.ToArray();
+            if ( i != index)
+            {
+                AppManagedModel[] appsT = new AppManagedModel[index];
+                Array.ConstrainedCopy(apps, 0, appsT, 0, index);
+                return appsT;
+            }
 
-            return AppManagedList;
+            return apps;
         }
-
+        
         private void CloseSelectedAppsButton_Click(Object sender, RoutedEventArgs e)
         {
             var options = new CloserOptions
@@ -153,48 +184,60 @@ namespace closeapps
                 IncludeTasksLikeGiven = true
             };
 
-            foreach (AppToClose toClose in appslist.Children)
+            foreach (AppToClose toClose in AppsList.Children)
             {
-                if (toClose.Selected)
+                if (toClose.IsSelected)
                 {
-                    var closer = new Close(toClose.Appname.Text, options);
+                    var closer = new Close(toClose.AppName, options);
 
                     closer.DoClose();
                 }
-                
+
             }
-            
+
         }
 
-        private Task CheckRunning(AppManaged[] appManagedList)
+        private Task CheckRunning()
         {
             var Options = new TaskContinuationOptions();
             CheckingIfRunning = true;
-            Task CheckIfRunning = Task.Run(() =>{
+            Task CheckIfRunning = Task.Run(() =>
+            {
 
                 while (CheckingIfRunning)
                 {
-                    for (int index = 0; index < appManagedList.Length; index++)
+                    for (int index = 0; index < AppsList.Children.Count; index++)
                     {
-                        try
+                        Application.Current.Dispatcher.Invoke(() =>
                         {
-                            Debug.WriteLine("Checking app " + (index + 1).ToString() + "/" + appManagedList.Length.ToString());
-                            if (Process.GetProcessesByName(appManagedList[index].Name).Length > 0)
+                            AppToClose app = new AppToClose();
+                            try
                             {
-                                Debug.WriteLine("Running");
+                                app = (AppToClose)AppsList.Children[index];
+                                if (0 < app.AppName.Length)
+                                {
+                                    Debug.WriteLine("Checking app " + (index + 1).ToString() + "/" + app.AppName.Length.ToString());
+                                    if (Process.GetProcessesByName(app.AppName).Length > 0)
+                                    {
+                                        Debug.WriteLine("Running");
+                                    }
+                                    else
+                                    {
+                                        Debug.WriteLine("Stopped");
+                                    }
+                                }
+
+
                             }
-                            else
-                            {
-                                Debug.WriteLine("Stopped");
-                            }
-                            //throw new NotImplementedException("Checking if each listed app are running");
-                        }
-                        catch (Exception e) { Debug.WriteLine("Checked app " + (index + 1).ToString() + "/" + appManagedList.Length.ToString()); }
+                            catch (Exception e) { Debug.WriteLine("Checked app " + (index + 1).ToString() + "/" + app.AppName.Length.ToString()); }
+
+                        });
+                        
                     }
 
                     Task.Delay(2500).Wait();
                 }
-                
+
             });
 
             return CheckIfRunning;
@@ -204,9 +247,8 @@ namespace closeapps
         {
             e.Cancel = true;
             CheckingIfRunning = false;
-            AppManaged[] apps = ManagedAppsToArray();
             Debug.WriteLine("Exit wait");
-            Task saveWork = StoreAppsList(apps);
+            Task saveWork = StoreAppsList();
             //Task delay = Task.Run(()=> { Task.Delay(6000).Wait(); }); // Task.Delay does not start until awaited!
             //Debug.WriteLine("Exit in 6");
 
@@ -226,5 +268,9 @@ namespace closeapps
             e.Cancel = false;
         }
 
+        private void ConsoleWriteline(string text)
+        {
+            ConsolePanel.Children.Add(new Label() { Content = text });
+        }
     }
 }

@@ -20,9 +20,14 @@ using System.Text.Json.Serialization;
 using System.ComponentModel;
 using System.CodeDom.Compiler;
 using System.Reflection;
+using System.Threading;
 
 namespace closeapps
 {
+
+
+    public delegate AppManagedModel[] AppsManagedToModelsCallback();
+
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
@@ -36,6 +41,7 @@ namespace closeapps
 
         public MainWindow()
         {
+            Debug.WriteLine("Thread MainWindow: " + Thread.CurrentThread.ManagedThreadId.ToString());
             InitializeComponent();
 
             this.Closing += Window_Closing;
@@ -59,7 +65,7 @@ namespace closeapps
 
             if (ManagedAppsFileExists())
             {
-                AppToClose[] apps = LoadAppsListFromFile();
+                AppManaged[] apps = LoadAppsListFromFile();
                 AddAppsListToList(apps);
             }
             else
@@ -74,15 +80,15 @@ namespace closeapps
 
         private void AddAppsListHeader()
         {
-            AppsHeader.Children.Add(new AppToClose() { AppName = "All Apps", IsSelected = false, IsSimilarIncluded=false, IsChildrenIncluded=true, IsExitForced=false });
+            AppsHeader.Children.Add(new AppManaged() { AppName = "All Apps", IsSelected = false, IsSimilarIncluded=false, IsChildrenIncluded=true, IsExitForced=false });
         }
 
-        private AppToClose[] LoadAppsListFromFile()
+        private AppManaged[] LoadAppsListFromFile()
         {
             string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
             string filePath = System.IO.Path.Combine(documentsPath, "ManagedAppsLists.json");
             string fileText = File.ReadAllText(filePath);
-            AppToClose[] apps = JsonConvert.DeserializeObject<AppToClose[]>(fileText);
+            AppManaged[] apps = JsonConvert.DeserializeObject<AppManaged[]>(fileText);
             return apps;
         }
 
@@ -96,7 +102,7 @@ namespace closeapps
         private void AddAppButton_Click(object sender, RoutedEventArgs e)
         {
 
-            AddAppToList(new AppToClose());
+            AddAppToList(new AppManaged());
         }
 
         private void AddAppsListToList(string[] appNames)
@@ -107,7 +113,7 @@ namespace closeapps
             }
         }
 
-        private void AddAppsListToList(AppToClose[] apps)
+        private void AddAppsListToList(AppManaged[] apps)
         {
             for (int i = 0; i < apps.Length; i++)
             {
@@ -117,54 +123,67 @@ namespace closeapps
 
         private void AddAppToList(string name, bool selected = true)
         {
-            AddAppToList(new AppToClose() { AppName = name, IsSelected=selected });
+            AddAppToList(new AppManaged() { AppName = name, IsSelected=selected });
         }
 
-        private void AddAppToList(AppToClose appToManage)
+        private void AddAppToList(AppManaged appToManage)
         {
             AppsList.Children.Add(appToManage);
             appToManage.AppNameBox.MinWidth = 32;
         }
 
-        public Task StoreAppsList()
+        public Task StoreAppsList(AppManagedModel[] models)
         {
-
             Task work = Task.Run(() =>
             {
+                Debug.WriteLine("Thread StoreAppsList: " + Thread.CurrentThread.ManagedThreadId.ToString());
+                try
+                {
+                    string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                    string filePath = System.IO.Path.Combine(documentsPath, "ManagedAppsLists.json");
 
-                string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-                string filePath = System.IO.Path.Combine(documentsPath, "ManagedAppsLists.json");
-                string asJson = JsonConvert.SerializeObject(AppsManagedToModels(), Formatting.Indented);
-                File.WriteAllText(filePath, asJson);
+                    File.WriteAllText(filePath, JsonConvert.SerializeObject(models, Formatting.Indented));
 
-                Debug.WriteLine("Done saving");
+                    Debug.WriteLine("Done saving");
+                }
+                catch(Exception e) 
+                {
+                    Debug.Write($"{e.Message}\n{e.StackTrace}\n{e.TargetSite.Name}\n");
+                }
+                
             });
             return work;
         }
 
         public AppManagedModel[] AppsManagedToModels()
         {
+            Debug.WriteLine("Thread AppsManagedToModels: " + Thread.CurrentThread.ManagedThreadId.ToString());
+            
+            
+                Debug.WriteLine("Thread AppsManagedToModels invoked: " + Thread.CurrentThread.ManagedThreadId.ToString());
             AppManagedModel[] apps = new AppManagedModel[AppsList.Children.Count];
 
-            AppToClose app;
+                AppManaged app;
             int i = 0, index = 0;
-            while ( i < AppsList.Children.Count )
-            {
-                try
+                while (i < AppsList.Children.Count)
                 {
-                    app = (AppToClose)AppsList.Children[i];
-                    if (0 < app.AppName.Length)
+                    try
                     {
-                        apps[index] = (AppManagedModel)app;
-                        index++;
+                        app = (AppManaged)AppsList.Children[i];
+                        if (0 < app.AppName.Length)
+                        {
+                            apps[index] = (AppManagedModel)app;
+                            index++;
+                        }
                     }
+                    catch { }
+
+                    i++;
                 }
-                catch { }
 
-                i++;
-            }
+            
 
-            if ( i != index)
+            if (i != index)
             {
                 AppManagedModel[] appsT = new AppManagedModel[index];
                 Array.ConstrainedCopy(apps, 0, appsT, 0, index);
@@ -184,7 +203,7 @@ namespace closeapps
                 IncludeTasksLikeGiven = true
             };
 
-            foreach (AppToClose toClose in AppsList.Children)
+            foreach (AppManaged toClose in AppsList.Children)
             {
                 if (toClose.IsSelected)
                 {
@@ -203,39 +222,45 @@ namespace closeapps
             CheckingIfRunning = true;
             Task CheckIfRunning = Task.Run(() =>
             {
-
-                while (CheckingIfRunning)
+                try
                 {
-                    for (int index = 0; index < AppsList.Children.Count; index++)
+                    while (CheckingIfRunning)
                     {
                         Application.Current.Dispatcher.Invoke(() =>
                         {
-                            AppToClose app = new AppToClose();
-                            try
+                            for (int index = 0; index < AppsList.Children.Count; index++)
                             {
-                                app = (AppToClose)AppsList.Children[index];
-                                if (0 < app.AppName.Length)
+                                AppManaged app = new AppManaged();
+                                try
                                 {
-                                    Debug.WriteLine("Checking app " + (index + 1).ToString() + "/" + app.AppName.Length.ToString());
-                                    if (Process.GetProcessesByName(app.AppName).Length > 0)
+                                    app = (AppManaged)AppsList.Children[index];
+                                    if (0 < app.AppName.Length)
                                     {
-                                        Debug.WriteLine("Running");
+                                        Debug.WriteLine("Checking app " + (index + 1).ToString() + "/" + AppsList.Children.Count.ToString());
+                                        if (Process.GetProcessesByName(app.AppName).Length > 0)
+                                        {
+                                            Debug.WriteLine("Running");
+                                        }
+                                        else
+                                        {
+                                            Debug.WriteLine("Stopped");
+                                        }
                                     }
-                                    else
-                                    {
-                                        Debug.WriteLine("Stopped");
-                                    }
-                                }
 
+
+                                }
+                                catch (Exception e) { Debug.WriteLine("Checked app " + (index + 1).ToString() + "/" + app.AppName.Length.ToString()); }
 
                             }
-                            catch (Exception e) { Debug.WriteLine("Checked app " + (index + 1).ToString() + "/" + app.AppName.Length.ToString()); }
 
                         });
-                        
-                    }
 
-                    Task.Delay(2500).Wait();
+                        Task.Delay(2500).Wait();
+                    }
+                }
+                catch (Exception e)
+                {
+                    Debug.Write($"{e.Message}\n{e.StackTrace}\n{e.TargetSite.Name}\n");
                 }
 
             });
@@ -248,7 +273,7 @@ namespace closeapps
             e.Cancel = true;
             CheckingIfRunning = false;
             Debug.WriteLine("Exit wait");
-            Task saveWork = StoreAppsList();
+            Task saveWork = StoreAppsList(AppsManagedToModels());
             //Task delay = Task.Run(()=> { Task.Delay(6000).Wait(); }); // Task.Delay does not start until awaited!
             //Debug.WriteLine("Exit in 6");
 

@@ -7,7 +7,7 @@ using System.Windows.Controls.Primitives;
 
 namespace closeapps
 {
-    public class AppToClose : DockPanel, IAppManaged
+    public class AppManaged : DockPanel, IAppManaged
     {
         public TextBox AppNameBox;
         public CheckBox SelectedBox, ForceKillBox, IncludeChildrenBox, IncludeTasksLikeGivenBox;
@@ -68,7 +68,7 @@ namespace closeapps
         }
 
 
-        public AppToClose()
+        public AppManaged()
         {
             AppNameBox = new TextBox();
 

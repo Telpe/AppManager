@@ -43,7 +43,7 @@ namespace closeapps
 
         public AppManagedModel() { }
 
-        public static explicit operator AppManagedModel(AppToClose v)
+        public static explicit operator AppManagedModel(AppManaged v)
         {
             AppManagedModel m = new AppManagedModel();
 

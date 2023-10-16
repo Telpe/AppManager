@@ -11,16 +11,24 @@ namespace closeapps
     {
         public TextBox AppNameBox;
         public CheckBox SelectedBox, ForceKillBox, IncludeChildrenBox, IncludeTasksLikeGivenBox;
-        protected bool? _IsRunning = false;
+        public Label RunningStateLabel;
+        protected int _IsRunning = 0;
 
         public string AppName
         {
             get { return AppNameBox.Text; }
             set { AppNameBox.Text = value; }
         }
-        public bool? IsRunning
+        public int IsRunning
         {
             get { return _IsRunning; }
+            set
+            {
+                _IsRunning = value;
+
+                RunningState = value.ToString();
+                
+            }
         }
         public bool IsSelected
         {
@@ -67,6 +75,17 @@ namespace closeapps
             }
         }
 
+        public string RunningState
+        {
+            get
+            {
+                return RunningStateLabel.Content.ToString();
+            }
+            set
+            {
+                RunningStateLabel.Content = value;
+            }
+        }
 
         public AppManaged()
         {
@@ -76,12 +95,15 @@ namespace closeapps
             ForceKillBox = new CheckBox();
             IncludeChildrenBox = new CheckBox();
             IncludeTasksLikeGivenBox = new CheckBox();
+            RunningStateLabel = new Label();
 
             this.Children.Add(SelectedBox);
             this.Children.Add(AppNameBox);
             this.Children.Add(IncludeTasksLikeGivenBox);
             this.Children.Add(IncludeChildrenBox);
             this.Children.Add(ForceKillBox);
+            this.Children.Add(RunningStateLabel);
+
 
         }
 

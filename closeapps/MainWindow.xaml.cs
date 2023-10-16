@@ -21,6 +21,7 @@ using System.ComponentModel;
 using System.CodeDom.Compiler;
 using System.Reflection;
 using System.Threading;
+using System.Timers;
 
 namespace closeapps
 {
@@ -33,15 +34,12 @@ namespace closeapps
     /// </summary>
     public partial class MainWindow : Window
     {
-        private Task CheckAppsRunning;
-        //private Task LoadApps = null;
-        private bool CheckingIfRunning = false;
-
+        private System.Timers.Timer CheckIfAppsRunning = new System.Timers.Timer();
+        
         private string[] AppsListLoaded = { "Steam", "GOG", "Galaxy", "Epic", "Battle", "wgc", "Discord", "mbam", "action", "dsclock", "msedge", "hMailServer", "ScpService", "SRService" };
 
         public MainWindow()
         {
-            Debug.WriteLine("Thread MainWindow: " + Thread.CurrentThread.ManagedThreadId.ToString());
             InitializeComponent();
 
             this.Closing += Window_Closing;
@@ -75,7 +73,10 @@ namespace closeapps
 
             AddAppsListHeader();
 
-            CheckAppsRunning = CheckRunning();
+            CheckIfAppsRunning.Interval = 2500;
+            CheckIfAppsRunning.AutoReset = true;
+            CheckIfAppsRunning.Elapsed += new ElapsedEventHandler(CheckRunningHandler);
+            CheckIfAppsRunning.Start();
         }
 
         private void AddAppsListHeader()
@@ -132,10 +133,8 @@ namespace closeapps
             appToManage.AppNameBox.MinWidth = 32;
         }
 
-        public Task StoreAppsList(AppManagedModel[] models)
+        public void StoreAppsList(AppManagedModel[] models)
         {
-            Task work = Task.Run(() =>
-            {
                 Debug.WriteLine("Thread StoreAppsList: " + Thread.CurrentThread.ManagedThreadId.ToString());
                 try
                 {
@@ -150,17 +149,10 @@ namespace closeapps
                 {
                     Debug.Write($"{e.Message}\n{e.StackTrace}\n{e.TargetSite.Name}\n");
                 }
-                
-            });
-            return work;
         }
 
         public AppManagedModel[] AppsManagedToModels()
         {
-            Debug.WriteLine("Thread AppsManagedToModels: " + Thread.CurrentThread.ManagedThreadId.ToString());
-            
-            
-                Debug.WriteLine("Thread AppsManagedToModels invoked: " + Thread.CurrentThread.ManagedThreadId.ToString());
             AppManagedModel[] apps = new AppManagedModel[AppsList.Children.Count];
 
                 AppManaged app;
@@ -216,80 +208,43 @@ namespace closeapps
 
         }
 
-        private Task CheckRunning()
+        private void CheckRunningHandler(object sender, ElapsedEventArgs eve)
         {
-            var Options = new TaskContinuationOptions();
-            CheckingIfRunning = true;
-            Task CheckIfRunning = Task.Run(() =>
+            Application.Current.Dispatcher.Invoke(CheckRunning);
+        }
+
+        private void CheckRunning()
+        {
+            for (int i = 0; i < AppsList.Children.Count; i++)
             {
+                AppManaged app;
                 try
                 {
-                    while (CheckingIfRunning)
-                    {
-                        Application.Current.Dispatcher.Invoke(() =>
-                        {
-                            for (int index = 0; index < AppsList.Children.Count; index++)
-                            {
-                                AppManaged app = new AppManaged();
-                                try
-                                {
-                                    app = (AppManaged)AppsList.Children[index];
-                                    if (0 < app.AppName.Length)
-                                    {
-                                        Debug.WriteLine("Checking app " + (index + 1).ToString() + "/" + AppsList.Children.Count.ToString());
-                                        if (Process.GetProcessesByName(app.AppName).Length > 0)
-                                        {
-                                            Debug.WriteLine("Running");
-                                        }
-                                        else
-                                        {
-                                            Debug.WriteLine("Stopped");
-                                        }
-                                    }
-
-
-                                }
-                                catch (Exception e) { Debug.WriteLine("Checked app " + (index + 1).ToString() + "/" + app.AppName.Length.ToString()); }
-
-                            }
-
-                        });
-
-                        Task.Delay(2500).Wait();
-                    }
+                    app = (AppManaged)AppsList.Children[i];
                 }
-                catch (Exception e)
+                catch(Exception e)
                 {
-                    Debug.Write($"{e.Message}\n{e.StackTrace}\n{e.TargetSite.Name}\n");
+                    app = new AppManaged();
+                    Debug.WriteLine(e.Message + "\n" + e.StackTrace);
                 }
 
-            });
+                if (0 < app.AppName.Length)
+                {
+                    var processs = Process.GetProcessesByName(app.AppName);
+                    app.IsRunning = processs.Length;
+                    
+                }
 
-            return CheckIfRunning;
+            }
+
         }
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
             e.Cancel = true;
-            CheckingIfRunning = false;
-            Debug.WriteLine("Exit wait");
-            Task saveWork = StoreAppsList(AppsManagedToModels());
-            //Task delay = Task.Run(()=> { Task.Delay(6000).Wait(); }); // Task.Delay does not start until awaited!
-            //Debug.WriteLine("Exit in 6");
-
-            Debug.WriteLine("CheckApps " + CheckAppsRunning.Status.ToString());
-            CheckAppsRunning.Wait();
-            Debug.WriteLine("CheckApps " + CheckAppsRunning.Status.ToString());
-
-            Debug.WriteLine("saveWork " + saveWork.Status.ToString());
-            saveWork.Wait();
-            Debug.WriteLine("saveWork " + saveWork.Status.ToString());
-
-            //Debug.WriteLine("delay " + delay.Status.ToString());
-            //delay.Wait();
-            //Debug.WriteLine("delay " + delay.Status.ToString());
-
-            Debug.WriteLine("Exit");
+            CheckIfAppsRunning.Stop();
+            StoreAppsList(AppsManagedToModels());
+            
             e.Cancel = false;
         }
 

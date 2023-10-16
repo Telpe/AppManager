@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.ComponentModel;
-using System.Threading;
+//using System.Threading;
 using System.Timers;
 
 namespace AppManager
@@ -115,25 +115,24 @@ namespace AppManager
         private void AddAppToList(AppManaged appToManage)
         {
             AppsList.Children.Add(appToManage);
-            appToManage.AppNameBox.MinWidth = 32;
+            appToManage.AppNameBox.Width = 160;
         }
 
         public void StoreAppsList(AppManagedModel[] models)
         {
-                Debug.WriteLine("Thread StoreAppsList: " + Thread.CurrentThread.ManagedThreadId.ToString());
-                try
-                {
-                    string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-                    string filePath = System.IO.Path.Combine(documentsPath, "ManagedAppsLists.json");
+            try
+            {
+                string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                string filePath = System.IO.Path.Combine(documentsPath, "ManagedAppsLists.json");
 
-                    File.WriteAllText(filePath, JsonConvert.SerializeObject(models, Formatting.Indented));
+                File.WriteAllText(filePath, JsonConvert.SerializeObject(models, Formatting.Indented));
 
-                    Debug.WriteLine("Done saving");
-                }
-                catch(Exception e) 
-                {
-                    Debug.Write($"{e.Message}\n{e.StackTrace}\n{e.TargetSite.Name}\n");
-                }
+                Debug.WriteLine("Done saving");
+            }
+            catch(Exception e) 
+            {
+                Debug.Write($"{e.Message}\n{e.StackTrace}\n{e.TargetSite.Name}\n");
+            }
         }
 
         public AppManagedModel[] AppsManagedToModels()

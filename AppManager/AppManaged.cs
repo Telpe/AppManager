@@ -5,7 +5,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 
-namespace closeapps
+namespace AppManager
 {
     public class AppManaged : DockPanel, IAppManaged
     {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 
-namespace closeapps
+namespace AppManager
 {
     public class Close
     {

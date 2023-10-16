@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace closeapps
+namespace AppManager
 {
-    public class ProcessRunningOptions
+    public class CloserOptions
     {
         public bool? ForceKill { get; set; } = false;
         public bool? IncludeChildren { get; set; } = true;

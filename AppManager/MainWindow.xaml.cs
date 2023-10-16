@@ -21,7 +21,7 @@ namespace AppManager
     {
         private System.Timers.Timer CheckIfAppsRunning = new System.Timers.Timer();
         
-        private string[] AppsListLoaded = { "Steam", "GOG", "Galaxy", "Epic", "Battle", "wgc", "Discord", "mbam", "action", "dsclock", "msedge", "hMailServer", "ScpService", "SRService" };
+        private string[] AppsListLoaded = { "Steam", "GOG", "Galaxy", "Epic", "Battle", "wgc", "Discord", "msedge", };
 
         public MainWindow()
         {

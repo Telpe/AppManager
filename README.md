@@ -1,2 +1,2 @@
-# quicksite_closeapps
+# AppManager
  Close all chosen process.

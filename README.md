@@ -8,6 +8,12 @@ Also note that all apps starting with the chosen name will be closed, even thoug
 ## Main purpose: 
 Closes all chosen process.
 
+The AppManager is not a replacement for windows TaskManager.
+AppManager will not show all apps and background apps running on user pc.
+It will not scan the computer for apps.
+
+AppManager will only check if the apps on the user's list is running.
+
 ## History:
 This app started out as a batch file to close Skype as it could not be closed at the time. It kept reopening in the background.
 Another app needed to be closed often, so a list begang to form.
@@ -31,3 +37,4 @@ The number is shown next to the still inactive selectboxes in each row.
 
 Names are case-insensitive.
 
+AppManager have a default starter list, as an example.

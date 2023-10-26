@@ -1,14 +1,14 @@
 # AppManager
 
-!Attention:
+## !Attention:
 At the moment all apps are closed with force exit. This can mess up things in some apps.
 Make sure you have saved your work, and that the apps to close are not installing or updating anything.
 Also note that all apps starting with the chosen name will be closed, even though the process counter only count proceess with the exact name.
 
-Main purpose: 
+## Main purpose: 
 Closes all chosen process.
 
-History:
+## History:
 This app started out as a batch file to close Skype as it could not be closed at the time. It kept reopening in the background.
 Another app needed to be closed often, so a list begang to form.
 Some apps can not close because another app keep reopenning it. 
@@ -18,7 +18,7 @@ Since not all apps on the list needed closing in all situations, I begang making
 This was acceptable for me for years.
 Late 2023 I began to build the app to be used by others and to have some nicer features.
 
-Description:
+## Description:
 Add process names to the list of apps you would like to manage, or change the names already there.
 Clear the name field to remove a row from the list (happens when saving).
 The list saves when closing AppManager.

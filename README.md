@@ -8,21 +8,22 @@ Also note that all apps starting with the chosen name will be closed, even thoug
 ## Main purpose: 
 Closes all chosen process.\
 \
-The AppManager is not a replacement for windows TaskManager.\
-AppManager will not show all apps and background apps running on user pc.\
-It will not scan the computer for apps.\
+The AppManager is not a replacement for Windows TaskManager.\
+AppManager will not show all apps or background apps running on the user pc.\
+AppManager will not scan the computer for apps.\
 \
-AppManager will only check if the apps on the user's list is running.
+AppManager will only check if the apps on the user's list are running.
 
 ## History:
 This app started out as a batch file to close Skype as it could not be closed at the time. It kept reopening in the background.\
 Another app needed to be closed often, so a list begang to form.\
 Some apps can not close because another app keep reopenning it. \
 These apps names would start the same. Example only: skype and skypetray.\
-So instead of adding all hidden apps to the list, I made use of the windows feature, of closing apps, that close all apps beginning with the given name.\
-Since not all apps on the list needed closing in all situations, I begang making the AppManager, so I could deselect some apps before closing.\
+So instead of adding all hidden apps to the list, I made use of the Windows feature, of closing apps, that close all apps beginning with the given name.\
+Since not all apps on the list needed closing in all situations, I began making the AppManager, so I could deselect some apps before closing.\
 This was acceptable for me for years.\
 Late 2023 I began to build the app to be used by others and to have some nicer features.
+Late 2024, so this project obviously got on a standby. I hope to get back to it soon.
 
 ## Description:
 Add process names to the list of apps you would like to manage, or change the names already there.\

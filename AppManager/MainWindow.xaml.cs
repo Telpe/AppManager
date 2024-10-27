@@ -115,7 +115,7 @@ namespace AppManager
         private void AddAppToList(AppManaged appToManage)
         {
             AppsList.Children.Add(appToManage);
-            appToManage.AppNameBox.Width = 160;
+            
         }
 
         public void StoreAppsList(AppManagedModel[] models)

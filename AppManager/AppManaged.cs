@@ -89,13 +89,24 @@ namespace AppManager
 
         public AppManaged()
         {
-            AppNameBox = new TextBox();
+            Height = 22;
 
             SelectedBox = new CheckBox();
+
+            AppNameBox = new TextBox();
+            AppNameBox.Width = 160;
+            AppNameBox.Padding = new Thickness(0, 0, 0, 0);
+            AppNameBox.Margin = new Thickness(0, 1, 0, 1);
+            AppNameBox.VerticalAlignment = VerticalAlignment.Center;
+
+            
             ForceKillBox = new CheckBox();
             IncludeChildrenBox = new CheckBox();
             IncludeTasksLikeGivenBox = new CheckBox();
+
             RunningStateLabel = new Label();
+            RunningStateLabel.Padding = new Thickness(0, 0, 0, 0);
+            RunningStateLabel.Margin = new Thickness(1, 1, 1, 1);
 
             this.Children.Add(SelectedBox);
             this.Children.Add(AppNameBox);

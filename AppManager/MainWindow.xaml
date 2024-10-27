@@ -16,7 +16,7 @@
 			<RowDefinition Height="*" />
 			<RowDefinition Height="auto" />
 		</Grid.RowDefinitions>
-		<DockPanel x:Name="AppsHeader" Grid.Row="0" Grid.Column="0" LastChildFill="False"/>
+		<DockPanel x:Name="AppsHeader" Grid.Row="0" Grid.Column="0" Margin="0,0,17,0"/>
 		<ScrollViewer HorizontalAlignment="Left" Grid.Row="1" Grid.Column="0" MinWidth="240">
 			<StackPanel x:Name="AppsList" Height="auto"/>
 		</ScrollViewer>

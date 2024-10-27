@@ -22,7 +22,7 @@ These apps names would start the same. Example only: skype and skypetray.\
 So instead of adding all hidden apps to the list, I made use of the Windows feature, of closing apps, that close all apps beginning with the given name.\
 Since not all apps on the list needed closing in all situations, I began making the AppManager, so I could deselect some apps before closing.\
 This was acceptable for me for years.\
-Late 2023 I began to build the app to be used by others and to have some nicer features.
+Late 2023 I began to build the app to be used by others and to have some nicer features.\
 Late 2024, so this project obviously got on a standby. I hope to get back to it soon.
 
 ## Description:

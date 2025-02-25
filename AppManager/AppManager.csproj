@@ -7,6 +7,6 @@
     <StartupObject>AppManager.App</StartupObject>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <Folder Include="Lib\" />
   </ItemGroup>
 </Project>

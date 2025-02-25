@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using Newtonsoft.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.ComponentModel;
-//using System.Threading;
+using System.Threading;
 using System.Timers;
+using System.Text.Json;
+using System.Linq;
+using System.Collections.Generic;
 
 namespace AppManager
 {
@@ -27,11 +29,20 @@ namespace AppManager
         {
             InitializeComponent();
 
-            this.Closing += Window_Closing;
+            try
+            {
+                this.Closing += Window_Closing;
 
-            LoadAppsList();
+                LoadAppsList();
 
-            EnableButtons();
+                EnableButtons();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("MainWindow error");
+                Debug.WriteLine(ex.Message.ToString());
+                Debug.WriteLine(ex.StackTrace.ToString());
+            }
         }
 
         private void EnableButtons()
@@ -66,7 +77,7 @@ namespace AppManager
 
         private void AddAppsListHeader()
         {
-            AppsHeader.Children.Add(new AppManaged() { AppName = "All Apps", IsSelected = false, IsSimilarIncluded=false, IsChildrenIncluded=true, IsExitForced=false });
+            AppsHeader.Children.Add(new AppManaged() { AppName = "All Apps", Selected = false, IncludeSimilar=false, IncludeChildren=true, ForceExit=false });
         }
 
         private AppManaged[] LoadAppsListFromFile()
@@ -74,7 +85,7 @@ namespace AppManager
             string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
             string filePath = System.IO.Path.Combine(documentsPath, "ManagedAppsLists.json");
             string fileText = File.ReadAllText(filePath);
-            AppManaged[] apps = JsonConvert.DeserializeObject<AppManaged[]>(fileText);
+            AppManaged[] apps = JsonSerializer.Deserialize<AppManaged[]>(fileText);
             return apps;
         }
 
@@ -93,23 +104,19 @@ namespace AppManager
 
         private void AddAppsListToList(string[] appNames)
         {
-            for (int i = 0; i < appNames.Length; i++)
-            {
-                AddAppToList(appNames[i]);
-            }
+            foreach (string appName in appNames) { AddAppToList(appName); }
         }
 
         private void AddAppsListToList(AppManaged[] apps)
         {
-            for (int i = 0; i < apps.Length; i++)
-            {
-                AddAppToList(apps[i]);
-            }
+            foreach (AppManaged app in apps) { AddAppToList(app); }
         }
 
         private void AddAppToList(string name, bool selected = true)
         {
-            AddAppToList(new AppManaged() { AppName = name, IsSelected=selected });
+            var app = new AppManaged() { AppName = name, Selected = selected };
+            AddAppToList(app);
+
         }
 
         private void AddAppToList(AppManaged appToManage)
@@ -125,7 +132,7 @@ namespace AppManager
                 string documentsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
                 string filePath = System.IO.Path.Combine(documentsPath, "ManagedAppsLists.json");
 
-                File.WriteAllText(filePath, JsonConvert.SerializeObject(models, Formatting.Indented));
+                File.WriteAllText(filePath, JsonSerializer.Serialize(models));
 
                 Debug.WriteLine("Done saving");
             }
@@ -137,36 +144,17 @@ namespace AppManager
 
         public AppManagedModel[] AppsManagedToModels()
         {
-            AppManagedModel[] apps = new AppManagedModel[AppsList.Children.Count];
+            IEnumerable<AppManagedModel> apps = Enumerable.Empty<AppManagedModel>();
 
-                AppManaged app;
-            int i = 0, index = 0;
-                while (i < AppsList.Children.Count)
-                {
-                    try
-                    {
-                        app = (AppManaged)AppsList.Children[i];
-                        if (0 < app.AppName.Length)
-                        {
-                            apps[index] = (AppManagedModel)app;
-                            index++;
-                        }
-                    }
-                    catch { }
-
-                    i++;
-                }
-
-            
-
-            if (i != index)
+            foreach (AppManaged app in AppsList.Children)
             {
-                AppManagedModel[] appsT = new AppManagedModel[index];
-                Array.ConstrainedCopy(apps, 0, appsT, 0, index);
-                return appsT;
+                if (0 < app.AppName.Length)
+                {
+                    apps = apps.Append((AppManagedModel)app);
+                }
             }
 
-            return apps;
+            return apps.ToArray();
         }
         
         private void CloseSelectedAppsButton_Click(Object sender, RoutedEventArgs e)
@@ -181,7 +169,7 @@ namespace AppManager
 
             foreach (AppManaged toClose in AppsList.Children)
             {
-                if (toClose.IsSelected)
+                if (toClose.Selected)
                 {
                     var closer = new Close(toClose.AppName, options);
 

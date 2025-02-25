@@ -30,7 +30,7 @@ namespace AppManager
                 
             }
         }
-        public bool IsSelected
+        public bool Selected
         {
             get
             {
@@ -41,7 +41,7 @@ namespace AppManager
                 SelectedBox.IsChecked = value;
             }
         }
-        public bool IsSimilarIncluded
+        public bool IncludeSimilar
         {
             get
             {
@@ -52,7 +52,7 @@ namespace AppManager
                 IncludeTasksLikeGivenBox.IsChecked = value;
             }
         }
-        public bool IsExitForced
+        public bool ForceExit
         {
             get
             {
@@ -63,7 +63,7 @@ namespace AppManager
                 ForceKillBox.IsChecked = value;
             }
         }
-        public bool IsChildrenIncluded
+        public bool IncludeChildren
         {
             get
             {
@@ -90,8 +90,15 @@ namespace AppManager
         public AppManaged()
         {
             Height = 22;
+            double checkboxNewWidth = 40;
+            double checkboxWidth = 16;
 
             SelectedBox = new CheckBox();
+            SelectedBox.Width = checkboxWidth;
+            SelectedBox.Height = checkboxWidth;
+            int leftright = (int)((checkboxNewWidth - checkboxWidth - SelectedBox.Padding.Left - SelectedBox.Padding.Right) * 0.5);
+            SelectedBox.Margin = new Thickness(leftright, 1, leftright, 1);
+            SelectedBox.VerticalAlignment = VerticalAlignment.Center;
 
             AppNameBox = new TextBox();
             AppNameBox.Width = 160;
@@ -101,8 +108,22 @@ namespace AppManager
 
             
             ForceKillBox = new CheckBox();
+            ForceKillBox.Width = checkboxWidth;
+            ForceKillBox.Height = checkboxWidth;
+            ForceKillBox.Margin = new Thickness(leftright, 1, leftright, 1);
+            ForceKillBox.VerticalAlignment = VerticalAlignment.Center;
+
             IncludeChildrenBox = new CheckBox();
+            IncludeChildrenBox.Width = checkboxWidth;
+            IncludeChildrenBox.Height = checkboxWidth;
+            IncludeChildrenBox.Margin = new Thickness(leftright, 1, leftright, 1);
+            IncludeChildrenBox.VerticalAlignment = VerticalAlignment.Center;
+
             IncludeTasksLikeGivenBox = new CheckBox();
+            IncludeTasksLikeGivenBox.Width = checkboxWidth;
+            IncludeTasksLikeGivenBox.Height = checkboxWidth;
+            IncludeTasksLikeGivenBox.Margin = new Thickness(leftright, 1, leftright, 1);
+            IncludeTasksLikeGivenBox.VerticalAlignment = VerticalAlignment.Center;
 
             RunningStateLabel = new Label();
             RunningStateLabel.Padding = new Thickness(0, 0, 0, 0);

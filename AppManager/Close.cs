@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
 
 namespace AppManager
@@ -32,25 +33,27 @@ namespace AppManager
 
         private string ComposeArguments()
         {
-            StringBuilder args = new StringBuilder();
+            IEnumerable<string> args = Enumerable.Empty<string>();
 
             if ((bool)Options.ForceKill)
             {
-                args.Append("/F ");
+                args = args.Append("/F");
             }
+
             if ((bool)Options.IncludeChildren)
             {
-                args.Append("/T ");
+                args = args.Append("/T");
             }
 
-            args.Append("/IM " + AppName);
-            
+            args = args.Append("/IM");
+            args = args.Append(AppName);
+
             if ((bool)Options.IncludeTasksLikeGiven)
             {
-                args.Append('*');
+                args = args.Append(@"*");
             }
 
-            return String.Concat( args );
+            return String.Join(' ', args);
         }
 
         public void DoClose()

@@ -9,10 +9,10 @@ namespace AppManager
     internal interface IAppManaged
     {
         public string AppName { get; set; }
-        public bool IsSelected { get; set; }
-        public bool IsSimilarIncluded { get; set; }
-        public bool IsExitForced { get; set; }
-        public bool IsChildrenIncluded { get; set; }
+        public bool Selected { get; set; }
+        public bool IncludeSimilar { get; set; }
+        public bool ForceExit { get; set; }
+        public bool IncludeChildren { get; set; }
 
     }
 }

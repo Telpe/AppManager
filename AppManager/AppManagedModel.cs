@@ -9,39 +9,19 @@ namespace AppManager
 {
     public class AppManagedModel : IAppManaged
     {
-        protected string _AppName = "";
-        protected bool _IsSelected = false;
-        protected bool _IsSimilarIncluded = false;
-        protected bool _IsExitForced = false;
-        protected bool _IsChildrenIncluded = false;
+         public string AppName
+        { get; set; }
+        public bool Selected
+        { get; set; }
+        public bool IncludeSimilar
+        { get; set; }
+        public bool ForceExit
+        { get; set; }
+        public bool IncludeChildren
+        { get; set; }
 
-        public string AppName
-        {
-            get { return _AppName; }
-            set { _AppName = value; }
-        }
-        public bool IsSelected
-        {
-            get { return _IsSelected; }
-            set { _IsSelected = value; }
-        }
-        public bool IsSimilarIncluded
-        {
-            get { return _IsSimilarIncluded; }
-            set { _IsSimilarIncluded = value; }
-        }
-        public bool IsExitForced
-        {
-            get { return _IsExitForced; }
-            set { _IsExitForced = value; }
-        }
-        public bool IsChildrenIncluded
-        {
-            get { return _IsChildrenIncluded; }
-            set { _IsChildrenIncluded = value; }
-        }
-
-        public AppManagedModel() { }
+        public AppManagedModel() 
+        { }
 
         public static explicit operator AppManagedModel(AppManaged v)
         {
@@ -52,7 +32,7 @@ namespace AppManager
                 m.GetType().GetProperty(propertyInfo.Name).SetValue(m, propertyInfo.GetValue(v));
             }
 
-            return m;   
+            return m;
         }
     }
 }

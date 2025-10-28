@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
 
-namespace AppManager
+namespace AppManager.Profile
 {
     public class AppManaged : DockPanel, IAppManaged
     {
@@ -89,6 +85,25 @@ namespace AppManager
 
         public AppManaged()
         {
+
+            Initiate();
+
+
+        }
+
+        public AppManaged(AppManagedModel model)
+        {
+            Initiate();
+
+            AppName = model.AppName;
+            Selected = model.Selected;
+            IncludeSimilar = model.IncludeSimilar;
+            ForceExit = model.ForceExit;
+            IncludeChildren = model.IncludeChildren;
+        }
+
+        private void Initiate()
+        {
             Height = 22;
             double checkboxNewWidth = 40;
             double checkboxWidth = 16;
@@ -106,7 +121,7 @@ namespace AppManager
             AppNameBox.Margin = new Thickness(0, 1, 0, 1);
             AppNameBox.VerticalAlignment = VerticalAlignment.Center;
 
-            
+
             ForceKillBox = new CheckBox();
             ForceKillBox.Width = checkboxWidth;
             ForceKillBox.Height = checkboxWidth;
@@ -135,8 +150,6 @@ namespace AppManager
             this.Children.Add(IncludeChildrenBox);
             this.Children.Add(ForceKillBox);
             this.Children.Add(RunningStateLabel);
-
-
         }
 
     }

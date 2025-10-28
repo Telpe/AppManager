@@ -5,57 +5,37 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:AppManager"
         mc:Ignorable="d"
-        Title="App Manager" Height="500" Width="600">
-	<Grid Margin="10">
-		<Grid.ColumnDefinitions>
-			<ColumnDefinition Width="auto" />
-			<ColumnDefinition Width="*" />
-		</Grid.ColumnDefinitions>
+        Title="App Manager" Height="600" Width="600">
+    <Grid>
 		<Grid.RowDefinitions>
-			<RowDefinition Height="36" />
-			<RowDefinition Height="32" />
-			<RowDefinition Height="*" />
-			<RowDefinition Height="auto" />
+			<RowDefinition MinHeight="32" Height="Auto"/>
+			<RowDefinition Height="*"/>
 		</Grid.RowDefinitions>
-		<StackPanel Orientation="Horizontal">
-			<WrapPanel Width="40">
-				<Label Content="Select" Padding="2,0,2,0" />
-				<Label Content="more" Padding="2,0,2,0" />
-			</WrapPanel>
-			<WrapPanel Width="160">
-				<Label Content="App" Padding="2,0,2,0" />
-				<Label Content="name" Padding="2,0,2,0" />
-			</WrapPanel>
-			<WrapPanel Width="40">
-				<Label Content="Include" Padding="2,0,2,0" />
-				<Label Content="tasks" Padding="2,0,2,0" />
-				<Label Content="like" Padding="2,0,2,0" />
-				<Label Content="given" Padding="2,0,2,0" />
-			</WrapPanel>
-			<WrapPanel Width="40">
-				<Label Content="Include" Padding="2,0,2,0" />
-				<Label Content="children" Padding="2,0,2,0" />
-			</WrapPanel>
-			<WrapPanel Width="40">
-				<Label Content="Force" Padding="2,0,2,0" />
-				<Label Content="kill" Padding="2,0,2,0" />
-			</WrapPanel>
-			<WrapPanel Width="40">
-				<Label Content="Like" Padding="2,0,2,0" />
-				<Label Content="given" Padding="2,0,2,0" />
-				<Label Content="running" Padding="2,0,2,0" />
-			</WrapPanel>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="*"/>
+			<ColumnDefinition Width="*"/>
+		</Grid.ColumnDefinitions>
+		<Label Grid.Row="0" Grid.Column="0" Content="App Manager" FontWeight="Bold" VerticalAlignment="Center" Margin="10,0,0,0"/>
+		<StackPanel Orientation="Vertical" Grid.Row="1" Grid.Column="0" Background="#D0D0D0" Height="auto">
+			
+			<!-- Nav 1 menu -->
+			<StackPanel Orientation="Horizontal" Background="#F0F0F0">
+				<Button x:Name="AppsButton" Content="Apps" Width="100" Height="30" Margin="5" Click="Nav1MenuButton_Click"/>
+				<Button x:Name="AppGroupsButton" Content="Groups" Width="100" Height="30" Margin="5" Click="Nav1MenuButton_Click"/>
+				<Button x:Name="ShortcutsButton" Content="Shortcuts" Width="100" Height="30" Margin="5" Click="Nav1MenuButton_Click"/>
+			</StackPanel>
+			<!-- Nav 1 List -->
+			<ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+				<StackPanel x:Name="Nav1List" Orientation="Vertical" Background="#F0F0F0" Width="auto" HorizontalAlignment="Left">
+					<Label Content="Navigation1" FontWeight="Bold" Margin="5" Width="100"/>
+					<Label Content="Navigation2" FontWeight="Bold" Margin="5"/>
+					<Label Content="Navigation3" FontWeight="Bold" Margin="5"/>
+					<Label Content="Navigation4" FontWeight="Bold" Margin="5"/>
+				</StackPanel>
+			</ScrollViewer>
 		</StackPanel>
-		<DockPanel x:Name="AppsHeader" Grid.Row="1" Grid.Column="0" Margin="0,0,17,0" />
-		<ScrollViewer Grid.Row="2" Grid.Column="0" MinWidth="240" Margin="0,0,10,0">
-			<StackPanel x:Name="AppsList" Height="auto"/>
-		</ScrollViewer>
-		<WrapPanel Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Left">
-			<Button x:Name="AddAppButton" Width="70" Height="22">Add App</Button>
-			<Button x:Name="CloseSelectedAppsButton" Width="70" Height="22">Close Apps</Button>
-		</WrapPanel>
 
-		<StackPanel x:Name="ConsolePanel" HorizontalAlignment="Right" Grid.Row="0" Grid.Column="1" Grid.RowSpan="3"/>
-
+			<!-- Page Content -->
+		<Frame x:Name="MainFrame" Grid.Row="1" Grid.Column="1" NavigationUIVisibility="Hidden" Margin="10"/>
 	</Grid>
 </Window>

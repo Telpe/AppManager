@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 
-namespace AppManager
+namespace AppManager.Actions
 {
-    public class Close
+    public class ProcessRunning
     {
         private readonly List<string> _ResponseMessages = new List<string>();
         private readonly string _ErrorMessage = "";
@@ -17,46 +15,44 @@ namespace AppManager
         public List<string> ResponseMessages { get { return _ResponseMessages; } }
         public bool Running { get { return _Running; } }
         public int ClosingAttempts { get { return _ClosingAttempts; } }
-        public CloserOptions Options { get; set; }
+        public ProcessRunningOptions Options { get; set; }
 
-        public Close(string inputName)
+        public ProcessRunning(string inputName)
         {
             AppName = inputName;
-            Options = new CloserOptions();
+            Options = new ProcessRunningOptions();
         }
 
-        public Close(string inputName, CloserOptions closerOptions)
+        public ProcessRunning(string inputName, ProcessRunningOptions ProcessRunningrOptions)
         {
             AppName = inputName;
-            Options = closerOptions;
+            Options = ProcessRunningrOptions;
         }
 
         private string ComposeArguments()
         {
-            IEnumerable<string> args = Enumerable.Empty<string>();
+            string args = "";
 
             if ((bool)Options.ForceKill)
             {
-                args = args.Append("/F");
+                args += "/F ";
             }
-
             if ((bool)Options.IncludeChildren)
             {
-                args = args.Append("/T");
+                args += "/T ";
             }
-
-            args = args.Append("/IM");
-            args = args.Append(AppName);
-
+            
+            args += "/IM " + AppName;
+            
             if ((bool)Options.IncludeTasksLikeGiven)
             {
-                args = args.Append(@"*");
+                args += "*";
             }
 
-            return String.Join(' ', args);
+            return args;
         }
 
-        public void DoClose()
+        public void DoProcessRunning()
         {
             try
             {

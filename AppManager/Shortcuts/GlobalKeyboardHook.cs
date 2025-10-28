@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Input;
 
-namespace AppManager
+namespace AppManager.Shortcuts
 {
     internal class GlobalKeyboardHook : IDisposable
     {
@@ -34,9 +31,7 @@ namespace AppManager
                 throw new Win32Exception(errorCode, $"Failed to load library 'User32.dll'. Error {errorCode}: {new Win32Exception(Marshal.GetLastWin32Error()).Message}.");
             }
 
-
-
-            _windowsHookHandle = SetWindowsHookEx(WH_KEYBOARD_LL, _hookProc, _user32LibraryHandle, 0);
+            _windowsHookHandle = SetWindowsHookEx(KeyboardHookConstants.WH_KEYBOARD_LL, _hookProc, _user32LibraryHandle, 0);
             if (_windowsHookHandle == IntPtr.Zero)
             {
                 int errorCode = Marshal.GetLastWin32Error();
@@ -89,8 +84,6 @@ namespace AppManager
         private IntPtr _user32LibraryHandle;
         private HookProc _hookProc;
 
-        delegate IntPtr HookProc(int nCode, IntPtr wParam, IntPtr lParam);
-
         [DllImport("kernel32.dll")]
         private static extern IntPtr LoadLibrary(string lpFileName);
 
@@ -130,56 +123,8 @@ namespace AppManager
         [DllImport("USER32", SetLastError = true)]
         static extern IntPtr CallNextHookEx(IntPtr hHook, int code, IntPtr wParam, IntPtr lParam);
 
-        [StructLayout(LayoutKind.Sequential)]
-        public struct LowLevelKeyboardInputEvent
-        {
-            /// <summary>
-            /// A virtual-key code. The code must be a value in the range 1 to 254.
-            /// </summary>
-            public int VirtualCode;
-
-            // EDT: added a conversion from VirtualCode to Keys.
-            /// <summary>
-            /// The VirtualCode converted to typeof(Keys) for higher usability.
-            /// </summary>
-            public Key Key { get { return (Key)VirtualCode; } }
-
-            /// <summary>
-            /// A hardware scan code for the key. 
-            /// </summary>
-            public int HardwareScanCode;
-
-            /// <summary>
-            /// The extended-key flag, event-injected Flags, context code, and transition-state flag. This member is specified as follows. An application can use the following values to test the keystroke Flags. Testing LLKHF_INJECTED (bit 4) will tell you whether the event was injected. If it was, then testing LLKHF_LOWER_IL_INJECTED (bit 1) will tell you whether or not the event was injected from a process running at lower integrity level.
-            /// </summary>
-            public int Flags;
-
-            /// <summary>
-            /// The time stamp stamp for this message, equivalent to what GetMessageTime would return for this message.
-            /// </summary>
-            public int TimeStamp;
-
-            /// <summary>
-            /// Additional information associated with the message. 
-            /// </summary>
-            public IntPtr AdditionalInformation;
-        }
-
-        public const int WH_KEYBOARD_LL = 13;
-        //const int HC_ACTION = 0;
-
-        public enum KeyboardState
-        {
-            KeyDown = 0x0100,
-            KeyUp = 0x0101,
-            SysKeyDown = 0x0104,
-            SysKeyUp = 0x0105
-        }
-
         // EDT: Replaced VkSnapshot(int) with RegisteredKeys(Key[])
         public static Key[] RegisteredKeys;
-        const int KfAltdown = 0x2000;
-        public const int LlkhfAltdown = (KfAltdown >> 8);
 
         public IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam)
         {

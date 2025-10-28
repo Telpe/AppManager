@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace AppManager
+﻿namespace AppManager.Actions
 {
-    public class ProcessRunningOptions
+    public class CloserOptions
     {
         public bool? ForceKill { get; set; } = false;
         public bool? IncludeChildren { get; set; } = true;

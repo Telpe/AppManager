@@ -1,0 +1,32 @@
+using System;
+using System.Reflection;
+
+namespace AppManager.Profile
+{
+    public class GroupManagedModel : IGroupManaged
+    {
+        public string GroupName { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public bool Selected { get; set; }
+        public bool AutoCloseAll { get; set; }
+        public bool IsExpanded { get; set; } = true;
+        public string[] MemberApps { get; set; } = Array.Empty<string>();
+
+        public GroupManagedModel() 
+        { 
+        }
+
+        public static explicit operator GroupManagedModel(GroupManaged v)
+        {
+            GroupManagedModel m = new GroupManagedModel();
+
+            foreach (PropertyInfo propertyInfo in typeof(IGroupManaged).GetProperties())
+            {
+                var sourceValue = propertyInfo.GetValue(v);
+                m.GetType().GetProperty(propertyInfo.Name)?.SetValue(m, sourceValue);
+            }
+
+            return m;
+        }
+    }
+}

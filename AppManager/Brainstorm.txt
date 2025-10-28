@@ -1,0 +1,62 @@
+﻿UI Flow:
+Config should be together with what it configures.
+Perhaps some general config require a config page.
+
+Main pages/sort by::
+List of controlled apps.
+List of shortcuts used.
+About.
+
+Open app control by clicking a shortcut or an app from above menus.
+
+
+app management:
+appname
+
+-------
+Trigger (shortcut, button, on launch of another app, on close of another app, on system event)
+
+
+--------
+Conditions(running, minimized, unfocused, ...)
+
+
+
+--------
+Action (launch, close, restart, focus, bring to front, minimize)
+
+// Example usage in your application
+var actionManager = new ActionManager();
+
+// Launch an application
+var launchParams = new ActionParameters 
+{ 
+    ExecutablePath = @"C:\Program Files\Example\example.exe",
+    Arguments = "--start-minimized"
+};
+bool launched = await actionManager.ExecuteActionAsync("Launch", "example", launchParams);
+
+// Close an application with force
+var closeParams = new ActionParameters 
+{ 
+    ForceOperation = true,
+    IncludeChildProcesses = true 
+};
+bool closed = await actionManager.ExecuteActionAsync("Close", "example", closeParams);
+
+// Focus a specific window
+var focusParams = new ActionParameters 
+{ 
+    WindowTitle = "Document1 - Notepad" 
+};
+bool focused = await actionManager.ExecuteActionAsync("Focus", "notepad", focusParams);
+
+
+// Enum for action types
+var actionManager = new ActionManager();
+
+// Using enum (preferred)
+await actionManager.ExecuteActionAsync(AppActionEnum.Launch, "notepad");
+
+// Using string (backward compatibility)
+await actionManager.ExecuteActionAsync("Launch", "notepad");

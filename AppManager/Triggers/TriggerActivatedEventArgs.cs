@@ -9,7 +9,7 @@ namespace AppManager.Triggers
         public TriggerTypeEnum TriggerType { get; set; }
         public string TargetAppName { get; set; }
         public AppActionEnum ActionToExecute { get; set; }
-        public ActionParameters ActionParameters { get; set; }
+        public ActionModel ActionParameters { get; set; }
         public DateTime ActivatedAt { get; set; } = DateTime.Now;
         public object TriggerData { get; set; }
     }

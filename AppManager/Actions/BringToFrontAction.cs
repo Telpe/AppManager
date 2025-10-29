@@ -8,7 +8,6 @@ namespace AppManager.Actions
 {
     public class BringToFrontAction : IAppAction
     {
-        public AppActionEnum ActionName => AppActionEnum.BringToFront;
         public string Description => "Brings an application window to the front and makes it topmost temporarily";
 
         [DllImport("user32.dll")]
@@ -30,20 +29,26 @@ namespace AppManager.Actions
         private const int SW_RESTORE = 9;
         private const int SW_SHOW = 5;
 
-        public bool CanExecute(string appName, ActionParameters parameters = null)
+        public bool CanExecute(ActionModel model)
         {
-            return !string.IsNullOrEmpty(appName) && GetTargetProcess(appName, parameters) != null;
+            return !string.IsNullOrEmpty(model?.AppName) && GetTargetProcess(model) != null;
         }
 
-        public async Task<bool> ExecuteAsync(string appName, ActionParameters parameters = null)
+        public async Task<bool> ExecuteAsync(ActionModel model)
         {
+            if (model == null || string.IsNullOrEmpty(model.AppName))
+            {
+                Debug.WriteLine("Invalid ActionModel or AppName is null/empty");
+                return false;
+            }
+
             try
             {
-                var process = GetTargetProcess(appName, parameters);
+                var process = GetTargetProcess(model);
                 
                 if (process == null)
                 {
-                    Debug.WriteLine($"No process found to bring to front: {appName}");
+                    Debug.WriteLine($"No process found to bring to front: {model.AppName}");
                     return false;
                 }
 
@@ -75,41 +80,41 @@ namespace AppManager.Actions
                 await Task.Delay(100);
                 SetWindowPos(mainWindowHandle, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 
-                Debug.WriteLine($"Successfully brought to front: {appName}");
+                Debug.WriteLine($"Successfully brought to front: {model.AppName}");
                 return true;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Failed to bring to front {appName}: {ex.Message}");
+                Debug.WriteLine($"Failed to bring to front {model.AppName}: {ex.Message}");
                 return false;
             }
         }
 
-        private Process GetTargetProcess(string appName, ActionParameters parameters)
+        private Process GetTargetProcess(ActionModel model)
         {
             try
             {
                 Process[] processes;
                 
-                if (parameters?.IncludeSimilarNames == true)
+                if (model.IncludeSimilarNames)
                 {
                     processes = Process.GetProcesses()
-                        .Where(p => p.ProcessName.IndexOf(appName, StringComparison.OrdinalIgnoreCase) >= 0)
+                        .Where(p => p.ProcessName.IndexOf(model.AppName, StringComparison.OrdinalIgnoreCase) >= 0)
                         .Where(p => p.MainWindowHandle != IntPtr.Zero)
                         .ToArray();
                 }
                 else
                 {
-                    processes = Process.GetProcessesByName(appName)
+                    processes = Process.GetProcessesByName(model.AppName)
                         .Where(p => p.MainWindowHandle != IntPtr.Zero)
                         .ToArray();
                 }
 
                 // If window title is specified, filter by it
-                if (!string.IsNullOrEmpty(parameters?.WindowTitle))
+                if (!string.IsNullOrEmpty(model.WindowTitle))
                 {
                     processes = processes
-                        .Where(p => p.MainWindowTitle.IndexOf(parameters.WindowTitle, StringComparison.OrdinalIgnoreCase) >= 0)
+                        .Where(p => p.MainWindowTitle.IndexOf(model.WindowTitle, StringComparison.OrdinalIgnoreCase) >= 0)
                         .ToArray();
                 }
 
@@ -117,7 +122,7 @@ namespace AppManager.Actions
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error finding process to bring to front {appName}: {ex.Message}");
+                Debug.WriteLine($"Error finding process to bring to front {model.AppName}: {ex.Message}");
                 return null;
             }
         }

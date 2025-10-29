@@ -8,23 +8,28 @@ namespace AppManager.Actions
 {
     public class CloseAction : IAppAction
     {
-        public AppActionEnum ActionName => AppActionEnum.Close;
         public string Description => "Closes an application gracefully";
 
-        public bool CanExecute(string appName, ActionParameters parameters = null)
+        public bool CanExecute(ActionModel model)
         {
-            return !string.IsNullOrEmpty(appName) && GetProcesses(appName, parameters).Any();
+            return !string.IsNullOrEmpty(model?.AppName) && GetProcesses(model).Any();
         }
 
-        public async Task<bool> ExecuteAsync(string appName, ActionParameters parameters = null)
+        public async Task<bool> ExecuteAsync(ActionModel model)
         {
+            if (model == null || string.IsNullOrEmpty(model.AppName))
+            {
+                Debug.WriteLine("Invalid ActionModel or AppName is null/empty");
+                return false;
+            }
+
             try
             {
-                var processes = GetProcesses(appName, parameters);
+                var processes = GetProcesses(model);
                 
                 if (!processes.Any())
                 {
-                    Debug.WriteLine($"No processes found for: {appName}");
+                    Debug.WriteLine($"No processes found for: {model.AppName}");
                     return false;
                 }
 
@@ -34,7 +39,7 @@ namespace AppManager.Actions
                 {
                     try
                     {
-                        if (parameters?.ForceOperation == true)
+                        if (model.ForceOperation)
                         {
                             process.Kill();
                             Debug.WriteLine($"Force killed process: {process.ProcessName} (ID: {process.Id})");
@@ -58,7 +63,7 @@ namespace AppManager.Actions
                         }
 
                         // Wait for process to exit
-                        if (!process.WaitForExit(parameters?.TimeoutMs ?? 5000))
+                        if (!process.WaitForExit(model.TimeoutMs))
                         {
                             Debug.WriteLine($"Process {process.ProcessName} did not exit within timeout");
                             allClosed = false;
@@ -75,31 +80,31 @@ namespace AppManager.Actions
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Failed to close {appName}: {ex.Message}");
+                Debug.WriteLine($"Failed to close {model.AppName}: {ex.Message}");
                 return false;
             }
         }
 
-        private Process[] GetProcesses(string appName, ActionParameters parameters)
+        private Process[] GetProcesses(ActionModel model)
         {
             try
             {
                 Process[] processes;
                 
-                if (parameters?.IncludeSimilarNames == true)
+                if (model.IncludeSimilarNames)
                 {
                     // Get all processes and filter by name pattern
                     processes = Process.GetProcesses()
-                        .Where(p => p.ProcessName.IndexOf(appName, StringComparison.OrdinalIgnoreCase) >= 0)
+                        .Where(p => p.ProcessName.IndexOf(model.AppName, StringComparison.OrdinalIgnoreCase) >= 0)
                         .ToArray();
                 }
                 else
                 {
                     // Get exact match processes
-                    processes = Process.GetProcessesByName(appName);
+                    processes = Process.GetProcessesByName(model.AppName);
                 }
 
-                if (parameters?.IncludeChildProcesses == true)
+                if (model.IncludeChildProcesses)
                 {
                     // Add child processes
                     var allProcesses = processes.ToList();
@@ -115,7 +120,7 @@ namespace AppManager.Actions
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error getting processes for {appName}: {ex.Message}");
+                Debug.WriteLine($"Error getting processes for {model.AppName}: {ex.Message}");
                 return new Process[0];
             }
         }

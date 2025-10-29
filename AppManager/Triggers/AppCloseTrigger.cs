@@ -12,7 +12,7 @@ namespace AppManager.Triggers
         public override TriggerTypeEnum TriggerType => TriggerTypeEnum.AppClose;
         public override string Description => "Monitors for application close/exit events";
 
-        private TriggerParameters _parameters;
+        private TriggerModel _parameters;
         private ManagementEventWatcher _processWatcher;
         private CancellationTokenSource _cancellationTokenSource;
 
@@ -20,12 +20,12 @@ namespace AppManager.Triggers
         {
         }
 
-        public override bool CanStart(TriggerParameters parameters = null)
+        public override bool CanStart(TriggerModel parameters = null)
         {
             return !string.IsNullOrEmpty(parameters?.ProcessName) || !string.IsNullOrEmpty(parameters?.ExecutablePath);
         }
 
-        public override async Task<bool> StartAsync(TriggerParameters parameters = null)
+        public override async Task<bool> StartAsync(TriggerModel parameters = null)
         {
             if (IsActive || parameters == null)
                 return false;

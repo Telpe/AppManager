@@ -18,9 +18,9 @@ namespace AppManager.Triggers
             Name = name ?? GetType().Name;
         }
 
-        public abstract Task<bool> StartAsync(TriggerParameters parameters = null);
+        public abstract Task<bool> StartAsync(TriggerModel parameters = null);
         public abstract Task<bool> StopAsync();
-        public abstract bool CanStart(TriggerParameters parameters = null);
+        public abstract bool CanStart(TriggerModel parameters = null);
 
         protected virtual void OnTriggerActivated(TriggerActivatedEventArgs args)
         {
@@ -29,7 +29,7 @@ namespace AppManager.Triggers
             TriggerActivated?.Invoke(this, args);
         }
 
-        protected virtual void OnTriggerActivated(string targetAppName, AppActionEnum action, ActionParameters actionParams = null, object triggerData = null)
+        protected virtual void OnTriggerActivated(string targetAppName, AppActionEnum action, ActionModel actionParams = null, object triggerData = null)
         {
             var args = new TriggerActivatedEventArgs
             {

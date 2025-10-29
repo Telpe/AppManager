@@ -1,25 +1,19 @@
-﻿using System.Reflection;
+﻿using AppManager.Actions;
+using AppManager.Triggers;
+using System.Collections.Generic;
+using System.Reflection;
 
 namespace AppManager.Profile
 {
     public class AppManagedModel : IAppManaged
     {
-         public string AppName
-        { get; set; }
-        public bool Selected
-        { get; set; }
-        public bool IncludeSimilar
-        { get; set; }
-        public bool ForceExit
-        { get; set; }
-        public bool IncludeChildren
-        { get; set; }
+        public string AppName { get; set; }
+        public bool Active { get; set; }
+        
+        // Add missing interface properties
+        public Dictionary<int, TriggerModel> AppTriggers { get; set; } = new Dictionary<int, TriggerModel>();
+        public Dictionary<int, ActionModel> AppActions { get; set; } = new Dictionary<int, ActionModel>();
 
-        // New action-related properties
-        public string ExecutablePath { get; set; }
-        public string LaunchArguments { get; set; }
-        public string[] AvailableActions { get; set; } = { "Launch", "Close", "Restart", "Focus", "BringToFront", "Minimize" };
-        public int ActionTimeoutMs { get; set; } = 5000;
 
         public AppManagedModel() 
         { }
@@ -30,23 +24,15 @@ namespace AppManager.Profile
 
             foreach (PropertyInfo propertyInfo in typeof(IAppManaged).GetProperties())
             {
-                m.GetType().GetProperty(propertyInfo.Name).SetValue(m, propertyInfo.GetValue(v));
+                var targetProperty = m.GetType().GetProperty(propertyInfo.Name);
+                if (targetProperty != null && targetProperty.CanWrite)
+                {
+                    targetProperty.SetValue(m, propertyInfo.GetValue(v));
+                }
             }
 
             return m;
         }
 
-        public Actions.ActionParameters CreateActionParameters()
-        {
-            return new Actions.ActionParameters
-            {
-                ForceOperation = ForceExit,
-                IncludeChildProcesses = IncludeChildren,
-                IncludeSimilarNames = IncludeSimilar,
-                TimeoutMs = ActionTimeoutMs,
-                ExecutablePath = ExecutablePath,
-                Arguments = LaunchArguments
-            };
-        }
     }
 }

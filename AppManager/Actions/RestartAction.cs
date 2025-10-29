@@ -7,7 +7,6 @@ namespace AppManager.Actions
         private readonly CloseAction _closeAction;
         private readonly LaunchAction _launchAction;
 
-        public AppActionEnum ActionName => AppActionEnum.Restart;
         public string Description => "Restarts an application by closing and launching it";
 
         public RestartAction()
@@ -16,20 +15,25 @@ namespace AppManager.Actions
             _launchAction = new LaunchAction();
         }
 
-        public bool CanExecute(string appName, ActionParameters parameters = null)
+        public bool CanExecute(ActionModel model)
         {
-            return _closeAction.CanExecute(appName, parameters) && 
-                   _launchAction.CanExecute(appName, parameters);
+            return _closeAction.CanExecute(model) && _launchAction.CanExecute(model);
         }
 
-        public async Task<bool> ExecuteAsync(string appName, ActionParameters parameters = null)
+        public async Task<bool> ExecuteAsync(ActionModel model)
         {
+            if (model == null || string.IsNullOrEmpty(model.AppName))
+            {
+                System.Diagnostics.Debug.WriteLine("Invalid ActionModel or AppName is null/empty");
+                return false;
+            }
+
             // First close the application
-            bool closed = await _closeAction.ExecuteAsync(appName, parameters);
+            bool closed = await _closeAction.ExecuteAsync(model);
             
             if (!closed)
             {
-                System.Diagnostics.Debug.WriteLine($"Failed to close {appName} for restart");
+                System.Diagnostics.Debug.WriteLine($"Failed to close {model.AppName} for restart");
                 return false;
             }
 
@@ -37,15 +41,15 @@ namespace AppManager.Actions
             await Task.Delay(1000);
 
             // Then launch it again
-            bool launched = await _launchAction.ExecuteAsync(appName, parameters);
+            bool launched = await _launchAction.ExecuteAsync(model);
             
             if (!launched)
             {
-                System.Diagnostics.Debug.WriteLine($"Failed to launch {appName} after close");
+                System.Diagnostics.Debug.WriteLine($"Failed to launch {model.AppName} after close");
                 return false;
             }
 
-            System.Diagnostics.Debug.WriteLine($"Successfully restarted: {appName}");
+            System.Diagnostics.Debug.WriteLine($"Successfully restarted: {model.AppName}");
             return true;
         }
     }

@@ -7,112 +7,103 @@ namespace AppManager.Actions
 {
     public class ActionManager
     {
-        private readonly Dictionary<AppActionEnum, IAppAction> _actions;
+        private readonly Dictionary<AppActionEnum, IAppAction> _Actions;
 
         public ActionManager()
         {
-            var actions = new IAppAction[]
+            _Actions = new Dictionary<AppActionEnum, IAppAction>() 
             {
-                new LaunchAction(),
-                new CloseAction(),
-                new RestartAction(),
-                new FocusAction(),
-                new BringToFrontAction(),
-                new MinimizeAction()
+                { AppActionEnum.Launch, new LaunchAction() },
+                { AppActionEnum.Close, new CloseAction() },
+                { AppActionEnum.Restart, new RestartAction() },
+                { AppActionEnum.Focus, new FocusAction() },
+                { AppActionEnum.BringToFront, new BringToFrontAction() },
+                { AppActionEnum.Minimize, new MinimizeAction() }
             };
-
-            _actions = new Dictionary<AppActionEnum, IAppAction>();
-            
-            foreach (var action in actions)
-            {
-                _actions[action.ActionName] = action;
-            }
         }
 
         public IEnumerable<AppActionEnum> GetAvailableActions()
         {
-            return _actions.Keys;
-        }
-
-        public IEnumerable<string> GetAvailableActionNames()
-        {
-            return _actions.Keys.Select(a => a.ToString());
+            return Enum.GetValues(typeof(AppActionEnum)).Cast<AppActionEnum>();
         }
 
         public IAppAction GetAction(AppActionEnum actionName)
         {
-            _actions.TryGetValue(actionName, out IAppAction action);
+            if(!_Actions.TryGetValue(actionName, out IAppAction action))
+            {
+                throw new Exception($"Action not found: {actionName}");
+            }
             return action;
         }
 
-        public IAppAction GetAction(string actionName)
+        public bool CanExecuteAction(ActionModel model)
         {
-            if (Enum.TryParse<AppActionEnum>(actionName, true, out AppActionEnum actionEnum))
+            if (model == null)
+                return false;
+                
+            var action = GetAction(model.ActionName);
+            return action?.CanExecute(model) ?? false;
+        }
+
+        public bool CanExecuteAction(AppActionEnum actionName, string appName, ActionModel parameters = null)
+        {
+            var model = parameters ?? new ActionModel();
+            model.ActionName = actionName;
+            model.AppName = appName;
+            
+            return CanExecuteAction(model);
+        }
+
+        public async Task<bool> ExecuteActionAsync(ActionModel model)
+        {
+            if (model == null)
             {
-                return GetAction(actionEnum);
+                System.Diagnostics.Debug.WriteLine("ActionModel is null");
+                return false;
             }
-            return null;
-        }
 
-        public bool CanExecuteAction(AppActionEnum actionName, string appName, ActionParameters parameters = null)
-        {
-            var action = GetAction(actionName);
-            return action?.CanExecute(appName, parameters) ?? false;
-        }
-
-        public bool CanExecuteAction(string actionName, string appName, ActionParameters parameters = null)
-        {
-            var action = GetAction(actionName);
-            return action?.CanExecute(appName, parameters) ?? false;
-        }
-
-        public async Task<bool> ExecuteActionAsync(AppActionEnum actionName, string appName, ActionParameters parameters = null)
-        {
-            var action = GetAction(actionName);
+            var action = GetAction(model.ActionName);
             if (action == null)
             {
-                System.Diagnostics.Debug.WriteLine($"Action not found: {actionName}");
+                System.Diagnostics.Debug.WriteLine($"Action not found: {model.ActionName}");
                 return false;
             }
 
             try
             {
-                return await action.ExecuteAsync(appName, parameters);
+                return await action.ExecuteAsync(model);
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error executing action {actionName} on {appName}: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Error executing action {model.ActionName} on {model.AppName}: {ex.Message}");
                 return false;
             }
         }
 
-        public async Task<bool> ExecuteActionAsync(string actionName, string appName, ActionParameters parameters = null)
+        public async Task<bool> ExecuteActionAsync(AppActionEnum actionName, string appName, ActionModel parameters = null)
         {
-            if (Enum.TryParse<AppActionEnum>(actionName, true, out AppActionEnum actionEnum))
-            {
-                return await ExecuteActionAsync(actionEnum, appName, parameters);
-            }
-
-            System.Diagnostics.Debug.WriteLine($"Invalid action name: {actionName}");
-            return false;
+            var model = parameters ?? new ActionModel();
+            model.ActionName = actionName;
+            model.AppName = appName;
+            
+            return await ExecuteActionAsync(model);
         }
 
-        public async Task<Dictionary<string, bool>> ExecuteMultipleActionsAsync(
-            IEnumerable<(AppActionEnum actionName, string appName, ActionParameters parameters)> actions)
+        public async Task<Dictionary<string, bool>> ExecuteMultipleActionsAsync(IEnumerable<ActionModel> actions)
         {
             var results = new Dictionary<string, bool>();
             
-            foreach (var (actionName, appName, parameters) in actions)
+            foreach (var model in actions)
             {
-                var key = $"{actionName}_{appName}";
-                results[key] = await ExecuteActionAsync(actionName, appName, parameters);
+                var key = $"{model.ActionName}_{model.AppName}";
+                results[key] = await ExecuteActionAsync(model);
             }
 
             return results;
         }
 
         public async Task<Dictionary<string, bool>> ExecuteMultipleActionsAsync(
-            IEnumerable<(string actionName, string appName, ActionParameters parameters)> actions)
+            IEnumerable<(AppActionEnum actionName, string appName, ActionModel parameters)> actions)
         {
             var results = new Dictionary<string, bool>();
             

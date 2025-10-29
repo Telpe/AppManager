@@ -38,7 +38,7 @@ namespace AppManager.Triggers
             return trigger;
         }
 
-        public async Task<bool> RegisterTriggerAsync(ITrigger trigger, TriggerParameters parameters = null)
+        public async Task<bool> RegisterTriggerAsync(ITrigger trigger, TriggerModel parameters = null)
         {
             if (trigger == null || _triggers.ContainsKey(trigger.Name))
                 return false;

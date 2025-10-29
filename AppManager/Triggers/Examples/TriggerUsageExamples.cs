@@ -14,7 +14,7 @@ namespace AppManager.Triggers.Examples
 
             // Example 1: Global shortcut (Ctrl+Shift+N) to launch Notepad
             var shortcutTrigger = triggerManager.CreateTrigger(TriggerTypeEnum.Shortcut, "LaunchNotepad");
-            var shortcutParams = new TriggerParameters
+            var shortcutParams = new TriggerModel
             {
                 Key = Key.N,
                 Modifiers = ModifierKeys.Control | ModifierKeys.Shift
@@ -23,7 +23,7 @@ namespace AppManager.Triggers.Examples
 
             // Example 2: Monitor for Chrome launch to auto-focus it
             var chromeLaunchTrigger = triggerManager.CreateTrigger(TriggerTypeEnum.AppLaunch, "AutoFocusChrome");
-            var chromeParams = new TriggerParameters
+            var chromeParams = new TriggerModel
             {
                 ProcessName = "chrome"
             };
@@ -31,7 +31,7 @@ namespace AppManager.Triggers.Examples
 
             // Example 3: Monitor for Steam close to launch Epic Games
             var steamCloseTrigger = triggerManager.CreateTrigger(TriggerTypeEnum.AppClose, "SteamToEpic");
-            var steamParams = new TriggerParameters
+            var steamParams = new TriggerModel
             {
                 ProcessName = "Steam"
             };
@@ -39,7 +39,7 @@ namespace AppManager.Triggers.Examples
 
             // Example 4: Monitor system unlock to launch Discord
             var unlockTrigger = triggerManager.CreateTrigger(TriggerTypeEnum.SystemEvent, "UnlockToDiscord");
-            var unlockParams = new TriggerParameters
+            var unlockParams = new TriggerModel
             {
                 EventName = "Unlocked"
             };
@@ -47,7 +47,7 @@ namespace AppManager.Triggers.Examples
 
             // Example 5: Network port trigger for remote commands
             var networkTrigger = triggerManager.CreateTrigger(TriggerTypeEnum.NetworkPort, "RemoteCommands");
-            var networkParams = new TriggerParameters
+            var networkParams = new TriggerModel
             {
                 Port = 8080,
                 IPAddress = "127.0.0.1"

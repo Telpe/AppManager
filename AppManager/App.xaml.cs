@@ -89,6 +89,8 @@ namespace AppManager
             try
             {
                 Directory.CreateDirectory(StorePath);
+
+                JsonSerializerOptions.Default.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
                 File.WriteAllText(StoreFile, JsonSerializer.Serialize(CurrentProfile, new JsonSerializerOptions { WriteIndented = true }));
                 Debug.WriteLine("Profile saved successfully");
             }

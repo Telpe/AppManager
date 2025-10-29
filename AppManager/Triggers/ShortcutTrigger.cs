@@ -12,7 +12,7 @@ namespace AppManager.Triggers
         public override TriggerTypeEnum TriggerType => TriggerTypeEnum.Shortcut;
         public override string Description => "Monitors global keyboard shortcuts with high compatibility using GlobalKeyboardHook";
 
-        private TriggerParameters _parameters;
+        private TriggerModel _parameters;
         private GlobalKeyboardHook _globalKeyboardHook;
         private Key _targetKey;
         private ModifierKeys _targetModifiers;
@@ -23,12 +23,12 @@ namespace AppManager.Triggers
         {
         }
 
-        public override bool CanStart(TriggerParameters parameters = null)
+        public override bool CanStart(TriggerModel parameters = null)
         {
             return parameters?.Key != Key.None || !string.IsNullOrEmpty(parameters?.ShortcutCombination);
         }
 
-        public override async Task<bool> StartAsync(TriggerParameters parameters = null)
+        public override async Task<bool> StartAsync(TriggerModel parameters = null)
         {
             if (IsActive || parameters == null)
                 return false;

@@ -1,7 +1,9 @@
 namespace AppManager.Actions
 {
-    public class ActionParameters
+    public class ActionModel
     {
+        public string AppName { get; set; }
+        public AppActionEnum ActionName { get; set; }
         public bool ForceOperation { get; set; } = false;
         public bool IncludeChildProcesses { get; set; } = false;
         public bool IncludeSimilarNames { get; set; } = false;

@@ -15,7 +15,9 @@
 			<ColumnDefinition Width="*"/>
 			<ColumnDefinition Width="*"/>
 		</Grid.ColumnDefinitions>
-		<Label Grid.Row="0" Grid.Column="0" Content="App Manager" FontWeight="Bold" VerticalAlignment="Center" Margin="10,0,0,0"/>
+		<Label Grid.Row="0" Grid.Column="0" Content="App Manager" FontWeight="Bold"  HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,0,0,0"/>
+		<!-- Console Panel -->
+		<StackPanel x:Name="ConsolePanel" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0" />
 		<StackPanel Orientation="Vertical" Grid.Row="1" Grid.Column="0" Background="#D0D0D0" Height="auto">
 			
 			<!-- Nav 1 menu -->

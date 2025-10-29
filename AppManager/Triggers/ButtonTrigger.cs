@@ -10,19 +10,19 @@ namespace AppManager.Triggers
         public override TriggerTypeEnum TriggerType => TriggerTypeEnum.Button;
         public override string Description => "Monitors UI button clicks";
 
-        private TriggerParameters _parameters;
+        private TriggerModel _parameters;
         private Button _monitoredButton;
 
         public ButtonTrigger(string name = null) : base(name)
         {
         }
 
-        public override bool CanStart(TriggerParameters parameters = null)
+        public override bool CanStart(TriggerModel parameters = null)
         {
             return parameters?.CustomProperties?.ContainsKey("Button") == true;
         }
 
-        public override async Task<bool> StartAsync(TriggerParameters parameters = null)
+        public override async Task<bool> StartAsync(TriggerModel parameters = null)
         {
             if (IsActive || parameters == null)
                 return false;

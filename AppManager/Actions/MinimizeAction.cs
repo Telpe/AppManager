@@ -8,7 +8,6 @@ namespace AppManager.Actions
 {
     public class MinimizeAction : IAppAction
     {
-        public AppActionEnum ActionName => AppActionEnum.Minimize;
         public string Description => "Minimizes an application window";
 
         [DllImport("user32.dll")]
@@ -16,20 +15,26 @@ namespace AppManager.Actions
 
         private const int SW_MINIMIZE = 6;
 
-        public bool CanExecute(string appName, ActionParameters parameters = null)
+        public bool CanExecute(ActionModel model)
         {
-            return !string.IsNullOrEmpty(appName) && GetTargetProcesses(appName, parameters).Any();
+            return !string.IsNullOrEmpty(model?.AppName) && GetTargetProcesses(model).Any();
         }
 
-        public async Task<bool> ExecuteAsync(string appName, ActionParameters parameters = null)
+        public async Task<bool> ExecuteAsync(ActionModel model)
         {
+            if (model == null || string.IsNullOrEmpty(model.AppName))
+            {
+                Debug.WriteLine("Invalid ActionModel or AppName is null/empty");
+                return false;
+            }
+
             try
             {
-                var processes = GetTargetProcesses(appName, parameters);
+                var processes = GetTargetProcesses(model);
                 
                 if (!processes.Any())
                 {
-                    Debug.WriteLine($"No processes found to minimize: {appName}");
+                    Debug.WriteLine($"No processes found to minimize: {model.AppName}");
                     return false;
                 }
 
@@ -70,36 +75,36 @@ namespace AppManager.Actions
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Failed to minimize {appName}: {ex.Message}");
+                Debug.WriteLine($"Failed to minimize {model.AppName}: {ex.Message}");
                 return false;
             }
         }
 
-        private Process[] GetTargetProcesses(string appName, ActionParameters parameters)
+        private Process[] GetTargetProcesses(ActionModel model)
         {
             try
             {
                 Process[] processes;
                 
-                if (parameters?.IncludeSimilarNames == true)
+                if (model.IncludeSimilarNames)
                 {
                     processes = Process.GetProcesses()
-                        .Where(p => p.ProcessName.IndexOf(appName, StringComparison.OrdinalIgnoreCase) >= 0)
+                        .Where(p => p.ProcessName.IndexOf(model.AppName, StringComparison.OrdinalIgnoreCase) >= 0)
                         .Where(p => p.MainWindowHandle != IntPtr.Zero)
                         .ToArray();
                 }
                 else
                 {
-                    processes = Process.GetProcessesByName(appName)
+                    processes = Process.GetProcessesByName(model.AppName)
                         .Where(p => p.MainWindowHandle != IntPtr.Zero)
                         .ToArray();
                 }
 
                 // If window title is specified, filter by it
-                if (!string.IsNullOrEmpty(parameters?.WindowTitle))
+                if (!string.IsNullOrEmpty(model.WindowTitle))
                 {
                     processes = processes
-                        .Where(p => p.MainWindowTitle.IndexOf(parameters.WindowTitle, StringComparison.OrdinalIgnoreCase) >= 0)
+                        .Where(p => p.MainWindowTitle.IndexOf(model.WindowTitle, StringComparison.OrdinalIgnoreCase) >= 0)
                         .ToArray();
                 }
 
@@ -107,7 +112,7 @@ namespace AppManager.Actions
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error finding processes to minimize {appName}: {ex.Message}");
+                Debug.WriteLine($"Error finding processes to minimize {model.AppName}: {ex.Message}");
                 return new Process[0];
             }
         }

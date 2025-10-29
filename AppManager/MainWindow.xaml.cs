@@ -386,5 +386,9 @@ namespace AppManager
 
             e.Cancel = false;
         }
+        public void ConsoleWriteline(string text)
+        {
+            ConsolePanel.Children.Add(new Label() { Content = text });
+        }
     }
 }

@@ -3,8 +3,11 @@ using System.Windows.Input;
 
 namespace AppManager.Triggers
 {
-    public class TriggerParameters
+    public class TriggerModel
     {
+
+        public TriggerTypeEnum TriggerType { get; set; }
+
         // Shortcut-specific parameters
         public Key Key { get; set; }
         public ModifierKeys Modifiers { get; set; }

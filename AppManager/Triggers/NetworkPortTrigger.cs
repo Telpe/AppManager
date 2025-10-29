@@ -13,7 +13,7 @@ namespace AppManager.Triggers
         public override TriggerTypeEnum TriggerType => TriggerTypeEnum.NetworkPort;
         public override string Description => "Monitors network port for incoming connections or data";
 
-        private TriggerParameters _parameters;
+        private TriggerModel _parameters;
         private TcpListener _tcpListener;
         private CancellationTokenSource _cancellationTokenSource;
 
@@ -21,12 +21,12 @@ namespace AppManager.Triggers
         {
         }
 
-        public override bool CanStart(TriggerParameters parameters = null)
+        public override bool CanStart(TriggerModel parameters = null)
         {
             return parameters?.Port > 0 && parameters.Port <= 65535;
         }
 
-        public override async Task<bool> StartAsync(TriggerParameters parameters = null)
+        public override async Task<bool> StartAsync(TriggerModel parameters = null)
         {
             if (IsActive || parameters == null)
                 return false;

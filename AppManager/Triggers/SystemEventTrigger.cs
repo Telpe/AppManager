@@ -12,7 +12,7 @@ namespace AppManager.Triggers
         public override TriggerTypeEnum TriggerType => TriggerTypeEnum.SystemEvent;
         public override string Description => "Monitors Windows system events (login, logout, lock, unlock, etc.)";
 
-        private TriggerParameters _parameters;
+        private TriggerModel _parameters;
         private EventLogWatcher _eventWatcher;
         private CancellationTokenSource _cancellationTokenSource;
 
@@ -20,12 +20,12 @@ namespace AppManager.Triggers
         {
         }
 
-        public override bool CanStart(TriggerParameters parameters = null)
+        public override bool CanStart(TriggerModel parameters = null)
         {
             return !string.IsNullOrEmpty(parameters?.EventName);
         }
 
-        public override async Task<bool> StartAsync(TriggerParameters parameters = null)
+        public override async Task<bool> StartAsync(TriggerModel parameters = null)
         {
             if (IsActive || parameters == null)
                 return false;

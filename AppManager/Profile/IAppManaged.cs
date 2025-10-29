@@ -1,12 +1,15 @@
-﻿namespace AppManager.Profile
+﻿using AppManager.Actions;
+using AppManager.Triggers;
+using System.Collections.Generic;
+
+namespace AppManager.Profile
 {
-    internal interface IAppManaged
+    public interface IAppManaged
     {
         public string AppName { get; set; }
-        public bool Selected { get; set; }
-        public bool IncludeSimilar { get; set; }
-        public bool ForceExit { get; set; }
-        public bool IncludeChildren { get; set; }
+        public bool Active { get; set; }
 
+        public Dictionary<int, TriggerModel> AppTriggers { get; set; }
+        public Dictionary<int, ActionModel> AppActions { get; set; }
     }
 }

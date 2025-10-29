@@ -7,38 +7,43 @@ namespace AppManager.Actions
 {
     public class LaunchAction : IAppAction
     {
-        public AppActionEnum ActionName => AppActionEnum.Launch;
         public string Description => "Launches an application";
 
-        public bool CanExecute(string appName, ActionParameters parameters = null)
+        public bool CanExecute(ActionModel model)
         {
-            if (string.IsNullOrEmpty(appName))
+            if (string.IsNullOrEmpty(model?.AppName))
                 return false;
 
             // Check if executable path is provided and exists
-            if (parameters?.ExecutablePath != null)
-                return File.Exists(parameters.ExecutablePath);
+            if (model.ExecutablePath != null)
+                return File.Exists(model.ExecutablePath);
 
             // Try to find the executable in common locations
-            return FindExecutable(appName) != null;
+            return FindExecutable(model.AppName) != null;
         }
 
-        public async Task<bool> ExecuteAsync(string appName, ActionParameters parameters = null)
+        public async Task<bool> ExecuteAsync(ActionModel model)
         {
+            if (model == null || string.IsNullOrEmpty(model.AppName))
+            {
+                Debug.WriteLine("Invalid ActionModel or AppName is null/empty");
+                return false;
+            }
+
             try
             {
-                string executablePath = parameters?.ExecutablePath ?? FindExecutable(appName);
+                string executablePath = model.ExecutablePath ?? FindExecutable(model.AppName);
                 
                 if (string.IsNullOrEmpty(executablePath))
                 {
-                    Debug.WriteLine($"Could not find executable for: {appName}");
+                    Debug.WriteLine($"Could not find executable for: {model.AppName}");
                     return false;
                 }
 
                 var startInfo = new ProcessStartInfo
                 {
                     FileName = executablePath,
-                    Arguments = parameters?.Arguments ?? string.Empty,
+                    Arguments = model.Arguments ?? string.Empty,
                     UseShellExecute = true
                 };
 
@@ -46,15 +51,16 @@ namespace AppManager.Actions
                 
                 if (process != null)
                 {
-                    Debug.WriteLine($"Successfully launched: {appName}");
+                    Debug.WriteLine($"Successfully launched: {model.AppName}");
                     return true;
                 }
 
+                Debug.WriteLine($"Failed to launch {model.AppName}");
                 return false;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Failed to launch {appName}: {ex.Message}");
+                Debug.WriteLine($"Failed to launch {model.AppName}: {ex.Message}");
                 return false;
             }
         }

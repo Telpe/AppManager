@@ -19,11 +19,9 @@
 		</Grid.RowDefinitions>
 
 
-		<!-- Console Panel -->
-		<StackPanel x:Name="ConsolePanel" HorizontalAlignment="Right" Grid.Row="0" Grid.Column="0" />
+		<!-- App Details Panel -->
+		<ScrollViewer x:Name="AppManagedEdit" Grid.Row="1" Grid.Column="0" VerticalScrollBarVisibility="Auto"></ScrollViewer>
 
-		
-		
 		<!-- Buttons Panel -->
 		<WrapPanel Grid.Row="2" Grid.Column="0" HorizontalAlignment="Left">
 		</WrapPanel>
@@ -36,8 +34,6 @@
 		</StackPanel>-->
 		
 
-		<!-- App Details Panel -->
-		<ScrollViewer x:Name="AppManagedEdit" Grid.Row="1" Grid.Column="0" VerticalScrollBarVisibility="Auto"></ScrollViewer>
 
 	</Grid>
 </Page>

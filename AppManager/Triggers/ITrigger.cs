@@ -13,8 +13,8 @@ namespace AppManager.Triggers
         
         event EventHandler<TriggerActivatedEventArgs> TriggerActivated;
         
-        Task<bool> StartAsync(TriggerParameters parameters = null);
+        Task<bool> StartAsync(TriggerModel parameters = null);
         Task<bool> StopAsync();
-        bool CanStart(TriggerParameters parameters = null);
+        bool CanStart(TriggerModel parameters = null);
     }
 }

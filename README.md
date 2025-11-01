@@ -2,6 +2,18 @@
 
 A comprehensive application management tool built with .NET 8 and WPF that allows users to monitor, control, and automate applications through triggers and actions.
 
+## Introduction
+
+This document, except Introduction, was made by these 2 promts to Copilot:
+
+###
+
+Describe the store data and edit data functionality as the user experience it.
+
+###
+
+Now add my question and your answer to a proper named readme file. If it can be read on github as well, with out too much hassle, that would be great.
+
 ## Overview
 
 AppManager provides users with the ability to manage applications through configurable triggers (keyboard shortcuts, app events, system events) and corresponding actions (launch, close, focus, etc.). The application features a persistent profile system that saves user configurations and preferences.

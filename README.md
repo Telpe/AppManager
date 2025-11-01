@@ -4,7 +4,7 @@ A comprehensive application management tool built with .NET 8 and WPF that allow
 
 ## Introduction
 
-! UNDER CONSTRUCTION !
+! UNDER CONSTRUCTION !\
 This document, except Introduction, was made by these 2 promts to Copilot:
 
 ###

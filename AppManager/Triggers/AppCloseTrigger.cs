@@ -7,7 +7,7 @@ using AppManager.Actions;
 
 namespace AppManager.Triggers
 {
-    public class AppCloseTrigger : BaseTrigger
+    internal class AppCloseTrigger : BaseTrigger
     {
         public override TriggerTypeEnum TriggerType => TriggerTypeEnum.AppClose;
         public override string Description => "Monitors for application close/exit events";

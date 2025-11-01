@@ -4,7 +4,7 @@ using AppManager.Actions;
 
 namespace AppManager.Triggers
 {
-    public abstract class BaseTrigger : ITrigger
+    internal abstract class BaseTrigger : ITrigger
     {
         public abstract TriggerTypeEnum TriggerType { get; }
         public string Name { get; set; }

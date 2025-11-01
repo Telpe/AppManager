@@ -1,6 +1,7 @@
 ﻿using AppManager.Actions;
 using AppManager.Triggers;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 namespace AppManager.Profile
@@ -18,21 +19,15 @@ namespace AppManager.Profile
         public AppManagedModel() 
         { }
 
-        public static explicit operator AppManagedModel(AppManaged v)
+        public AppManagedModel Clone()
         {
-            AppManagedModel m = new AppManagedModel();
-
-            foreach (PropertyInfo propertyInfo in typeof(IAppManaged).GetProperties())
+            return new()
             {
-                var targetProperty = m.GetType().GetProperty(propertyInfo.Name);
-                if (targetProperty != null && targetProperty.CanWrite)
-                {
-                    targetProperty.SetValue(m, propertyInfo.GetValue(v));
-                }
-            }
-
-            return m;
+                AppName = this.AppName,
+                Active = this.Active,
+                AppTriggers = this.AppTriggers.Select(kvp => new KeyValuePair<int, TriggerModel>(kvp.Key, kvp.Value.Clone())).ToDictionary(),
+                AppActions = this.AppActions.Select(kvp => new KeyValuePair<int, ActionModel>(kvp.Key, kvp.Value.Clone())).ToDictionary()
+            };
         }
-
     }
 }

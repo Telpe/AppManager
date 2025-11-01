@@ -5,6 +5,6 @@ namespace AppManager.Pages
     /// </summary>
     public interface IPageWithParameter
     {
-        void SetPageName(string pageName);
+        void LoadPageByName(string pageName);
     }
 }

@@ -15,7 +15,7 @@ namespace AppManager.Pages
             InitializeComponent();
         }
 
-        public void SetPageName(string pageName)
+        public void LoadPageByName(string pageName)
         {
             
 

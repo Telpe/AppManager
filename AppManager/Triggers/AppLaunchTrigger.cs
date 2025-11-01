@@ -8,7 +8,7 @@ using AppManager.Actions;
 
 namespace AppManager.Triggers
 {
-    public class AppLaunchTrigger : BaseTrigger
+    internal class AppLaunchTrigger : BaseTrigger
     {
         public override TriggerTypeEnum TriggerType => TriggerTypeEnum.AppLaunch;
         public override string Description => "Monitors for application launch events";

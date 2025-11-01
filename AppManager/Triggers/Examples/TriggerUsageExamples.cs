@@ -5,7 +5,7 @@ using AppManager.Actions;
 
 namespace AppManager.Triggers.Examples
 {
-    public static class TriggerUsageExamples
+    internal static class TriggerUsageExamples
     {
         public static async Task<TriggerManager> SetupExampleTriggersAsync()
         {

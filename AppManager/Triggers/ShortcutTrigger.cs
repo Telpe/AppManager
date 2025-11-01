@@ -7,7 +7,7 @@ using AppManager.Shortcuts;
 
 namespace AppManager.Triggers
 {
-    public class ShortcutTrigger : BaseTrigger
+    internal class ShortcutTrigger : BaseTrigger
     {
         public override TriggerTypeEnum TriggerType => TriggerTypeEnum.Shortcut;
         public override string Description => "Monitors global keyboard shortcuts with high compatibility using GlobalKeyboardHook";

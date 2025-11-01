@@ -8,7 +8,7 @@ using AppManager.Actions;
 
 namespace AppManager.Triggers
 {
-    public class NetworkPortTrigger : BaseTrigger
+    internal class NetworkPortTrigger : BaseTrigger
     {
         public override TriggerTypeEnum TriggerType => TriggerTypeEnum.NetworkPort;
         public override string Description => "Monitors network port for incoming connections or data";

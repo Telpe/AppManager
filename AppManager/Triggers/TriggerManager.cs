@@ -6,7 +6,7 @@ using AppManager.Actions;
 
 namespace AppManager.Triggers
 {
-    public class TriggerManager : IDisposable
+    internal class TriggerManager : IDisposable
     {
         private readonly Dictionary<string, ITrigger> _triggers;
         private readonly ActionManager _actionManager;

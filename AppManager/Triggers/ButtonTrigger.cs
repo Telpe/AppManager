@@ -5,7 +5,7 @@ using AppManager.Actions;
 
 namespace AppManager.Triggers
 {
-    public class ButtonTrigger : BaseTrigger
+    internal class ButtonTrigger : BaseTrigger
     {
         public override TriggerTypeEnum TriggerType => TriggerTypeEnum.Button;
         public override string Description => "Monitors UI button clicks";

@@ -11,5 +11,23 @@ namespace AppManager.Actions
         public string WindowTitle { get; set; }
         public string ExecutablePath { get; set; }
         public string Arguments { get; set; }
+
+        public ActionModel() { }
+
+        public ActionModel Clone()
+        {
+            return new()
+            {
+                AppName = this.AppName,
+                ActionName = this.ActionName,
+                ForceOperation = this.ForceOperation,
+                IncludeChildProcesses = this.IncludeChildProcesses,
+                IncludeSimilarNames = this.IncludeSimilarNames,
+                TimeoutMs = this.TimeoutMs,
+                WindowTitle = this.WindowTitle,
+                ExecutablePath = this.ExecutablePath,
+                Arguments = this.Arguments
+            };
+        }
     }
 }

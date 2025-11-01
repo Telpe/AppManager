@@ -7,7 +7,7 @@ using AppManager.Actions;
 
 namespace AppManager.Triggers
 {
-    public class SystemEventTrigger : BaseTrigger
+    internal class SystemEventTrigger : BaseTrigger
     {
         public override TriggerTypeEnum TriggerType => TriggerTypeEnum.SystemEvent;
         public override string Description => "Monitors Windows system events (login, logout, lock, unlock, etc.)";

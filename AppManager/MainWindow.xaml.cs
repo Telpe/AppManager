@@ -198,7 +198,7 @@ namespace AppManager
                 {
                     if (AppsPage is IPageWithParameter appsPageWithParam)
                     {
-                        appsPageWithParam.SetPageName(pageName);
+                        appsPageWithParam.LoadPageByName(pageName);
                     }
                     MainFrame.Navigate(AppsPage);
                     break;
@@ -207,7 +207,7 @@ namespace AppManager
                 {
                     if (AppGroupsPage is IPageWithParameter groupsPageWithParam)
                     {
-                        groupsPageWithParam.SetPageName(pageName);
+                        groupsPageWithParam.LoadPageByName(pageName);
                     }
                     MainFrame.Navigate(AppGroupsPage);
                     break;
@@ -216,7 +216,7 @@ namespace AppManager
                 {
                     if (ShortcutsPage is IPageWithParameter shortcutsPageWithParam)
                     {
-                        shortcutsPageWithParam.SetPageName(pageName);
+                        shortcutsPageWithParam.LoadPageByName(pageName);
                     }
                     MainFrame.Navigate(ShortcutsPage);
                     break;
@@ -225,7 +225,7 @@ namespace AppManager
                 {
                     if (AppsPage is IPageWithParameter defaultPageWithParam)
                     {
-                        defaultPageWithParam.SetPageName(pageName);
+                        defaultPageWithParam.LoadPageByName(pageName);
                     }
                     MainFrame.Navigate(AppsPage);
                     break;

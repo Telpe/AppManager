@@ -1,6 +1,7 @@
 ﻿using AppManager.Profile;
 using AppManager.Shortcuts;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text.Json;
@@ -30,8 +31,7 @@ namespace AppManager
         public static readonly string StoreName = "AppsManaged.json";
         public static readonly string StoreFile = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "AppManager", StoreName);
 
-        private string[] AppsListLoaded = { "Steam", "GOG", "Galaxy", "Epic", "Battle", "wgc", "Discord", "msedge", };
-        private string[] AppsList;
+        private static Dictionary<string,string> UnsavedPages = new();
 
         private Timer CheckIfAppsRunningValue = new();
         public Timer CheckIfAppsRunning { get { return CheckIfAppsRunningValue; } }
@@ -81,6 +81,8 @@ namespace AppManager
             return profile;
         }
 
+
+
         public static void SaveProfile()
         {
             //Major Minor  Build Revision
@@ -100,10 +102,6 @@ namespace AppManager
             }
         }
 
-        public static AppManaged[] LoadAppsListFromFile()
-        {
-            return JsonSerializer.Deserialize<AppManaged[]>(File.ReadAllText(StoreFile));
-        }
 
         public static bool ManagedAppsFileExists()
         {

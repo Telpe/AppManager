@@ -32,5 +32,27 @@ namespace AppManager.Triggers
         
         // Additional configuration
         public Dictionary<string, object> CustomProperties { get; set; } = new Dictionary<string, object>();
+
+        public TriggerModel Clone()
+        {
+            return new()
+            {
+                TriggerType = this.TriggerType,
+                Key = this.Key,
+                Modifiers = this.Modifiers,
+                ShortcutCombination = this.ShortcutCombination,
+                ProcessName = this.ProcessName,
+                ExecutablePath = this.ExecutablePath,
+                MonitorChildProcesses = this.MonitorChildProcesses,
+                EventName = this.EventName,
+                EventSource = this.EventSource,
+                Port = this.Port,
+                IPAddress = this.IPAddress,
+                PollingIntervalMs = this.PollingIntervalMs,
+                TimeoutMs = this.TimeoutMs,
+                CustomProperties = new Dictionary<string, object>(this.CustomProperties)
+            };
+
+        }
     }
 }

@@ -18,6 +18,12 @@ namespace AppManager
     {
         private static GlobalKeyboardHook _GlobalKeyboardHook;
 
+        private static JsonSerializerOptions JsonOptions = new JsonSerializerOptions()
+        {
+            WriteIndented = true,
+            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+        };
+
         // Profile-related properties
         private static ProfileData _CurrentProfile;
         public static ProfileData CurrentProfile 
@@ -38,9 +44,9 @@ namespace AppManager
 
         public App()
         {
-            // Load profile first
+            // Load profile after configuration
             CurrentProfile = LoadProfile();
-
+            
             InitializeComponent();
 
             CheckIfAppsRunningValue.Interval = 2500;
@@ -57,7 +63,7 @@ namespace AppManager
                 if (File.Exists(StoreFile))
                 {
                     string profileJson = File.ReadAllText(StoreFile);
-                    profile = JsonSerializer.Deserialize<ProfileData>(profileJson);
+                    profile = JsonSerializer.Deserialize<ProfileData>(profileJson, JsonOptions);
                     Debug.WriteLine("Profile loaded successfully");
                 }
                 else
@@ -91,21 +97,13 @@ namespace AppManager
             try
             {
                 Directory.CreateDirectory(StorePath);
-
-                JsonSerializerOptions.Default.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
-                File.WriteAllText(StoreFile, JsonSerializer.Serialize(CurrentProfile, new JsonSerializerOptions { WriteIndented = true }));
-                Debug.WriteLine("Profile saved successfully");
+                File.WriteAllText(StoreFile, JsonSerializer.Serialize(CurrentProfile, JsonOptions));
+                Debug.WriteLine($"Profile {CurrentProfile.Username} saved successfully");
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error saving profile: {ex.Message}");
             }
-        }
-
-
-        public static bool ManagedAppsFileExists()
-        {
-            return File.Exists(StoreFile);
         }
 
         protected override void OnExit(ExitEventArgs e)

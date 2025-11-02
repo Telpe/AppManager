@@ -9,7 +9,7 @@ namespace AppManager.Pages
 {
     internal class AppPageModel
     {
-        public AppManagedModel[] BackupModel { get; set; } = Array.Empty<AppManagedModel>();
+        public AppManagedModel[] BackupModels { get; set; } = Array.Empty<AppManagedModel>();
         public AppManagedModel CurrentModel { get; set; }
         public bool IsStored { get; set; } = true;
     }

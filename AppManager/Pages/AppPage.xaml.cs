@@ -18,6 +18,8 @@ namespace AppManager.Pages
     public partial class AppPage : Page, IPageWithParameter
     {
         private string _PageName = "";
+        private int _MaxBackupModels = 5;
+
         private Dictionary<string, AppPageModel> _LoadedPages = new();
         private AppPageModel _CurrentPage { get; set; } = new AppPageModel();
         private AppManagedModel _CurrentModel
@@ -37,15 +39,18 @@ namespace AppManager.Pages
         {
             _PageName = pageName;
 
+            DisableButtons();
+
             try
             {
-
                 if (!_LoadedPages.ContainsKey(_PageName))
                 {
+                    var model = App.CurrentProfile.Apps.Where(app => app.AppName == _PageName).FirstOrDefault();
                     _LoadedPages[_PageName] = new AppPageModel()
                     {
-                        CurrentModel = App.CurrentProfile.Apps.Where(app => app.AppName == _PageName).FirstOrDefault().Clone(),
-                        IsStored = true
+                        CurrentModel = model.Clone(),
+                        IsStored = true,
+                        BackupModels = [model.Clone()]
                     };
                 }
 
@@ -63,12 +68,6 @@ namespace AppManager.Pages
                 Debug.WriteLine(ex.StackTrace.ToString());
             }
 
-
-            
-
-            Debug.WriteLine($"Page name set to: {pageName}");
-
-
         }
 
         private void Edited()
@@ -81,7 +80,7 @@ namespace AppManager.Pages
             AppManagedModel temp = App.CurrentProfile.Apps.Where(app => app.AppName == _PageName).FirstOrDefault();
             if (temp != null)
             {
-                _CurrentPage.BackupModel = _CurrentPage.BackupModel.Append(temp.Clone()).ToArray();
+                _CurrentPage.BackupModels = [temp.Clone(), .._CurrentPage.BackupModels.Take(_MaxBackupModels - 1)];
             }
         }
 
@@ -120,11 +119,16 @@ namespace AppManager.Pages
         }
         private void DisableButtons()   
         {
-            // Initialize button events if needed
-
-            AppNameBox.TextChanged -= AppNameBox_TextChanged;
-            ActiveBox.Checked -= ActiveBox_Changed;
-            ActiveBox.Unchecked -= ActiveBox_Changed;
+            try
+            {
+                AppNameBox.TextChanged -= AppNameBox_TextChanged;
+                ActiveBox.Checked -= ActiveBox_Changed;
+                ActiveBox.Unchecked -= ActiveBox_Changed;
+            }
+            catch
+            {                 
+                // Ignore errors
+            }
         }
 
         private void EnableButtons()
@@ -190,6 +194,8 @@ namespace AppManager.Pages
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
             // Save profile to file
+            int id = App.CurrentProfile.Apps.Select((app, index) => new { app, index }).Where(x => x.app.AppName == _PageName).Select(x => x.index).FirstOrDefault();
+            App.CurrentProfile.Apps[id] = _CurrentModel.Clone();
             App.SaveProfile();
             SetBackupModel();
 
@@ -201,13 +207,11 @@ namespace AppManager.Pages
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
             // Reload from model to discard changes
-            if (_CurrentPage.BackupModel != null && _CurrentPage.BackupModel.Length > 0)
+            if (_CurrentPage.BackupModels != null && _CurrentPage.BackupModels.Length > 0)
             {
                 DisableButtons();
 
-                int appId = Array.IndexOf(App.CurrentProfile.Apps, _CurrentModel);
-                App.CurrentProfile.Apps[appId] = _CurrentPage.BackupModel.Last().Clone();
-                _CurrentModel = App.CurrentProfile.Apps[appId];
+                _CurrentModel = _CurrentPage.BackupModels.First().Clone();
 
                 LoadFromModel();
 

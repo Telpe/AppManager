@@ -37,9 +37,9 @@ namespace AppManager.Pages
 
         public void LoadPageByName(string pageName)
         {
-            _PageName = pageName;
-
             DisableButtons();
+
+            _PageName = pageName;
 
             try
             {
@@ -49,7 +49,6 @@ namespace AppManager.Pages
                     _LoadedPages[_PageName] = new AppPageModel()
                     {
                         CurrentModel = model.Clone(),
-                        IsStored = true,
                         BackupModels = [model.Clone()]
                     };
                 }
@@ -73,6 +72,18 @@ namespace AppManager.Pages
         private void Edited()
         {
             _CurrentPage.IsStored = false;
+            
+            CancelButton.IsEnabled = true;
+            SaveButton.IsEnabled = true;
+        }
+
+        private void Unedited()
+        {
+
+            _CurrentPage.IsStored = true;
+            
+            CancelButton.IsEnabled = false;
+            SaveButton.IsEnabled = false;
         }
 
         private void SetBackupModel()
@@ -124,6 +135,10 @@ namespace AppManager.Pages
                 AppNameBox.TextChanged -= AppNameBox_TextChanged;
                 ActiveBox.Checked -= ActiveBox_Changed;
                 ActiveBox.Unchecked -= ActiveBox_Changed;
+                
+                // Set Cancel and Save buttons based on IsStored status
+                CancelButton.IsEnabled = false;
+                SaveButton.IsEnabled = false;
             }
             catch
             {                 
@@ -134,10 +149,13 @@ namespace AppManager.Pages
         private void EnableButtons()
         {
             // Initialize button events if needed
-
             AppNameBox.TextChanged += AppNameBox_TextChanged;
             ActiveBox.Checked += ActiveBox_Changed;
             ActiveBox.Unchecked += ActiveBox_Changed;
+            
+            // Set Cancel and Save buttons based on IsStored status
+            CancelButton.IsEnabled = !_CurrentPage.IsStored;
+            SaveButton.IsEnabled = !_CurrentPage.IsStored;
         }
 
         private void AppNameBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -199,26 +217,27 @@ namespace AppManager.Pages
             App.SaveProfile();
             SetBackupModel();
 
-            _CurrentPage.IsStored = true;
+            Unedited();
 
-            MessageBox.Show($"App {_CurrentModel.AppName} saved successfully.", "Save Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+            Debug.WriteLine($"App {_CurrentModel.AppName} saved successfully.", "Save Complete", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
-            // Reload from model to discard changes
-            if (_CurrentPage.BackupModels != null && _CurrentPage.BackupModels.Length > 0)
+            var model = _CurrentPage.BackupModels?.FirstOrDefault();
+            if (model != null)
             {
                 DisableButtons();
-
-                _CurrentModel = _CurrentPage.BackupModels.First().Clone();
-
+                _CurrentModel = model.Clone();
                 LoadFromModel();
-
-                _CurrentPage.IsStored = true;
-
-                MessageBox.Show($"App {_CurrentModel.AppName} reloaded successfully.", "Reload Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                Unedited();
+                Debug.WriteLine($"App {_CurrentModel.AppName} reloaded successfully.", "Reload Complete", MessageBoxButton.OK, MessageBoxImage.Information);
             }
+        }
+
+        public bool HasUnsavedChanges()
+        {
+            return _LoadedPages?.Values.Any(page => !page.IsStored) ?? false;
         }
     }
 }

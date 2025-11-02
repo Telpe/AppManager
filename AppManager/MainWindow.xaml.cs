@@ -18,9 +18,9 @@ namespace AppManager
     /// </summary>
     public partial class MainWindow : Window
     {
-        private AppPage AppsPage;
-        private AppGroupsPage AppGroupsPage;
-        private ShortcutsPage ShortcutsPage;
+        private readonly AppPage AppsPage = new();
+        private readonly AppGroupsPage AppGroupsPage = new();
+        private readonly ShortcutsPage ShortcutsPage = new();
 
         public MainWindow()
         {
@@ -32,11 +32,6 @@ namespace AppManager
 
             // Apply profile settings to window
             ApplyProfileSettings();
-
-            // Initialize pages
-            AppsPage = new AppPage();
-            AppGroupsPage = new AppGroupsPage();
-            ShortcutsPage = new ShortcutsPage();
 
             // Load navigation based on profile's last selected page
             LoadNav1List(App.CurrentProfile.SelectedNav1Menu);
@@ -369,7 +364,23 @@ namespace AppManager
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
-            // Save window state to profile
+            e.Cancel = true;
+
+            if (AppsPage.HasUnsavedChanges() == true)
+            {
+                var result = MessageBox.Show(
+                    "You have unsaved changes in one or more app pages. Do you want to return and save them?", 
+                    "Unsaved Changes", 
+                    MessageBoxButton.YesNo, 
+                    MessageBoxImage.Question);
+
+                if (result == MessageBoxResult.Yes)
+                {
+                    e.Cancel = true;
+                    return;
+                }
+            }
+
             if (App.CurrentProfile != null)
             {
                 App.CurrentProfile.WindowWidth = this.Width;
@@ -378,8 +389,6 @@ namespace AppManager
                 App.CurrentProfile.WindowTop = this.Top;
                 App.CurrentProfile.WindowMaximized = this.WindowState == WindowState.Maximized;
             }
-
-            e.Cancel = true;
 
             // Save profile with updated settings
             App.SaveProfile();

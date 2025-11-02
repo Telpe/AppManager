@@ -18,13 +18,12 @@ namespace AppManager
     {
         private static GlobalKeyboardHook _GlobalKeyboardHook;
 
-        private static JsonSerializerOptions JsonOptions = new JsonSerializerOptions()
+        private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions()
         {
             WriteIndented = true,
             DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
         };
 
-        // Profile-related properties
         private static ProfileData _CurrentProfile;
         public static ProfileData CurrentProfile 
         { 
@@ -32,7 +31,6 @@ namespace AppManager
             private set => _CurrentProfile = value; 
         }
 
-        // Profile storage paths
         public static readonly string StorePath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "AppManager");
         public static readonly string StoreName = "AppsManaged.json";
         public static readonly string StoreFile = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "AppManager", StoreName);
@@ -44,7 +42,6 @@ namespace AppManager
 
         public App()
         {
-            // Load profile after configuration
             CurrentProfile = LoadProfile();
             
             InitializeComponent();
@@ -55,7 +52,7 @@ namespace AppManager
             //CheckIfAppsRunningValue.Start();
         }
 
-        private ProfileData LoadProfile()
+        private static ProfileData LoadProfile()
         {
             ProfileData profile;
             try
@@ -68,7 +65,6 @@ namespace AppManager
                 }
                 else
                 {
-                    // Create default profile if none exists
                     profile = new ProfileData
                     {
                         Username = Environment.UserName
@@ -80,7 +76,7 @@ namespace AppManager
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error loading profile: {ex.Message}");
-                // Create default profile on error
+                
                 profile = new ProfileData();
             }
 
@@ -91,7 +87,7 @@ namespace AppManager
 
         public static void SaveProfile()
         {
-            //Major Minor  Build Revision
+            // Major, Minor, Build, Revision
             CurrentProfile.Version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
 
             try
@@ -108,7 +104,6 @@ namespace AppManager
 
         protected override void OnExit(ExitEventArgs e)
         {
-            // Save profile when application exits
             //SaveProfile();
             base.OnExit(e);
         }

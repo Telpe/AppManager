@@ -1,5 +1,6 @@
 ﻿using AppManager.Pages;
 using AppManager.Profile;
+using AppManager.Settings;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -30,33 +31,33 @@ namespace AppManager
 
             this.Closing += Window_Closing;
 
-            // Apply profile settings to window
-            ApplyProfileSettings();
+            // Apply settings to window
+            ApplyWindowSettings();
 
             // Load navigation based on profile's last selected page
-            LoadNav1List(App.CurrentProfile.SelectedNav1Menu);
+            LoadNav1List(ProfileManager.CurrentProfile.SelectedNav1Menu);
         }
 
-        private void ApplyProfileSettings()
+        private void ApplyWindowSettings()
         {
-            var profile = App.CurrentProfile;
-            if (profile != null)
+            var settings = SettingsManager.CurrentSettings;
+            if (settings != null)
             {
-                // Apply window settings from profile
-                this.Width = profile.WindowWidth;
-                this.Height = profile.WindowHeight;
-                this.Left = profile.WindowLeft;
-                this.Top = profile.WindowTop;
+                // Apply window settings from settings file
+                this.Width = settings.WindowWidth;
+                this.Height = settings.WindowHeight;
+                this.Left = settings.WindowLeft;
+                this.Top = settings.WindowTop;
                 
-                if (profile.WindowMaximized)
+                if (settings.WindowMaximized)
                 {
                     this.WindowState = WindowState.Maximized;
                 }
 
                 // Apply theme if you have themes implemented
-                // ApplyTheme(profile.Theme);
+                // ApplyTheme(settings.Theme);
                 
-                Debug.WriteLine($"Applied profile settings for user: {profile.Username}");
+                Debug.WriteLine($"Applied window settings");
             }
         }
 
@@ -113,7 +114,7 @@ namespace AppManager
             {
                 case "apps":
                 {
-                    LoadNavigation(Nav1List.Children, App.CurrentProfile.Apps.Select(a=> a.AppName).ToArray(), Nav1ListButton_Click);
+                    LoadNavigation(Nav1List.Children, ProfileManager.CurrentProfile.Apps.Select(a=> a.AppName).ToArray(), Nav1ListButton_Click);
                     
                     // Add text input for creating new apps using the general method
                     var newAppTextBox = NewNavigationAddItemTextBox("Enter app name...", (appName) =>
@@ -125,7 +126,7 @@ namespace AppManager
                         };
 
                         // Add to current profile
-                        App.CurrentProfile.Apps = App.CurrentProfile.Apps.Append(newApp).ToArray();
+                        ProfileManager.CurrentProfile.Apps = ProfileManager.CurrentProfile.Apps.Append(newApp).ToArray();
 
                         // Reload the navigation list
                         LoadNav1List("apps");
@@ -139,7 +140,7 @@ namespace AppManager
                 case "groups":
                 {
                     // Extract group names from GroupManagedModel array
-                    LoadNavigation(Nav1List.Children, App.CurrentProfile.AppGroups.Select(g => g.GroupName).ToArray(), Nav1ListButton_Click);
+                    LoadNavigation(Nav1List.Children, ProfileManager.CurrentProfile.AppGroups.Select(g => g.GroupName).ToArray(), Nav1ListButton_Click);
                     
                     // Add text input for creating new groups using the general method
                     var newGroupTextBox = NewNavigationAddItemTextBox("Enter group name...", (groupName) =>
@@ -152,7 +153,7 @@ namespace AppManager
                         };
 
                         // Add to current profile's app groups
-                        App.CurrentProfile.AppGroups = App.CurrentProfile.AppGroups.Append(newGroup).ToArray();
+                        ProfileManager.CurrentProfile.AppGroups = ProfileManager.CurrentProfile.AppGroups.Append(newGroup).ToArray();
 
                         // Reload the navigation list
                         LoadNav1List("groups");
@@ -165,7 +166,7 @@ namespace AppManager
                 }
                 case "shortcuts":
                 {
-                    //LoadNavigation(Nav1List.Children, App.CurrentProfile. .Select(a => a.AppName).ToArray(), Nav1ListButton_Click);
+                    //LoadNavigation(Nav1List.Children, ProfileManager.CurrentProfile. .Select(a => a.AppName).ToArray(), Nav1ListButton_Click);
                     
                     // You can also add shortcuts input here when ready
                     // var newShortcutTextBox = NewNavigationAddItemTextBox("Enter shortcut name...", (shortcutName) =>
@@ -187,7 +188,7 @@ namespace AppManager
 
         private void LoadPage(string pageName)
         {
-            switch (App.CurrentProfile.SelectedNav1Menu.ToLower())
+            switch (ProfileManager.CurrentProfile.SelectedNav1Menu.ToLower())
             {
                 case "apps":
                 {
@@ -234,7 +235,7 @@ namespace AppManager
             LoadNav1List(sender.As<Button>().Content.ToString());
             Debug.WriteLine($"Update profile with selected page");
             // Update profile with selected page
-            App.CurrentProfile.SelectedNav1Menu = sender.As<Button>().Content.ToString();
+            ProfileManager.CurrentProfile.SelectedNav1Menu = sender.As<Button>().Content.ToString();
         }
 
         private void Nav1ListButton_Click(object sender, RoutedEventArgs e)
@@ -242,7 +243,7 @@ namespace AppManager
             LoadPage(sender.As<Button>().Content.ToString());
 
             // Update profile with last selected page
-            App.CurrentProfile.SelectedNav1List = sender.As<Button>().Content.ToString();
+            ProfileManager.CurrentProfile.SelectedNav1List = sender.As<Button>().Content.ToString();
         }
 
         private Button NewNavigationButton(string content, RoutedEventHandler clickHandler)
@@ -316,7 +317,7 @@ namespace AppManager
         private void ShowFavorites()
         {
             // Implementation to show favorite apps from profile
-            Debug.WriteLine($"Showing favorite apps: {string.Join(", ", App.CurrentProfile.FavoriteApps)}");
+            Debug.WriteLine($"Showing favorite apps: {string.Join(", ", ProfileManager.CurrentProfile.FavoriteApps)}");
         }
 
         private void ShowRecentlyUsed()
@@ -366,6 +367,7 @@ namespace AppManager
         {
             e.Cancel = true;
 
+            // Warn about unsaved changes in Apps page
             if (AppsPage.HasUnsavedChanges() == true)
             {
                 var result = MessageBox.Show(
@@ -381,20 +383,23 @@ namespace AppManager
                 }
             }
 
-            if (App.CurrentProfile != null)
+            // Save window settings to settings file
+            var settings = SettingsManager.CurrentSettings;
+            if (settings != null)
             {
-                App.CurrentProfile.WindowWidth = this.Width;
-                App.CurrentProfile.WindowHeight = this.Height;
-                App.CurrentProfile.WindowLeft = this.Left;
-                App.CurrentProfile.WindowTop = this.Top;
-                App.CurrentProfile.WindowMaximized = this.WindowState == WindowState.Maximized;
+                settings.WindowWidth = this.Width;
+                settings.WindowHeight = this.Height;
+                settings.WindowLeft = this.Left;
+                settings.WindowTop = this.Top;
+                settings.WindowMaximized = this.WindowState == WindowState.Maximized;
             }
 
-            // Save profile with updated settings
-            App.SaveProfile();
+            // Save only settings
+            SettingsManager.SaveSettings();
 
             e.Cancel = false;
         }
+
         public void ConsoleWriteline(string text)
         {
             ConsolePanel.Children.Add(new Label() { Content = text });

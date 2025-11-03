@@ -1,10 +1,9 @@
 ﻿using AppManager.Profile;
+using AppManager.Settings;
 using AppManager.Shortcuts;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Text.Json;
 using System.Timers;
 using System.Windows;
 using System.Windows.Input;
@@ -18,23 +17,6 @@ namespace AppManager
     {
         private static GlobalKeyboardHook _GlobalKeyboardHook;
 
-        private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions()
-        {
-            WriteIndented = true,
-            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
-        };
-
-        private static ProfileData _CurrentProfile;
-        public static ProfileData CurrentProfile 
-        { 
-            get => _CurrentProfile; 
-            private set => _CurrentProfile = value; 
-        }
-
-        public static readonly string StorePath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "AppManager");
-        public static readonly string StoreName = "AppsManaged.json";
-        public static readonly string StoreFile = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "AppManager", StoreName);
-
         private static Dictionary<string,string> UnsavedPages = new();
 
         private Timer CheckIfAppsRunningValue = new();
@@ -42,69 +24,35 @@ namespace AppManager
 
         public App()
         {
-            CurrentProfile = LoadProfile();
-            
             InitializeComponent();
 
-            CheckIfAppsRunningValue.Interval = 2500;
+            // Load the last used profile (or default if none specified)
+            string profileToLoad = !string.IsNullOrEmpty(SettingsManager.CurrentSettings.LastUsedProfileName) 
+                ? SettingsManager.CurrentSettings.LastUsedProfileName 
+                : ProfileManager.DefaultProfileFilename;
+            
+            // Load the specific profile
+            if (ProfileManager.ProfileExists(profileToLoad))
+            {
+                ProfileManager.LoadAndSetProfile(profileToLoad);
+                Debug.WriteLine($"Loaded last used profile: {profileToLoad}");
+            }
+            else
+            {
+                // If the last used profile doesn't exist, fall back to default
+                _ = ProfileManager.CurrentProfile; // This triggers loading of default profile
+                Debug.WriteLine($"Profile '{profileToLoad}' not found, loaded default profile instead");
+            }
+
+            CheckIfAppsRunningValue.Interval = ProfileManager.CurrentProfile.ScanInterval;
             CheckIfAppsRunningValue.AutoReset = true;
             CheckIfAppsRunningValue.Elapsed += new ElapsedEventHandler(CheckRunningHandler);
             //CheckIfAppsRunningValue.Start();
         }
 
-        private static ProfileData LoadProfile()
-        {
-            ProfileData profile;
-            try
-            {
-                if (File.Exists(StoreFile))
-                {
-                    string profileJson = File.ReadAllText(StoreFile);
-                    profile = JsonSerializer.Deserialize<ProfileData>(profileJson, JsonOptions);
-                    Debug.WriteLine("Profile loaded successfully");
-                }
-                else
-                {
-                    profile = new ProfileData
-                    {
-                        Username = Environment.UserName
-                    };
-                    SaveProfile();
-                    Debug.WriteLine("Default profile created");
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error loading profile: {ex.Message}");
-                
-                profile = new ProfileData();
-            }
-
-            return profile;
-        }
-
-
-
-        public static void SaveProfile()
-        {
-            // Major, Minor, Build, Revision
-            CurrentProfile.Version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-
-            try
-            {
-                Directory.CreateDirectory(StorePath);
-                File.WriteAllText(StoreFile, JsonSerializer.Serialize(CurrentProfile, JsonOptions));
-                Debug.WriteLine($"Profile {CurrentProfile.Username} saved successfully");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error saving profile: {ex.Message}");
-            }
-        }
-
         protected override void OnExit(ExitEventArgs e)
         {
-            //SaveProfile();
+            //ProfileManager.SaveProfile();
             base.OnExit(e);
         }
 

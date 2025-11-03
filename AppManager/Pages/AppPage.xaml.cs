@@ -45,7 +45,7 @@ namespace AppManager.Pages
             {
                 if (!_LoadedPages.ContainsKey(_PageName))
                 {
-                    var model = App.CurrentProfile.Apps.Where(app => app.AppName == _PageName).FirstOrDefault();
+                    var model = ProfileManager.CurrentProfile.Apps.Where(app => app.AppName == _PageName).FirstOrDefault();
                     _LoadedPages[_PageName] = new AppPageModel()
                     {
                         CurrentModel = model.Clone(),
@@ -88,7 +88,7 @@ namespace AppManager.Pages
 
         private void SetBackupModel()
         {
-            AppManagedModel temp = App.CurrentProfile.Apps.Where(app => app.AppName == _PageName).FirstOrDefault();
+            AppManagedModel temp = ProfileManager.CurrentProfile.Apps.Where(app => app.AppName == _PageName).FirstOrDefault();
             if (temp != null)
             {
                 _CurrentPage.BackupModels = [temp.Clone(), .._CurrentPage.BackupModels.Take(_MaxBackupModels - 1)];
@@ -212,9 +212,9 @@ namespace AppManager.Pages
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
             // Save profile to file
-            int id = App.CurrentProfile.Apps.Select((app, index) => new { app, index }).Where(x => x.app.AppName == _PageName).Select(x => x.index).FirstOrDefault();
-            App.CurrentProfile.Apps[id] = _CurrentModel.Clone();
-            App.SaveProfile();
+            int id = ProfileManager.CurrentProfile.Apps.Select((app, index) => new { app, index }).Where(x => x.app.AppName == _PageName).Select(x => x.index).FirstOrDefault();
+            ProfileManager.CurrentProfile.Apps[id] = _CurrentModel.Clone();
+            ProfileManager.SaveProfile();
             SetBackupModel();
 
             Unedited();

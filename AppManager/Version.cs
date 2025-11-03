@@ -106,5 +106,10 @@
                 Work = systemVersion.Revision >= 0 ? systemVersion.Revision : 0
             };
         }
+
+        public override int GetHashCode()
+        {
+            return (Exspansion, Patch, Hotfix, Work).GetHashCode();
+        }
     }
 }

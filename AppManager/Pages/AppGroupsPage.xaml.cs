@@ -26,7 +26,7 @@ namespace AppManager.Pages
             _PageName = pageName;
             
             // Find the group by name
-            _currentGroup = App.CurrentProfile.AppGroups.FirstOrDefault(g => g.GroupName == pageName);
+            _currentGroup = ProfileManager.CurrentProfile.AppGroups.FirstOrDefault(g => g.GroupName == pageName);
             
             if (_currentGroup != null)
             {
@@ -184,7 +184,7 @@ namespace AppManager.Pages
 
         private void AddAppToGroup(GroupManagedModel group, ListBox memberAppsListBox)
         {
-            var availableApps = App.CurrentProfile.Apps
+            var availableApps = ProfileManager.CurrentProfile.Apps
                 .Where(app => !group.MemberApps.Contains(app.AppName))
                 .Select(app => app.AppName)
                 .ToList();
@@ -249,7 +249,7 @@ namespace AppManager.Pages
 
         private void SaveGroup()
         {
-            App.SaveProfile();
+            ProfileManager.SaveProfile();
             MessageBox.Show("Group saved successfully!", "Save Complete", MessageBoxButton.OK, MessageBoxImage.Information);
         }
     }

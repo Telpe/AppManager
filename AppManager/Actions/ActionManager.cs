@@ -7,19 +7,8 @@ namespace AppManager.Actions
 {
     public class ActionManager
     {
-        private readonly Dictionary<AppActionEnum, IAppAction> _Actions;
-
         public ActionManager()
         {
-            _Actions = new Dictionary<AppActionEnum, IAppAction>() 
-            {
-                { AppActionEnum.Launch, new LaunchAction() },
-                { AppActionEnum.Close, new CloseAction() },
-                { AppActionEnum.Restart, new RestartAction() },
-                { AppActionEnum.Focus, new FocusAction() },
-                { AppActionEnum.BringToFront, new BringToFrontAction() },
-                { AppActionEnum.Minimize, new MinimizeAction() }
-            };
         }
 
         public IEnumerable<AppActionEnum> GetAvailableActions()
@@ -27,13 +16,18 @@ namespace AppManager.Actions
             return Enum.GetValues(typeof(AppActionEnum)).Cast<AppActionEnum>();
         }
 
-        public IAppAction GetAction(AppActionEnum actionName)
+        private IAppAction CreateAction(AppActionEnum actionName, ActionModel model)
         {
-            if(!_Actions.TryGetValue(actionName, out IAppAction action))
+            return actionName switch
             {
-                throw new Exception($"Action not found: {actionName}");
-            }
-            return action;
+                AppActionEnum.Launch => new LaunchAction(model),
+                AppActionEnum.Close => new CloseAction(model),
+                AppActionEnum.Restart => new RestartAction(model),
+                AppActionEnum.Focus => new FocusAction(model),
+                AppActionEnum.BringToFront => new BringToFrontAction(model),
+                AppActionEnum.Minimize => new MinimizeAction(model),
+                _ => throw new Exception($"Action not found: {actionName}")
+            };
         }
 
         public bool CanExecuteAction(ActionModel model)
@@ -41,8 +35,8 @@ namespace AppManager.Actions
             if (model == null)
                 return false;
                 
-            var action = GetAction(model.ActionName);
-            return action?.CanExecute(model) ?? false;
+            var action = CreateAction(model.ActionName, model);
+            return action?.CanExecute() ?? false;
         }
 
         public bool CanExecuteAction(AppActionEnum actionName, string appName, ActionModel parameters = null)
@@ -62,16 +56,10 @@ namespace AppManager.Actions
                 return false;
             }
 
-            var action = GetAction(model.ActionName);
-            if (action == null)
-            {
-                System.Diagnostics.Debug.WriteLine($"Action not found: {model.ActionName}");
-                return false;
-            }
-
             try
             {
-                return await action.ExecuteAsync(model);
+                var action = CreateAction(model.ActionName, model);
+                return await action.ExecuteAsync();
             }
             catch (Exception ex)
             {

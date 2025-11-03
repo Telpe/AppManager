@@ -6,35 +6,44 @@ using System.Threading.Tasks;
 
 namespace AppManager.Actions
 {
-    public class MinimizeAction : IAppAction
+    public class MinimizeAction : BaseAction
     {
-        public string Description => "Minimizes an application window";
+        public override string Description => "Minimizes an application window";
 
         [DllImport("user32.dll")]
         private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
 
         private const int SW_MINIMIZE = 6;
 
-        public bool CanExecute(ActionModel model)
+        public MinimizeAction(ActionModel model) : base(model) { }
+
+        protected override bool CanExecuteAction()
         {
-            return !string.IsNullOrEmpty(model?.AppName) && GetTargetProcesses(model).Any();
+            return !string.IsNullOrEmpty(_Model?.AppName) && GetTargetProcesses(_Model).Any();
         }
 
-        public async Task<bool> ExecuteAsync(ActionModel model)
+        public override async Task<bool> ExecuteAsync()
         {
-            if (model == null || string.IsNullOrEmpty(model.AppName))
+            if (_Model == null || string.IsNullOrEmpty(_Model.AppName))
             {
                 Debug.WriteLine("Invalid ActionModel or AppName is null/empty");
                 return false;
             }
 
+            // Check conditions before executing
+            if (!CheckConditions())
+            {
+                Debug.WriteLine($"Conditions not met for minimizing {_Model.AppName}");
+                return false;
+            }
+
             try
             {
-                var processes = GetTargetProcesses(model);
+                var processes = GetTargetProcesses(_Model);
                 
                 if (!processes.Any())
                 {
-                    Debug.WriteLine($"No processes found to minimize: {model.AppName}");
+                    Debug.WriteLine($"No processes found to minimize: {_Model.AppName}");
                     return false;
                 }
 
@@ -75,7 +84,7 @@ namespace AppManager.Actions
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Failed to minimize {model.AppName}: {ex.Message}");
+                Debug.WriteLine($"Failed to minimize {_Model.AppName}: {ex.Message}");
                 return false;
             }
         }

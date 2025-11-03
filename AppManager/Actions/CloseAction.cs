@@ -6,30 +6,34 @@ using System.Threading.Tasks;
 
 namespace AppManager.Actions
 {
-    public class CloseAction : IAppAction
+    public class CloseAction : BaseAction
     {
-        public string Description => "Closes an application gracefully";
+        public override string Description => "Closes an application gracefully";
 
-        public bool CanExecute(ActionModel model)
-        {
-            return !string.IsNullOrEmpty(model?.AppName) && GetProcesses(model).Any();
-        }
+        public CloseAction(ActionModel model) : base(model) { }
 
-        public async Task<bool> ExecuteAsync(ActionModel model)
+        public override async Task<bool> ExecuteAsync()
         {
-            if (model == null || string.IsNullOrEmpty(model.AppName))
+            if (_Model == null || string.IsNullOrEmpty(_Model.AppName))
             {
                 Debug.WriteLine("Invalid ActionModel or AppName is null/empty");
                 return false;
             }
 
+            // Check conditions before executing
+            if (!CheckConditions())
+            {
+                Debug.WriteLine($"Conditions not met for closing {_Model.AppName}");
+                return false;
+            }
+
             try
             {
-                var processes = GetProcesses(model);
+                var processes = GetProcesses(_Model);
                 
                 if (!processes.Any())
                 {
-                    Debug.WriteLine($"No processes found for: {model.AppName}");
+                    Debug.WriteLine($"No processes found for: {_Model.AppName}");
                     return false;
                 }
 
@@ -39,7 +43,7 @@ namespace AppManager.Actions
                 {
                     try
                     {
-                        if (model.ForceOperation)
+                        if (_Model.ForceOperation)
                         {
                             process.Kill();
                             Debug.WriteLine($"Force killed process: {process.ProcessName} (ID: {process.Id})");
@@ -63,7 +67,7 @@ namespace AppManager.Actions
                         }
 
                         // Wait for process to exit
-                        if (!process.WaitForExit(model.TimeoutMs))
+                        if (!process.WaitForExit(_Model.TimeoutMs))
                         {
                             Debug.WriteLine($"Process {process.ProcessName} did not exit within timeout");
                             allClosed = false;
@@ -80,7 +84,7 @@ namespace AppManager.Actions
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Failed to close {model.AppName}: {ex.Message}");
+                Debug.WriteLine($"Failed to close {_Model.AppName}: {ex.Message}");
                 return false;
             }
         }

@@ -2,38 +2,44 @@ using System.Threading.Tasks;
 
 namespace AppManager.Actions
 {
-    public class RestartAction : IAppAction
+    public class RestartAction : BaseAction
     {
-        private readonly CloseAction _closeAction;
-        private readonly LaunchAction _launchAction;
+        public override string Description => "Restarts an application by closing and launching it";
 
-        public string Description => "Restarts an application by closing and launching it";
+        public RestartAction(ActionModel model) : base(model) { }
 
-        public RestartAction()
+        protected override bool CanExecuteAction()
         {
-            _closeAction = new CloseAction();
-            _launchAction = new LaunchAction();
+            var closeAction = new CloseAction(_Model);
+            var launchAction = new LaunchAction(_Model);
+            
+            return closeAction.CanExecute() && launchAction.CanExecute();
         }
 
-        public bool CanExecute(ActionModel model)
+        public override async Task<bool> ExecuteAsync()
         {
-            return _closeAction.CanExecute(model) && _launchAction.CanExecute(model);
-        }
-
-        public async Task<bool> ExecuteAsync(ActionModel model)
-        {
-            if (model == null || string.IsNullOrEmpty(model.AppName))
+            if (_Model == null || string.IsNullOrEmpty(_Model.AppName))
             {
                 System.Diagnostics.Debug.WriteLine("Invalid ActionModel or AppName is null/empty");
                 return false;
             }
 
+            // Check conditions before executing
+            if (!CheckConditions())
+            {
+                System.Diagnostics.Debug.WriteLine($"Conditions not met for restarting {_Model.AppName}");
+                return false;
+            }
+
+            var closeAction = new CloseAction(_Model);
+            var launchAction = new LaunchAction(_Model);
+
             // First close the application
-            bool closed = await _closeAction.ExecuteAsync(model);
+            bool closed = await closeAction.ExecuteAsync();
             
             if (!closed)
             {
-                System.Diagnostics.Debug.WriteLine($"Failed to close {model.AppName} for restart");
+                System.Diagnostics.Debug.WriteLine($"Failed to close {_Model.AppName} for restart");
                 return false;
             }
 
@@ -41,15 +47,15 @@ namespace AppManager.Actions
             await Task.Delay(1000);
 
             // Then launch it again
-            bool launched = await _launchAction.ExecuteAsync(model);
+            bool launched = await launchAction.ExecuteAsync();
             
             if (!launched)
             {
-                System.Diagnostics.Debug.WriteLine($"Failed to launch {model.AppName} after close");
+                System.Diagnostics.Debug.WriteLine($"Failed to launch {_Model.AppName} after close");
                 return false;
             }
 
-            System.Diagnostics.Debug.WriteLine($"Successfully restarted: {model.AppName}");
+            System.Diagnostics.Debug.WriteLine($"Successfully restarted: {_Model.AppName}");
             return true;
         }
     }

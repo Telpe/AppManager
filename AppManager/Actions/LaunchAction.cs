@@ -5,45 +5,54 @@ using System.Threading.Tasks;
 
 namespace AppManager.Actions
 {
-    public class LaunchAction : IAppAction
+    public class LaunchAction : BaseAction
     {
-        public string Description => "Launches an application";
+        public override string Description => "Launches an application";
 
-        public bool CanExecute(ActionModel model)
+        public LaunchAction(ActionModel model) : base(model) { }
+
+        protected override bool CanExecuteAction()
         {
-            if (string.IsNullOrEmpty(model?.AppName))
+            if (string.IsNullOrEmpty(_Model?.AppName))
                 return false;
 
             // Check if executable path is provided and exists
-            if (model.ExecutablePath != null)
-                return File.Exists(model.ExecutablePath);
+            if (_Model.ExecutablePath != null)
+                return File.Exists(_Model.ExecutablePath);
 
             // Try to find the executable in common locations
-            return FindExecutable(model.AppName) != null;
+            return FindExecutable(_Model.AppName) != null;
         }
 
-        public async Task<bool> ExecuteAsync(ActionModel model)
+        public override async Task<bool> ExecuteAsync()
         {
-            if (model == null || string.IsNullOrEmpty(model.AppName))
+            if (_Model == null || string.IsNullOrEmpty(_Model.AppName))
             {
                 Debug.WriteLine("Invalid ActionModel or AppName is null/empty");
                 return false;
             }
 
+            // Check conditions before executing
+            if (!CheckConditions())
+            {
+                Debug.WriteLine($"Conditions not met for launching {_Model.AppName}");
+                return false;
+            }
+
             try
             {
-                string executablePath = model.ExecutablePath ?? FindExecutable(model.AppName);
+                string executablePath = _Model.ExecutablePath ?? FindExecutable(_Model.AppName);
                 
                 if (string.IsNullOrEmpty(executablePath))
                 {
-                    Debug.WriteLine($"Could not find executable for: {model.AppName}");
+                    Debug.WriteLine($"Could not find executable for: {_Model.AppName}");
                     return false;
                 }
 
                 var startInfo = new ProcessStartInfo
                 {
                     FileName = executablePath,
-                    Arguments = model.Arguments ?? string.Empty,
+                    Arguments = _Model.Arguments ?? string.Empty,
                     UseShellExecute = true
                 };
 
@@ -51,16 +60,16 @@ namespace AppManager.Actions
                 
                 if (process != null)
                 {
-                    Debug.WriteLine($"Successfully launched: {model.AppName}");
+                    Debug.WriteLine($"Successfully launched: {_Model.AppName}");
                     return true;
                 }
 
-                Debug.WriteLine($"Failed to launch {model.AppName}");
+                Debug.WriteLine($"Failed to launch {_Model.AppName}");
                 return false;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Failed to launch {model.AppName}: {ex.Message}");
+                Debug.WriteLine($"Failed to launch {_Model.AppName}: {ex.Message}");
                 return false;
             }
         }

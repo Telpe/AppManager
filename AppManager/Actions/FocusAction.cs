@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace AppManager.Actions
 {
-    public class FocusAction : IAppAction
+    public class FocusAction : BaseAction
     {
-        public string Description => "Brings an application window to the foreground";
+        public override string Description => "Brings an application window to the foreground";
 
         [DllImport("user32.dll")]
         private static extern bool SetForegroundWindow(IntPtr hWnd);
@@ -22,26 +22,35 @@ namespace AppManager.Actions
         private const int SW_RESTORE = 9;
         private const int SW_SHOW = 5;
 
-        public bool CanExecute(ActionModel model)
+        public FocusAction(ActionModel model) : base(model) { }
+
+        protected override bool CanExecuteAction()
         {
-            return !string.IsNullOrEmpty(model?.AppName) && GetTargetProcess(model) != null;
+            return !string.IsNullOrEmpty(_Model?.AppName) && GetTargetProcess(_Model) != null;
         }
 
-        public async Task<bool> ExecuteAsync(ActionModel model)
+        public override async Task<bool> ExecuteAsync()
         {
-            if (model == null || string.IsNullOrEmpty(model.AppName))
+            if (_Model == null || string.IsNullOrEmpty(_Model.AppName))
             {
                 Debug.WriteLine("Invalid ActionModel or AppName is null/empty");
                 return false;
             }
 
+            // Check conditions before executing
+            if (!CheckConditions())
+            {
+                Debug.WriteLine($"Conditions not met for focusing {_Model.AppName}");
+                return false;
+            }
+
             try
             {
-                var process = GetTargetProcess(model);
+                var process = GetTargetProcess(_Model);
                 
                 if (process == null)
                 {
-                    Debug.WriteLine($"No process found to focus: {model.AppName}");
+                    Debug.WriteLine($"No process found to focus: {_Model.AppName}");
                     return false;
                 }
 
@@ -68,18 +77,18 @@ namespace AppManager.Actions
                 
                 if (success)
                 {
-                    Debug.WriteLine($"Successfully focused window for: {model.AppName}");
+                    Debug.WriteLine($"Successfully focused window for: {_Model.AppName}");
                 }
                 else
                 {
-                    Debug.WriteLine($"Failed to focus window for: {model.AppName}");
+                    Debug.WriteLine($"Failed to focus window for: {_Model.AppName}");
                 }
 
                 return success;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Failed to focus {model.AppName}: {ex.Message}");
+                Debug.WriteLine($"Failed to focus {_Model.AppName}: {ex.Message}");
                 return false;
             }
         }

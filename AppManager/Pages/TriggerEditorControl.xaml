@@ -1,0 +1,174 @@
+<UserControl x:Class="AppManager.Pages.TriggerEditorControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="500" d:DesignWidth="600">
+
+	<Grid Margin="10">
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="*"/>
+			<RowDefinition Height="Auto"/>
+		</Grid.RowDefinitions>
+
+		<!-- Trigger Type Selection -->
+		<GroupBox Header="Trigger Configuration" Grid.Row="0" Margin="5">
+			<Grid Margin="5">
+				<Grid.RowDefinitions>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
+				</Grid.RowDefinitions>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="Auto"/>
+					<ColumnDefinition Width="*"/>
+				</Grid.ColumnDefinitions>
+
+				<Label Content="Trigger Type:" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center"/>
+				<ComboBox x:Name="TriggerTypeComboBox" Grid.Row="0" Grid.Column="1" Margin="5,0,0,0" 
+                          SelectionChanged="TriggerTypeComboBox_SelectionChanged"/>
+
+				<Label Content="Trigger Name:" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center"/>
+				<TextBox x:Name="TriggerNameTextBox" Grid.Row="1" Grid.Column="1" Margin="5,0,0,0" 
+                         VerticalAlignment="Center" Height="22"/>
+			</Grid>
+		</GroupBox>
+
+		<!-- Shortcut Configuration -->
+		<GroupBox x:Name="ShortcutConfigGroup" Header="Shortcut Configuration" Grid.Row="1" Margin="5" Visibility="Collapsed">
+			<Grid Margin="5">
+				<Grid.RowDefinitions>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
+				</Grid.RowDefinitions>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="Auto"/>
+					<ColumnDefinition Width="*"/>
+					<ColumnDefinition Width="Auto"/>
+				</Grid.ColumnDefinitions>
+
+				<Label Content="Key Combination:" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center"/>
+				<TextBox x:Name="ShortcutTextBox" Grid.Row="0" Grid.Column="1" Margin="5,0,5,0" 
+                         VerticalAlignment="Center" Height="22" IsReadOnly="True"/>
+				<Button Content="Capture" Grid.Row="0" Grid.Column="2" Width="80" Height="25"
+                        Click="CaptureShortcutButton_Click"/>
+
+				<WrapPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,5,0,0">
+					<CheckBox x:Name="CtrlModifierCheckBox" Content="Ctrl" Margin="0,0,10,0"/>
+					<CheckBox x:Name="ShiftModifierCheckBox" Content="Shift" Margin="0,0,10,0"/>
+					<CheckBox x:Name="AltModifierCheckBox" Content="Alt" Margin="0,0,10,0"/>
+					<CheckBox x:Name="WinModifierCheckBox" Content="Win" Margin="0,0,10,0"/>
+				</WrapPanel>
+			</Grid>
+		</GroupBox>
+
+		<!-- App Monitoring Configuration -->
+		<GroupBox x:Name="AppMonitoringGroup" Header="App Monitoring Configuration" Grid.Row="2" Margin="5" Visibility="Collapsed">
+			<Grid Margin="5">
+				<Grid.RowDefinitions>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
+				</Grid.RowDefinitions>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="Auto"/>
+					<ColumnDefinition Width="*"/>
+					<ColumnDefinition Width="Auto"/>
+				</Grid.ColumnDefinitions>
+
+				<Label Content="Process Name:" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center"/>
+				<TextBox x:Name="ProcessNameTextBox" Grid.Row="0" Grid.Column="1" Margin="5,0,0,0" 
+                         VerticalAlignment="Center" Height="22"/>
+
+				<Label Content="Executable Path:" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center"/>
+				<TextBox x:Name="ExecutablePathMonitorTextBox" Grid.Row="1" Grid.Column="1" Margin="5,0,5,0" 
+                         VerticalAlignment="Center" Height="22"/>
+				<Button Content="Browse..." Grid.Row="1" Grid.Column="2" Width="80" Height="25"
+                        Click="BrowseExecutableMonitorButton_Click"/>
+
+				<CheckBox x:Name="MonitorChildProcessesCheckBox" Content="Monitor Child Processes" 
+                          Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,5,0,0"/>
+			</Grid>
+		</GroupBox>
+
+		<!-- Network/System Configuration -->
+		<GroupBox x:Name="NetworkSystemGroup" Header="Network/System Configuration" Grid.Row="3" Margin="5" Visibility="Collapsed">
+			<Grid Margin="5">
+				<Grid.RowDefinitions>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
+				</Grid.RowDefinitions>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="Auto"/>
+					<ColumnDefinition Width="*"/>
+				</Grid.ColumnDefinitions>
+
+				<!-- Network Settings -->
+				<Label Content="IP Address:" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center"/>
+				<TextBox x:Name="IPAddressTextBox" Grid.Row="0" Grid.Column="1" Margin="5,0,0,0" 
+                         VerticalAlignment="Center" Height="22" Text="127.0.0.1"/>
+
+				<Label Content="Port:" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center"/>
+				<TextBox x:Name="PortTextBox" Grid.Row="1" Grid.Column="1" Margin="5,0,0,0" 
+                         VerticalAlignment="Center" Height="22"/>
+
+				<!-- System Event Settings -->
+				<Label Content="Event Name:" Grid.Row="2" Grid.Column="0" VerticalAlignment="Center"/>
+				<TextBox x:Name="EventNameTextBox" Grid.Row="2" Grid.Column="1" Margin="5,0,0,0" 
+                         VerticalAlignment="Center" Height="22"/>
+
+				<Label Content="Event Source:" Grid.Row="3" Grid.Column="0" VerticalAlignment="Center"/>
+				<TextBox x:Name="EventSourceTextBox" Grid.Row="3" Grid.Column="1" Margin="5,0,0,0" 
+                         VerticalAlignment="Center" Height="22"/>
+			</Grid>
+		</GroupBox>
+
+		<!-- Timing Configuration -->
+		<GroupBox Header="Timing Configuration" Grid.Row="4" Margin="5">
+			<Grid Margin="5">
+				<Grid.RowDefinitions>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="*"/>
+				</Grid.RowDefinitions>
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="Auto"/>
+					<ColumnDefinition Width="*"/>
+				</Grid.ColumnDefinitions>
+
+				<Label Content="Polling Interval (ms):" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center"/>
+				<TextBox x:Name="PollingIntervalTextBox" Grid.Row="0" Grid.Column="1" Margin="5,0,0,0" 
+                         VerticalAlignment="Center" Height="22" Text="1000"/>
+
+				<Label Content="Timeout (ms):" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center"/>
+				<TextBox x:Name="TriggerTimeoutTextBox" Grid.Row="1" Grid.Column="1" Margin="5,0,0,0" 
+                         VerticalAlignment="Center" Height="22" Text="30000"/>
+
+				<!-- Preview Section -->
+				<Label Content="Configuration Preview:" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" 
+                       Margin="0,10,0,0" VerticalAlignment="Top"/>
+				<ScrollViewer Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" Margin="0,30,0,0" 
+                              VerticalScrollBarVisibility="Auto">
+					<TextBlock x:Name="TriggerPreviewTextBlock" TextWrapping="Wrap" 
+                               Background="LightGray" Padding="5" FontFamily="Consolas"/>
+				</ScrollViewer>
+			</Grid>
+		</GroupBox>
+
+		<!-- Action Buttons -->
+		<WrapPanel Grid.Row="5" HorizontalAlignment="Right" Margin="5">
+			<Button Content="Test Trigger" Width="80" Height="25" Margin="0,0,5,0"
+                    Click="TestTriggerButton_Click"/>
+			<Button x:Name="SaveTriggerButton" Content="Save" Width="75" Height="25" 
+                    Margin="5,0,5,0" Click="SaveTriggerButton_Click"/>
+			<Button x:Name="CancelTriggerButton" Content="Cancel" Width="75" Height="25" 
+                    Margin="5,0,0,0" Click="CancelTriggerButton_Click"/>
+		</WrapPanel>
+	</Grid>
+</UserControl>

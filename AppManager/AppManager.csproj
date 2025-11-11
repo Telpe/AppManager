@@ -8,6 +8,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="Lib\" />
+    <Folder Include="Pages\AppPage\" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="System.Management" Version="9.0.10" />

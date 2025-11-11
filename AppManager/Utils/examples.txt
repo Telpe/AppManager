@@ -1,0 +1,17 @@
+﻿// Get screen resolution in WPF units (DPI-aware)
+var screenSize = ScreenHelper.GetScreenResolution();
+
+// Check if window can expand 100 WPF units to the right
+bool canExpandRight = ScreenHelper.CanExpandWindow(this, new Vector(1, 0), 100);
+
+// Check if window can expand 50 WPF units upward
+bool canExpandUp = ScreenHelper.CanExpandWindow(this, new Vector(0, -1), 50);
+
+// Check diagonal expansion (right and down)
+bool canExpandDiagonal = ScreenHelper.CanExpandWindow(this, new Vector(1, 1), 75);
+
+// Get maximum expansion possible to the right
+double maxRight = ScreenHelper.GetMaxExpansion(this, new Vector(1, 0));
+
+// Get working area (excludes taskbar)
+var workingArea = ScreenHelper.GetWorkingArea();

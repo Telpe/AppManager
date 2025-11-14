@@ -1,3 +1,4 @@
+using AppManager.Utils;
 using System.IO;
 
 namespace AppManager.Conditions
@@ -18,7 +19,7 @@ namespace AppManager.Conditions
                     return false;
                 }
 
-                bool exists = File.Exists(targetPath);
+                bool exists = FileManager.FileExists(targetPath);
                 LogConditionResult(exists, $"File '{targetPath}' exists: {exists}");
                 return exists;
             }

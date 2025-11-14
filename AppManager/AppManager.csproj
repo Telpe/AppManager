@@ -8,7 +8,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Folder Include="Lib\" />
+    <Folder Include="Models\" />
     <Folder Include="Pages\AppPage\" />
+    <Folder Include="ViewModels\" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="System.Management" Version="9.0.10" />

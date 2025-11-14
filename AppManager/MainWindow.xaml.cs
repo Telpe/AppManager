@@ -1,6 +1,7 @@
 ﻿using AppManager.Pages;
 using AppManager.Profile;
 using AppManager.Settings;
+using AppManager.Browser;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -36,6 +37,26 @@ namespace AppManager
 
             // Load navigation based on profile's last selected page
             LoadNav1List(ProfileManager.CurrentProfile.SelectedNav1Menu);
+        }
+
+        private void BrowserButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var browserWindow = new BrowserWindow
+                {
+                    Owner = this
+                };
+                browserWindow.Show();
+                
+                Debug.WriteLine("Browser window opened");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error opening Browser window: {ex.Message}", "Error", 
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+                Debug.WriteLine($"Error opening Browser window: {ex.Message}");
+            }
         }
 
         private void ApplyWindowSettings()

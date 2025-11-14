@@ -15,9 +15,35 @@
 			<ColumnDefinition Width="*"/>
 			<ColumnDefinition Width="*"/>
 		</Grid.ColumnDefinitions>
-		<Label Grid.Row="0" Grid.Column="0" Content="App Manager" FontWeight="Bold"  HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,0,0,0"/>
-		<!-- Console Panel -->
-		<StackPanel x:Name="ConsolePanel" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0" />
+		
+		<!-- Top Row with Title and Browser Button -->
+		<Grid Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="*"/>
+				<ColumnDefinition Width="Auto"/>
+				<ColumnDefinition Width="*"/>
+			</Grid.ColumnDefinitions>
+			
+			<Label Grid.Column="0" Content="App Manager" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,0,0,0"/>
+			
+			<!-- Browser Button in Center -->
+			<Button x:Name="BrowserButton" 
+			        Grid.Column="1" 
+			        Content="🚀 Browser" 
+			        Width="100" 
+			        Height="28" 
+			        Margin="5" 
+			        Click="BrowserButton_Click"
+			        Background="#4CAF50"
+			        Foreground="White"
+			        FontWeight="Bold"
+			        BorderThickness="0"
+			        ToolTip="Open Browser - Quick Launch shortcuts"/>
+			
+			<!-- Console Panel on Right -->
+			<StackPanel x:Name="ConsolePanel" Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0" />
+		</Grid>
+		
 		<StackPanel Orientation="Vertical" Grid.Row="1" Grid.Column="0" Background="#D0D0D0" Height="auto">
 			
 			<!-- Nav 1 menu -->

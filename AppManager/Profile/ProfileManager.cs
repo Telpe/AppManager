@@ -1,21 +1,12 @@
 using AppManager.Settings;
+using AppManager.Utils;
 using System;
 using System.Diagnostics;
-using System.IO;
-using System.Text.Json;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace AppManager.Profile
 {
     public static class ProfileManager
     {
-        private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions()
-        {
-            WriteIndented = true,
-            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
-        };
-
-        public static readonly string ProfilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "AppManager");
         public static readonly string DefaultProfileFilename = "default";
 
         private static ProfileData _CurrentProfile;
@@ -25,25 +16,22 @@ namespace AppManager.Profile
             private set => _CurrentProfile = value; 
         }
 
-        private static string GetProfileFilepath(string profileName = null)
-        {
-            return Path.Combine(ProfilePath, $"{profileName ?? DefaultProfileFilename}.json");
-        }
-
         public static ProfileData LoadProfile(string profileName = null)
         {
             ProfileData profile = null;
             try
             {
-                string profileFile = GetProfileFilepath(profileName);
-                if (File.Exists(profileFile))
+                string profileFile = FileManager.GetProfilePath(profileName ?? DefaultProfileFilename);
+                profile = FileManager.LoadJsonFile<ProfileData>(profileFile);
+                
+                if (profile.Name != null) // Check if file existed and was loaded
                 {
-                    profile = JsonSerializer.Deserialize<ProfileData>(File.ReadAllText(profileFile), JsonOptions);
                     Debug.WriteLine($"Profile '{profile.Name}' loaded successfully");
                 }
                 else
                 {
                     Debug.WriteLine($"Profile {profileName} not found.");
+                    profile = null;
                 }
             }
             catch (Exception ex)
@@ -67,9 +55,7 @@ namespace AppManager.Profile
                 if (null == profile)
                 {
                     profile = CreateNewProfile(profileName);
-
                     Debug.WriteLine($"Default profile '{profile.Name}' created");
-
                     return false;
                 }
 
@@ -79,6 +65,7 @@ namespace AppManager.Profile
                 UpdateLastUsedProfileInSettings(_CurrentProfile.Name);
 
                 Debug.WriteLine($"Successfully switched to profile: {_CurrentProfile.Name}");
+                return true;
             }
             catch (Exception ex)
             {
@@ -97,7 +84,6 @@ namespace AppManager.Profile
             try
             {
                 SettingsManager.CurrentSettings.LastUsedProfileName = profileName ?? DefaultProfileFilename;
-                
                 Debug.WriteLine($"Updated LastUsedProfileName to: {SettingsManager.CurrentSettings.LastUsedProfileName}");
             }
             catch (Exception ex)
@@ -119,19 +105,19 @@ namespace AppManager.Profile
                 return;
             }
 
-            // Major, Minor, Build, Revision
+            // Update version info
             profile.Version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
 
-            try
+            string profileFile = FileManager.GetProfilePath(profile.Name);
+            bool success = FileManager.SaveJsonFile(profile, profileFile);
+            
+            if (success)
             {
-                Directory.CreateDirectory(ProfilePath);
-                File.WriteAllText(GetProfileFilepath(profile.Name), JsonSerializer.Serialize(profile, JsonOptions));
-                
                 Debug.WriteLine($"Profile {profile.Name} saved successfully");
             }
-            catch (Exception ex)
+            else
             {
-                Debug.WriteLine($"Error saving profile: {ex.Message}");
+                Debug.WriteLine($"Failed to save profile {profile.Name}");
             }
         }
 
@@ -151,10 +137,8 @@ namespace AppManager.Profile
 
         public static bool ProfileExists(string profileName = null)
         {
-            string profileFile = profileName != null 
-                ? Path.Combine(ProfilePath, $"{profileName}.json")
-                : GetProfileFilepath();
-            return File.Exists(profileFile);
+            string profileFile = FileManager.GetProfilePath(profileName ?? DefaultProfileFilename);
+            return FileManager.FileExists(profileFile);
         }
 
         public static void ResetProfile()

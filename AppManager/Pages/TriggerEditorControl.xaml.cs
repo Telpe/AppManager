@@ -4,7 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using AppManager.Triggers;
-using Microsoft.Win32;
+using AppManager.Utils;
 
 namespace AppManager.Pages
 {
@@ -212,7 +212,7 @@ namespace AppManager.Pages
         private void StopCapturing()
         {
             _isCapturingShortcut = false;
-            var button = CaptureShortcutButton;
+            var button = this.FindName("CaptureShortcutButton") as Button;
             if (button != null)
                 button.Content = "Capture";
         }
@@ -270,20 +270,19 @@ namespace AppManager.Pages
 
         private void BrowseExecutableMonitorButton_Click(object sender, RoutedEventArgs e)
         {
-            var openFileDialog = new OpenFileDialog
-            {
-                Filter = "Executable files (*.exe)|*.exe|All files (*.*)|*.*",
-                Title = "Select Executable to Monitor"
-            };
+            // Use centralized FileManager for file dialog
+            string selectedFile = FileManager.ShowOpenFileDialog(
+                "Executable files (*.exe)|*.exe|All files (*.*)|*.*", 
+                "Select Executable to Monitor");
 
-            if (openFileDialog.ShowDialog() == true)
+            if (!string.IsNullOrEmpty(selectedFile))
             {
-                ExecutablePathMonitorTextBox.Text = openFileDialog.FileName;
+                ExecutablePathMonitorTextBox.Text = selectedFile;
                 
                 // Auto-populate process name if empty
                 if (string.IsNullOrEmpty(ProcessNameTextBox.Text))
                 {
-                    var fileName = System.IO.Path.GetFileNameWithoutExtension(openFileDialog.FileName);
+                    var fileName = System.IO.Path.GetFileNameWithoutExtension(selectedFile);
                     ProcessNameTextBox.Text = fileName;
                 }
                 

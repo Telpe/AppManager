@@ -1,10 +1,13 @@
-﻿using System;
+﻿using AppManager.Utils;
+using System;
+using System.Text.Json.Serialization;
 
 namespace AppManager.Profile
 {
     public class ProfileData
     {
         public string Name { get; set; }
+        [JsonConverter(typeof(VersionJsonConverter))]
         public Version Version { get; set; }
         public AppManagedModel[] Apps { get; set; } = Array.Empty<AppManagedModel>();
         public GroupManagedModel[] AppGroups { get; set; } = Array.Empty<GroupManagedModel>();
@@ -16,7 +19,5 @@ namespace AppManager.Profile
         public string SelectedNav1Menu { get; set; } = "Apps";
         public string SelectedNav1List { get; set; } = "Apps";
 
-        // Window settings moved to SettingsData
-        // Theme, MinimizeToTray, ShowNotifications moved to SettingsData
     }
 }

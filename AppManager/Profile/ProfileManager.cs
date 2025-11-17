@@ -97,16 +97,16 @@ namespace AppManager.Profile
             if (profile == null)
             {
                 profile = _CurrentProfile;
-            }
 
-            if(profile == null)
-            {
-                Debug.WriteLine("No profile to save");
-                return;
+                if (profile == null)
+                {
+                    Debug.WriteLine("No profile to save");
+                    return;
+                }
             }
 
             // Update version info
-            profile.Version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+            profile.Version = App.Version;
 
             string profileFile = FileManager.GetProfilePath(profile.Name);
             bool success = FileManager.SaveJsonFile(profile, profileFile);

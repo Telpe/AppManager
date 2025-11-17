@@ -1,6 +1,7 @@
 ﻿using AppManager.Profile;
 using AppManager.Settings;
 using AppManager.Shortcuts;
+using AppManager.Utils;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -22,9 +23,20 @@ namespace AppManager
         private Timer CheckIfAppsRunningValue = new();
         public Timer CheckIfAppsRunning { get { return CheckIfAppsRunningValue; } }
 
+        public static readonly Version Version;
+
+        static App()
+        {
+            // Load version from version.json file
+            Version = FileManager.LoadVersion();
+            Debug.WriteLine($"AppManager Version: {Version}");
+        }
+
         public App()
         {
             InitializeComponent();
+
+
 
             // Load the last used profile (or default if none specified)
             string profileToLoad = !string.IsNullOrEmpty(SettingsManager.CurrentSettings.LastUsedProfileName) 

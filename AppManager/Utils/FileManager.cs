@@ -15,7 +15,7 @@ namespace AppManager.Utils
 {
     public static class FileManager
     {
-        private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions()
+        private static readonly JsonSerializerOptions JsonOptions = new()
         {
             WriteIndented = true,
             DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
@@ -97,8 +97,7 @@ namespace AppManager.Utils
                     {
                         string pattern = $"*{appName}*{ext}";
                         var files = Directory.GetFiles(basePath, pattern, SearchOption.AllDirectories);
-                        if (files.Length > 0)
-                            return files[0];
+                        if (files.Length > 0) { return files[0]; }
                     }
                     catch (Exception ex)
                     {
@@ -168,22 +167,13 @@ namespace AppManager.Utils
             {
                 // First, try to find a standalone icon file with the same name
                 string iconPath = FindIconFileForExecutable(baseName, iconExtensions);
-                if (!string.IsNullOrEmpty(iconPath))
-                {
-                    return CreateImageSourceFromFile(iconPath);
-                }
+                if (!string.IsNullOrEmpty(iconPath)) { return CreateImageSourceFromFile(iconPath); }
 
                 // Second, try to extract icon from executable (for .exe files)
-                if (Path.GetExtension(executablePath).Equals(".exe", StringComparison.OrdinalIgnoreCase))
-                {
-                    return ExtractIconFromExecutable(executablePath);
-                }
+                if (Path.GetExtension(executablePath).Equals(".exe", StringComparison.OrdinalIgnoreCase)) { return ExtractIconFromExecutable(executablePath); }
 
                 // Third, try to extract icon from .lnk files
-                if (Path.GetExtension(executablePath).Equals(".lnk", StringComparison.OrdinalIgnoreCase))
-                {
-                    return ExtractIconFromShortcut(executablePath);
-                }
+                if (Path.GetExtension(executablePath).Equals(".lnk", StringComparison.OrdinalIgnoreCase)) { return ExtractIconFromShortcut(executablePath); }
             }
             catch (Exception ex)
             {
@@ -198,8 +188,7 @@ namespace AppManager.Utils
             foreach (string ext in iconExtensions)
             {
                 string iconPath = Path.Combine(BrowserShortcutsPath, $"{baseName}{ext}");
-                if (File.Exists(iconPath))
-                    return iconPath;
+                if (File.Exists(iconPath)) { return iconPath; }
             }
             return null;
         }
@@ -209,8 +198,7 @@ namespace AppManager.Utils
         /// </summary>
         public static ImageSource CreateImageSourceFromBytes(byte[] imageData)
         {
-            if (imageData == null || imageData.Length == 0)
-                return null;
+            if (imageData == null || imageData.Length == 0) { return null; }
 
             try
             {
@@ -237,8 +225,7 @@ namespace AppManager.Utils
         {
             try
             {
-                if (!File.Exists(filePath))
-                    return null;
+                if (!File.Exists(filePath)) { return null; }
 
                 byte[] imageData = File.ReadAllBytes(filePath);
                 return CreateImageSourceFromBytes(imageData);
@@ -288,10 +275,7 @@ namespace AppManager.Utils
             {
                 // For .lnk files, we need to resolve the target and extract its icon
                 string targetPath = ResolveShortcutTarget(shortcutPath);
-                if (!string.IsNullOrEmpty(targetPath) && File.Exists(targetPath))
-                {
-                    return ExtractIconFromExecutable(targetPath);
-                }
+                if (!string.IsNullOrEmpty(targetPath) && File.Exists(targetPath)) { return ExtractIconFromExecutable(targetPath); }
             }
             catch (Exception ex)
             {
@@ -415,6 +399,37 @@ namespace AppManager.Utils
                 System.Diagnostics.Debug.WriteLine($"Error extracting shell icon {iconIndex}: {ex.Message}");
             }
             return null;
+        }
+
+        /// <summary>
+        /// Gets the path to version.json in the assembly root directory
+        /// </summary>
+        public static string GetVersionFilePath() =>
+            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "version.json");
+
+        /// <summary>
+        /// Loads version information from version.json file
+        /// </summary>
+        /// <returns>Version struct or default if file doesn't exist</returns>
+        public static Version LoadVersion()
+        {
+            try
+            {
+                string versionFilePath = GetVersionFilePath();
+                
+                if (!File.Exists(versionFilePath))
+                {
+                    System.Diagnostics.Debug.WriteLine($"version.json not found at {versionFilePath}, using default version");
+                    return new Version { Exspansion = 0, Patch = 0, Hotfix = 0, Work = 1 };
+                }
+
+                return LoadJsonFile<Version>(versionFilePath);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error loading version: {ex.Message}");
+                return new Version { Exspansion = 0, Patch = 0, Hotfix = 0, Work = 1 };
+            }
         }
     }
 }

@@ -32,7 +32,11 @@
                     Content="📁 Open Folder" 
                     Margin="10,0,0,0" 
                     Padding="10,5" 
-                    Click="OpenFolderButton_Click"/>
+                    Click="OpenFolderButton_Click"
+                    Background="#FFC107"
+                    Foreground="White"
+                    FontWeight="Bold"
+                    BorderThickness="0"/>
         </StackPanel>
 
         <!-- Shortcuts List -->

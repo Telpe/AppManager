@@ -13,12 +13,10 @@ namespace AppManager.Actions
 
         protected override bool CanExecuteAction()
         {
-            if (string.IsNullOrEmpty(_Model?.AppName))
-                return false;
+            if (string.IsNullOrEmpty(_Model?.AppName)) { return false; }
 
             // Check if executable path is provided and exists
-            if (_Model.ExecutablePath != null)
-                return FileManager.FileExists(_Model.ExecutablePath);
+            if (_Model.ExecutablePath != null) { return FileManager.FileExists(_Model.ExecutablePath); }
 
             // Try to find the executable in common locations using FileManager
             return FileManager.FindExecutable(_Model.AppName) != null;

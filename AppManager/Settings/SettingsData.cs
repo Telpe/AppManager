@@ -1,9 +1,14 @@
 using System.Text.Json.Serialization;
+using AppManager.Utils;
 
 namespace AppManager.Settings
 {
     public class SettingsData
     {
+        [JsonPropertyName("version")]
+        [JsonConverter(typeof(VersionJsonConverter))]
+        public Version Version { get; set; }
+
         [JsonPropertyName("windowWidth")]
         public double WindowWidth { get; set; } = 600;
 

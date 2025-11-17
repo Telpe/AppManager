@@ -32,10 +32,7 @@ namespace AppManager.Actions
                 foreach (var conditionModel in _Model.Conditions)
                 {
                     var condition = ConditionFactory.CreateCondition(conditionModel);
-                    if (condition != null)
-                    {
-                        conditions.Add(condition);
-                    }
+                    if (condition != null) { conditions.Add(condition); }
                 }
                 _Conditions = conditions.ToArray();
             }
@@ -44,8 +41,7 @@ namespace AppManager.Actions
         public bool CanExecute()
         {
             // Check all conditions first
-            if (!CheckConditions())
-                return false;
+            if (!CheckConditions()) { return false; }
 
             // Then check action-specific logic
             return CanExecuteAction();
@@ -57,8 +53,7 @@ namespace AppManager.Actions
 
         protected virtual bool CheckConditions()
         {
-            if (_Conditions.Length == 0)
-                return true;
+            if (_Conditions.Length == 0) { return true; }
 
             foreach (var condition in _Conditions)
             {
@@ -118,7 +113,7 @@ namespace AppManager.Actions
 
         public bool RemoveCondition(ICondition condition)
         {
-            if (condition == null) return false;
+            if (condition == null) { return false; }
 
             var conditionArray = _Conditions.ToList();
             bool removed = conditionArray.Remove(condition);

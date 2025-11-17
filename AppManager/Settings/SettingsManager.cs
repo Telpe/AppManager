@@ -43,6 +43,9 @@ namespace AppManager.Settings
 
         public static void SaveSettings()
         {
+            // Update version info before saving
+            CurrentSettings.Version = App.Version;
+
             string settingsFile = FileManager.GetSettingsPath();
             bool success = FileManager.SaveJsonFile(CurrentSettings, settingsFile);
             

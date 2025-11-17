@@ -15,7 +15,9 @@ namespace AppManager.Conditions
         {
             var message = $"Condition {ConditionType} result: {result}";
             if (!string.IsNullOrEmpty(details))
+            {
                 message += $" - {details}";
+            }
             
             System.Diagnostics.Debug.WriteLine(message);
         }

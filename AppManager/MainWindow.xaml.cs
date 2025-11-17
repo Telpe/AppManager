@@ -2,6 +2,7 @@
 using AppManager.Profile;
 using AppManager.Settings;
 using AppManager.Browser;
+using AppManager.Utils;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -56,6 +57,28 @@ namespace AppManager
                 MessageBox.Show($"Error opening Browser window: {ex.Message}", "Error", 
                     MessageBoxButton.OK, MessageBoxImage.Error);
                 Debug.WriteLine($"Error opening Browser window: {ex.Message}");
+            }
+        }
+
+        private void DataFolderButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                string dataPath = FileManager.AppDataPath;
+                
+                // Ensure directory exists
+                System.IO.Directory.CreateDirectory(dataPath);
+                
+                // Open the folder in Windows Explorer
+                Process.Start("explorer.exe", dataPath);
+                
+                Debug.WriteLine($"Opened data folder: {dataPath}");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error opening data folder: {ex.Message}", "Error", 
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+                Debug.WriteLine($"Error opening data folder: {ex.Message}");
             }
         }
 

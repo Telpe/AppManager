@@ -9,8 +9,11 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Text.Json;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using AppManager.Pages;
 
-namespace AppManager.Pages
+namespace AppManager.AppUI
 {
     /// <summary>
     /// Interaction logic for Apps.xaml
@@ -28,9 +31,16 @@ namespace AppManager.Pages
             set { _CurrentPage.CurrentModel = value; }
         }
 
+        private ObservableCollection<TriggerViewModel> _TriggerViewModels = new();
+        private ObservableCollection<ActionViewModel> _ActionViewModels = new();
+
         public AppPage()
         {
             InitializeComponent();
+
+            // Set ItemsSource for ListBoxes
+            TriggersListBox.ItemsSource = _TriggerViewModels;
+            ActionsListBox.ItemsSource = _ActionViewModels;
 
             DisableButtons();
         }
@@ -113,19 +123,19 @@ namespace AppManager.Pages
 
         private void RefreshTriggersListBox()
         {
-            TriggersListBox.Items.Clear();
-            foreach (var trigger in _CurrentModel.AppTriggers.Values)
+            _TriggerViewModels.Clear();
+            foreach (var kvp in _CurrentModel.AppTriggers)
             {
-                TriggersListBox.Items.Add($"Trigger: {trigger.TriggerType}");
+                _TriggerViewModels.Add(new TriggerViewModel(kvp.Key, kvp.Value, this));
             }
         }
 
         private void RefreshActionsListBox()
         {
-            ActionsListBox.Items.Clear();
-            foreach (var action in _CurrentModel.AppActions.Values)
+            _ActionViewModels.Clear();
+            foreach (var kvp in _CurrentModel.AppActions)
             {
-                ActionsListBox.Items.Add($"Action: {action.ActionName}");
+                _ActionViewModels.Add(new ActionViewModel(kvp.Key, kvp.Value, this));
             }
         }
         private void DisableButtons()   
@@ -209,6 +219,26 @@ namespace AppManager.Pages
             RefreshActionsListBox();
         }
 
+        private void EditTriggerButton_Click(object sender, RoutedEventArgs e)
+        {
+            // TODO: Implement trigger editing dialog
+            if (sender is Button button && button.Tag is TriggerViewModel viewModel)
+            {
+                Debug.WriteLine($"Edit trigger: {viewModel.DisplayName}");
+                // Open edit dialog here
+            }
+        }
+
+        private void EditActionButton_Click(object sender, RoutedEventArgs e)
+        {
+            // TODO: Implement action editing dialog
+            if (sender is Button button && button.Tag is ActionViewModel viewModel)
+            {
+                Debug.WriteLine($"Edit action: {viewModel.DisplayName}");
+                // Open edit dialog here
+            }
+        }
+
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
             // Save profile to file
@@ -240,4 +270,8 @@ namespace AppManager.Pages
             return _LoadedPages?.Values.Any(page => !page.IsStored) ?? false;
         }
     }
+
+    
+
+    
 }

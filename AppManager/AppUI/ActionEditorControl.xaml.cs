@@ -8,7 +8,7 @@ using AppManager.Actions;
 using AppManager.Conditions;
 using Microsoft.Win32;
 
-namespace AppManager.Pages
+namespace AppManager.AppUI
 {
     public partial class ActionEditorControl : UserControl
     {

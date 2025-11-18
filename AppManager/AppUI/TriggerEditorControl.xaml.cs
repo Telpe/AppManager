@@ -6,7 +6,7 @@ using System.Windows.Input;
 using AppManager.Triggers;
 using AppManager.Utils;
 
-namespace AppManager.Pages
+namespace AppManager.AppUI
 {
     public partial class TriggerEditorControl : UserControl
     {

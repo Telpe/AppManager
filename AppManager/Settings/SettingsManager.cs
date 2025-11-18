@@ -5,20 +5,20 @@ namespace AppManager.Settings
 {
     public static class SettingsManager
     {
-        private static SettingsData _CurrentSettings;
-        public static SettingsData CurrentSettings 
+        private static SettingsModel _CurrentSettings;
+        public static SettingsModel CurrentSettings 
         { 
             get => _CurrentSettings ??= LoadSettings(); 
             private set => _CurrentSettings = value; 
         }
 
-        public static SettingsData LoadSettings()
+        public static SettingsModel LoadSettings()
         {
-            SettingsData settings;
+            SettingsModel settings;
             try
             {
                 string settingsFile = FileManager.GetSettingsPath();
-                settings = FileManager.LoadJsonFile<SettingsData>(settingsFile);
+                settings = FileManager.LoadJsonFile<SettingsModel>(settingsFile);
                 
                 // Check if file was actually loaded (has non-default values)
                 if (!string.IsNullOrEmpty(settings.Theme))
@@ -27,7 +27,7 @@ namespace AppManager.Settings
                 }
                 else
                 {
-                    settings = new SettingsData();
+                    settings = new SettingsModel();
                     _CurrentSettings = settings;
                     Debug.WriteLine("Default settings created");
                 }
@@ -35,7 +35,7 @@ namespace AppManager.Settings
             catch (System.Exception ex)
             {
                 Debug.WriteLine($"Error loading settings: {ex.Message}");
-                settings = new SettingsData();
+                settings = new SettingsModel();
             }
 
             return settings;

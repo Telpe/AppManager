@@ -51,6 +51,18 @@
 				        FontWeight="Bold"
 				        BorderThickness="0"
 				        ToolTip="Open data folder with profiles and settings"/>
+				
+				<Button x:Name="TestOverlayButton" 
+				        Content="🔲 Overlay" 
+				        Width="100" 
+				        Height="28" 
+				        Margin="5" 
+				        Click="TestOverlayButton_Click"
+				        Background="#9C27B0"
+				        Foreground="White"
+				        FontWeight="Bold"
+				        BorderThickness="0"
+				        ToolTip="Test overlay functionality"/>
 			</StackPanel>
 			
 			<!-- Console Panel on Right -->

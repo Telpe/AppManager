@@ -9,20 +9,20 @@ namespace AppManager.Profile
     {
         public static readonly string DefaultProfileFilename = "default";
 
-        private static ProfileData _CurrentProfile;
-        public static ProfileData CurrentProfile 
+        private static ProfileModel _CurrentProfile;
+        public static ProfileModel CurrentProfile 
         { 
             get => _CurrentProfile ??= LoadProfile(); 
             private set => _CurrentProfile = value; 
         }
 
-        public static ProfileData LoadProfile(string profileName = null)
+        public static ProfileModel LoadProfile(string profileName = null)
         {
-            ProfileData profile = null;
+            ProfileModel profile = null;
             try
             {
                 string profileFile = FileManager.GetProfilePath(profileName ?? DefaultProfileFilename);
-                profile = FileManager.LoadJsonFile<ProfileData>(profileFile);
+                profile = FileManager.LoadJsonFile<ProfileModel>(profileFile);
                 
                 if (profile.Name != null) // Check if file existed and was loaded
                 {
@@ -92,7 +92,7 @@ namespace AppManager.Profile
             }
         }
 
-        public static void SaveProfile(ProfileData profile = null)
+        public static void SaveProfile(ProfileModel profile = null)
         {
             if (profile == null)
             {
@@ -121,9 +121,9 @@ namespace AppManager.Profile
             }
         }
 
-        public static ProfileData CreateNewProfile(string profileName = null)
+        public static ProfileModel CreateNewProfile(string profileName = null)
         {
-            ProfileData profile = new ProfileData
+            ProfileModel profile = new ProfileModel
             {
                 Name = profileName ?? DefaultProfileFilename,
                 Username = Environment.UserName,
@@ -143,7 +143,7 @@ namespace AppManager.Profile
 
         public static void ResetProfile()
         {
-            _CurrentProfile = new ProfileData
+            _CurrentProfile = new ProfileModel
             {
                 Name = DefaultProfileFilename,
                 Username = Environment.UserName

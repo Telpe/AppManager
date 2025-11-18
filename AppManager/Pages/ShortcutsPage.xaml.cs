@@ -25,5 +25,10 @@ namespace AppManager.Pages
             // This is just a placeholder implementation
             Debug.WriteLine($"Page name set to: {pageName}");
         }
+
+        public bool HasUnsavedChanges()
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

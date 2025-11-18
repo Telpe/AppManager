@@ -252,5 +252,10 @@ namespace AppManager.Pages
             ProfileManager.SaveProfile();
             MessageBox.Show("Group saved successfully!", "Save Complete", MessageBoxButton.OK, MessageBoxImage.Information);
         }
+
+        public bool HasUnsavedChanges()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

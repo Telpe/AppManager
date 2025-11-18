@@ -3,7 +3,7 @@ using System.Windows;
 using AppManager.Actions;
 using AppManager.Triggers;
 
-namespace AppManager.Pages
+namespace AppManager.AppUI
 {
     public partial class ActionTriggerDialog : Window
     {

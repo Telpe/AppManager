@@ -7,7 +7,6 @@ namespace AppManager.Conditions
     {
         public override ConditionTypeEnum ConditionType => ConditionTypeEnum.ProcessRunning;
         public override string Description => "Checks if a specific process is currently running";
-        public ConditionModel Model { get; set; }
 
         public override bool Execute()
         {

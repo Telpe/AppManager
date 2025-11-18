@@ -6,12 +6,11 @@ using System.Reflection;
 
 namespace AppManager.Profile
 {
-    public class AppManagedModel : IAppManaged
+    public class AppManagedModel
     {
         public string AppName { get; set; }
         public bool Active { get; set; }
         
-        // Add missing interface properties
         public Dictionary<int, TriggerModel> AppTriggers { get; set; } = new Dictionary<int, TriggerModel>();
         public Dictionary<int, ActionModel> AppActions { get; set; } = new Dictionary<int, ActionModel>();
 

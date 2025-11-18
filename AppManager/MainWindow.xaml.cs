@@ -3,6 +3,7 @@ using AppManager.Profile;
 using AppManager.Settings;
 using AppManager.Browser;
 using AppManager.Utils;
+using AppManager.UI;
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -11,6 +12,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using WinRT;
+using AppManager.AppUI;
 
 namespace AppManager
 {
@@ -24,6 +26,7 @@ namespace AppManager
         private readonly AppPage AppsPage = new();
         private readonly AppGroupsPage AppGroupsPage = new();
         private readonly ShortcutsPage ShortcutsPage = new();
+        private OverlayManager _overlayManager;
 
         public MainWindow()
         {
@@ -33,12 +36,42 @@ namespace AppManager
 
             this.Closing += Window_Closing;
 
+            // Initialize overlay manager
+            _overlayManager = new OverlayManager(this);
+
+            // Handle window size changes
+            this.SizeChanged += (sender, e) => _overlayManager.UpdateSize();
+
             // Apply settings to window
             ApplyWindowSettings();
 
             // Load navigation based on profile's last selected page
             LoadNav1List(ProfileManager.CurrentProfile.SelectedNav1Menu);
         }
+
+        /// <summary>
+        /// Shows an overlay with the specified content and active area size
+        /// </summary>
+        /// <param name="content">Content that inherits from OverlayContent</param>
+        /// <param name="widthPercent">Width of active area as percentage (0-100)</param>
+        /// <param name="heightPercent">Height of active area as percentage (0-100)</param>
+        public void ShowOverlay(OverlayContent content, double widthPercent = 50, double heightPercent = 50)
+        {
+            _overlayManager.ShowOverlay(content, widthPercent, heightPercent);
+        }
+
+        /// <summary>
+        /// Hides the current overlay
+        /// </summary>
+        public void HideOverlay()
+        {
+            _overlayManager.HideOverlay();
+        }
+
+        /// <summary>
+        /// Gets whether an overlay is currently visible
+        /// </summary>
+        public bool IsOverlayVisible => _overlayManager.IsOverlayVisible;
 
         private void BrowserButton_Click(object sender, RoutedEventArgs e)
         {
@@ -448,5 +481,27 @@ namespace AppManager
         {
             ConsolePanel.Children.Add(new Label() { Content = text });
         }
+
+        private void TestOverlayButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // Create example overlay content
+                var overlayContent = new ExampleOverlayContent("This is a test overlay!\nClick 'Close Overlay' or click outside to dismiss.");
+                
+                // Show overlay with 60% width and 40% height
+                ShowOverlay(overlayContent, 60, 40);
+                
+                Debug.WriteLine("Test overlay displayed");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error showing overlay: {ex.Message}", "Error", 
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+                Debug.WriteLine($"Error showing overlay: {ex.Message}");
+            }
+        }
     }
 }
+
+

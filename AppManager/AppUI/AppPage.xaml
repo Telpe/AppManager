@@ -1,0 +1,199 @@
+﻿<Page x:Class="AppManager.AppUI.AppPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:AppManager.AppUI"
+      mc:Ignorable="d" 
+      d:DesignHeight="500" d:DesignWidth="600"
+      Title="App">
+
+	<Grid Margin="10">
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="*" />
+		</Grid.ColumnDefinitions>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="36" />
+			<RowDefinition Height="*" />
+			<RowDefinition Height="auto" />
+		</Grid.RowDefinitions>
+
+		<!-- App Details Panel -->
+		<ScrollViewer Grid.Row="1" Grid.Column="0" VerticalScrollBarVisibility="Auto">
+			<StackPanel>
+				<!-- App Management Section -->
+				<GroupBox Header="App Management" Margin="5">
+					<DockPanel Height="22" Margin="5">
+						<CheckBox x:Name="ActiveBox" 
+								  Width="16" 
+								  Height="16" 
+								  Margin="0,1,10,1" 
+								  VerticalAlignment="Center"
+								  Content="Active" />
+						
+						<Label Content="App Name:" 
+							   VerticalAlignment="Center" 
+							   Margin="0,-3,5,0" />
+						
+						<TextBox x:Name="AppNameBox" 
+								 Width="160" 
+								 Padding="0" 
+								 Margin="0,1,0,1" 
+								 VerticalAlignment="Center"
+								 TextChanged="AppNameBox_TextChanged" />
+					</DockPanel>
+				</GroupBox>
+
+				<!-- Triggers Section -->
+				<GroupBox Header="Triggers" Margin="5">
+					<StackPanel>
+						<ListBox x:Name="TriggersListBox" Height="150" Margin="5">
+							<ListBox.ItemTemplate>
+								<DataTemplate>
+									<Border BorderBrush="LightGray" BorderThickness="1" Padding="5" Margin="2">
+										<Grid>
+											<Grid.ColumnDefinitions>
+												<ColumnDefinition Width="Auto" />
+												<ColumnDefinition Width="*" />
+												<ColumnDefinition Width="Auto" />
+												<ColumnDefinition Width="Auto" />
+											</Grid.ColumnDefinitions>
+
+											<!-- Active Checkbox -->
+											<CheckBox Grid.Column="0" 
+													  IsChecked="{Binding IsActive}" 
+													  VerticalAlignment="Center" 
+													  Margin="0,0,10,0"
+													  ToolTip="Active" />
+
+											<!-- Trigger Type Display -->
+											<StackPanel Grid.Column="1" VerticalAlignment="Center">
+												<TextBlock Text="{Binding DisplayName}" 
+														   FontWeight="Bold" />
+												<TextBlock Text="{Binding ConditionCount, StringFormat='Conditions: {0}'}" 
+														   FontSize="10" 
+														   Foreground="Gray" />
+											</StackPanel>
+
+											<!-- Condition Count Badge -->
+											<Border Grid.Column="2" 
+													Background="#FF4CAF50" 
+													CornerRadius="10" 
+													Padding="6,2" 
+													Margin="5,0"
+													VerticalAlignment="Center"
+													Visibility="{Binding HasConditions, Converter={StaticResource BoolToVisibilityConverter}}">
+												<TextBlock Text="{Binding ConditionCount}" 
+														   Foreground="White" 
+														   FontSize="10" 
+														   FontWeight="Bold" />
+											</Border>
+
+											<!-- Edit Button -->
+											<Button Grid.Column="3" 
+													Content="Edit" 
+													Width="50" 
+													Height="24" 
+													Margin="5,0,0,0"
+													Click="EditTriggerButton_Click"
+													Tag="{Binding}" />
+										</Grid>
+									</Border>
+								</DataTemplate>
+							</ListBox.ItemTemplate>
+						</ListBox>
+						<Button x:Name="AddTriggerButton" 
+								Content="Add Trigger" 
+								Width="100" 
+								HorizontalAlignment="Left" 
+								Margin="5"
+								Click="AddTriggerButton_Click" />
+					</StackPanel>
+				</GroupBox>
+
+				<!-- Actions Section -->
+				<GroupBox Header="Actions" Margin="5">
+					<StackPanel>
+						<ListBox x:Name="ActionsListBox" Height="150" Margin="5">
+							<ListBox.ItemTemplate>
+								<DataTemplate>
+									<Border BorderBrush="LightGray" BorderThickness="1" Padding="5" Margin="2">
+										<Grid>
+											<Grid.ColumnDefinitions>
+												<ColumnDefinition Width="Auto" />
+												<ColumnDefinition Width="*" />
+												<ColumnDefinition Width="Auto" />
+												<ColumnDefinition Width="Auto" />
+											</Grid.ColumnDefinitions>
+
+											<!-- Active Checkbox -->
+											<CheckBox Grid.Column="0" 
+													  IsChecked="{Binding IsActive}" 
+													  VerticalAlignment="Center" 
+													  Margin="0,0,10,0"
+													  ToolTip="Active" />
+
+											<!-- Action Name Display -->
+											<StackPanel Grid.Column="1" VerticalAlignment="Center">
+												<TextBlock Text="{Binding DisplayName}" 
+														   FontWeight="Bold" />
+												<TextBlock Text="{Binding ConditionCount, StringFormat='Conditions: {0}'}" 
+														   FontSize="10" 
+														   Foreground="Gray" />
+											</StackPanel>
+
+											<!-- Condition Count Badge -->
+											<Border Grid.Column="2" 
+													Background="#FF2196F3" 
+													CornerRadius="10" 
+													Padding="6,2" 
+													Margin="5,0"
+													VerticalAlignment="Center"
+													Visibility="{Binding HasConditions, Converter={StaticResource BoolToVisibilityConverter}}">
+												<TextBlock Text="{Binding ConditionCount}" 
+														   Foreground="White" 
+														   FontSize="10" 
+														   FontWeight="Bold" />
+											</Border>
+
+											<!-- Edit Button -->
+											<Button Grid.Column="3" 
+													Content="Edit" 
+													Width="50" 
+													Height="24" 
+													Margin="5,0,0,0"
+													Click="EditActionButton_Click"
+													Tag="{Binding}" />
+										</Grid>
+									</Border>
+								</DataTemplate>
+							</ListBox.ItemTemplate>
+						</ListBox>
+						<Button x:Name="AddActionButton" 
+								Content="Add Action" 
+								Width="100" 
+								HorizontalAlignment="Left" 
+								Margin="5"
+								Click="AddActionButton_Click" />
+					</StackPanel>
+				</GroupBox>
+			</StackPanel>
+		</ScrollViewer>
+
+		<!-- Buttons Panel -->
+		<WrapPanel Grid.Row="2" Grid.Column="0" HorizontalAlignment="Left">
+			<Button x:Name="SaveButton" 
+					Content="Save" 
+					Width="75" 
+					Height="25" 
+					Margin="5,0,5,0"
+					Click="SaveButton_Click" />
+			<Button x:Name="CancelButton" 
+					Content="Cancel" 
+					Width="75" 
+					Height="25" 
+					Margin="5,0,5,0"
+					Click="CancelButton_Click" />
+		</WrapPanel>
+	</Grid>
+</Page>

@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace AppManager.Profile
 {
-    public class ProfileData
+    public class ProfileModel
     {
         public string Name { get; set; }
         [JsonConverter(typeof(VersionJsonConverter))]

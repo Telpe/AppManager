@@ -3,7 +3,7 @@ using AppManager.Utils;
 
 namespace AppManager.Settings
 {
-    public class SettingsData
+    public class SettingsModel
     {
         [JsonPropertyName("version")]
         [JsonConverter(typeof(VersionJsonConverter))]

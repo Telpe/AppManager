@@ -6,7 +6,7 @@ namespace AppManager.UI
     /// <summary>
     /// Base class for overlay content that provides access to DisableOverlay functionality
     /// </summary>
-    public abstract class OverlayContent : UserControl
+    public class OverlayContent : UserControl
     {
         /// <summary>
         /// Event raised when the overlay should be disabled

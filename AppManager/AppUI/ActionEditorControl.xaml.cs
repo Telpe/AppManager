@@ -6,11 +6,12 @@ using System.Windows;
 using System.Windows.Controls;
 using AppManager.Actions;
 using AppManager.Conditions;
+using AppManager.UI;
 using Microsoft.Win32;
 
 namespace AppManager.AppUI
 {
-    public partial class ActionEditorControl : UserControl
+    public partial class ActionEditorControl : OverlayContent
     {
         private ActionModel _currentAction;
         private ObservableCollection<ConditionDisplayItem> _conditions;
@@ -372,6 +373,7 @@ namespace AppManager.AppUI
                 var action = CreateActionModel();
                 _currentAction = action;
                 ActionSaved?.Invoke(this, action);
+                DisableOverlay(); // Close the overlay after saving
             }
             catch (Exception ex)
             {
@@ -382,6 +384,7 @@ namespace AppManager.AppUI
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
             ActionCancelled?.Invoke(this, EventArgs.Empty);
+            DisableOverlay(); // Close the overlay when cancelling
         }
 
         // Event handlers for text changes to update preview

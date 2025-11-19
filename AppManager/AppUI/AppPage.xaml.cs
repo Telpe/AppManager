@@ -2,6 +2,7 @@
 using AppManager.Actions;
 using AppManager.Profile;
 using AppManager.Triggers;
+using AppManager.UI;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -221,21 +222,87 @@ namespace AppManager.AppUI
 
         private void EditTriggerButton_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: Implement trigger editing dialog
             if (sender is Button button && button.Tag is TriggerViewModel viewModel)
             {
                 Debug.WriteLine($"Edit trigger: {viewModel.DisplayName}");
-                // Open edit dialog here
+                
+                try
+                {
+                    // Create trigger editor control directly
+                    var triggerEditor = new TriggerEditorControl();
+                    triggerEditor.CurrentTrigger = viewModel.Model;
+                    
+                    // Subscribe to save event
+                    triggerEditor.TriggerSaved += (s, updatedTrigger) =>
+                    {
+                        // Update the model in the dictionary
+                        _CurrentModel.AppTriggers[viewModel.Id] = updatedTrigger;
+                        
+                        // Refresh the UI to show changes
+                        RefreshTriggersListBox();
+                        
+                        // Mark as edited
+                        Edited();
+                        
+                        Debug.WriteLine($"Trigger {viewModel.DisplayName} updated successfully");
+                    };
+                    
+                    triggerEditor.TriggerCancelled += (s, args) =>
+                    {
+                        Debug.WriteLine($"Trigger editing cancelled for {viewModel.DisplayName}");
+                    };
+                    
+                    ((MainWindow)Application.Current.MainWindow)?.ShowOverlay(triggerEditor, 80, 70, false);
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error opening trigger editor: {ex.Message}");
+                    MessageBox.Show($"Error opening trigger editor: {ex.Message}", "Error", 
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
         }
 
         private void EditActionButton_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: Implement action editing dialog
             if (sender is Button button && button.Tag is ActionViewModel viewModel)
             {
                 Debug.WriteLine($"Edit action: {viewModel.DisplayName}");
-                // Open edit dialog here
+                
+                try
+                {
+                    // Create action editor control directly
+                    var actionEditor = new ActionEditorControl();
+                    actionEditor.CurrentAction = viewModel.Model;
+                    
+                    // Subscribe to save event
+                    actionEditor.ActionSaved += (s, updatedAction) =>
+                    {
+                        // Update the model in the dictionary
+                        _CurrentModel.AppActions[viewModel.Id] = updatedAction;
+                        
+                        // Refresh the UI to show changes
+                        RefreshActionsListBox();
+                        
+                        // Mark as edited
+                        Edited();
+                        
+                        Debug.WriteLine($"Action {viewModel.DisplayName} updated successfully");
+                    };
+                    
+                    actionEditor.ActionCancelled += (s, args) =>
+                    {
+                        Debug.WriteLine($"Action editing cancelled for {viewModel.DisplayName}");
+                    };
+                    
+                    ((MainWindow)Application.Current.MainWindow)?.ShowOverlay(actionEditor, 80, 70, false);
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error opening action editor: {ex.Message}");
+                    MessageBox.Show($"Error opening action editor: {ex.Message}", "Error", 
+                        MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
         }
 

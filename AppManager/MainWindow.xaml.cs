@@ -55,9 +55,9 @@ namespace AppManager
         /// <param name="content">Content that inherits from OverlayContent</param>
         /// <param name="widthPercent">Width of active area as percentage (0-100)</param>
         /// <param name="heightPercent">Height of active area as percentage (0-100)</param>
-        public void ShowOverlay(OverlayContent content, double widthPercent = 50, double heightPercent = 50)
+        public void ShowOverlay(OverlayContent content, double widthPercent = 50, double heightPercent = 50, bool clickHide = true)
         {
-            _overlayManager.ShowOverlay(content, widthPercent, heightPercent);
+            _overlayManager.ShowOverlay(content, widthPercent, heightPercent, clickHide);
         }
 
         /// <summary>

@@ -5,10 +5,11 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using AppManager.Triggers;
 using AppManager.Utils;
+using AppManager.UI;
 
 namespace AppManager.AppUI
 {
-    public partial class TriggerEditorControl : UserControl
+    public partial class TriggerEditorControl : OverlayContent
     {
         private TriggerModel _currentTrigger;
         private TriggerManager _triggerManager;
@@ -317,6 +318,7 @@ namespace AppManager.AppUI
                 var trigger = CreateTriggerModel();
                 _currentTrigger = trigger;
                 TriggerSaved?.Invoke(this, trigger);
+                DisableOverlay(); // Close the overlay after saving
             }
             catch (Exception ex)
             {
@@ -327,6 +329,7 @@ namespace AppManager.AppUI
         private void CancelTriggerButton_Click(object sender, RoutedEventArgs e)
         {
             TriggerCancelled?.Invoke(this, EventArgs.Empty);
+            DisableOverlay(); // Close the overlay when cancelling
         }
 
         // Event handlers for text changes to update preview

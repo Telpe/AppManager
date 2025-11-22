@@ -1,11 +1,8 @@
-﻿using AppManager.Pages;
-using AppManager.Profile;
-using AppManager.Settings;
+﻿using AppManager.Core.Utils;
+using AppManager.Pages;
 using AppManager.Browser;
-using AppManager.Utils;
 using AppManager.UI;
 using System;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows;
@@ -13,6 +10,9 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using WinRT;
 using AppManager.AppUI;
+using AppManager.Core.Models;
+using AppManager.Utils;
+using System.ComponentModel;
 
 namespace AppManager
 {

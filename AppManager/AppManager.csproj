@@ -7,11 +7,7 @@
     <StartupObject>AppManager.App</StartupObject>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="System.Management" Version="9.0.10" />
+    <ProjectReference Include="..\AppManager.Core\AppManager.Core.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <None Update="version.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
+  
 </Project>

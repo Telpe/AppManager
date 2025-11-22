@@ -1,8 +1,10 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.7.34202.233
+# Visual Studio Version 18
+VisualStudioVersion = 18.0.11217.181 d18.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AppManager", "AppManager\AppManager.csproj", "{4BA7A811-1B79-4038-A772-097BA35B53F1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppManager.Core", "AppManager.Core\AppManager.Core.csproj", "{4344FB30-8276-4E37-9225-DE2B6C497BF7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -14,6 +16,10 @@ Global
 		{4BA7A811-1B79-4038-A772-097BA35B53F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4BA7A811-1B79-4038-A772-097BA35B53F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4BA7A811-1B79-4038-A772-097BA35B53F1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4344FB30-8276-4E37-9225-DE2B6C497BF7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4344FB30-8276-4E37-9225-DE2B6C497BF7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4344FB30-8276-4E37-9225-DE2B6C497BF7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4344FB30-8276-4E37-9225-DE2B6C497BF7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

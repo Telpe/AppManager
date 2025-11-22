@@ -1,7 +1,4 @@
 ﻿using AppManager;
-using AppManager.Actions;
-using AppManager.Profile;
-using AppManager.Triggers;
 using AppManager.UI;
 using System;
 using System.Collections.Generic;
@@ -13,6 +10,10 @@ using System.Text.Json;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using AppManager.Pages;
+using AppManager.Core.Models;
+using AppManager.Core.Triggers;
+using AppManager.Core.Actions;
+using AppManager.Utils;
 
 namespace AppManager.AppUI
 {

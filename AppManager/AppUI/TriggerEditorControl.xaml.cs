@@ -3,8 +3,8 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using AppManager.Triggers;
-using AppManager.Utils;
+using AppManager.Core.Triggers;
+using AppManager.Core.Utils;
 using AppManager.UI;
 
 namespace AppManager.AppUI

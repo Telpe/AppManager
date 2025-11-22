@@ -1,4 +1,4 @@
-﻿using AppManager.Actions;
+﻿using AppManager.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;

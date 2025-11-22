@@ -1,4 +1,5 @@
-using AppManager.Profile;
+using AppManager.Core.Models;
+using AppManager.Utils;
 using System;
 using System.Diagnostics;
 using System.Linq;

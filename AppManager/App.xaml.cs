@@ -1,6 +1,4 @@
-﻿using AppManager.Profile;
-using AppManager.Settings;
-using AppManager.Shortcuts;
+﻿using AppManager.Core.Utils;
 using AppManager.Utils;
 using System;
 using System.Collections.Generic;
@@ -8,6 +6,10 @@ using System.Diagnostics;
 using System.Timers;
 using System.Windows;
 using System.Windows.Input;
+using AppManager.Core.Shortcuts;
+{
+    
+}
 
 namespace AppManager
 {
@@ -23,7 +25,7 @@ namespace AppManager
         private Timer CheckIfAppsRunningValue = new();
         public Timer CheckIfAppsRunning { get { return CheckIfAppsRunningValue; } }
 
-        public static readonly Version Version;
+        public static readonly AppManager.Core.Version Version;
 
         static App()
         {

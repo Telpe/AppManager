@@ -1,4 +1,4 @@
-﻿using AppManager.Profile;
+﻿using AppManager.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;

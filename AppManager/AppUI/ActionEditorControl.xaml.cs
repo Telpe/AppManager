@@ -4,8 +4,9 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using AppManager.Actions;
-using AppManager.Conditions;
+using AppManager.Core.Actions;
+using AppManager.Core.Conditions;
+using AppManager.Core.Models;
 using AppManager.UI;
 using Microsoft.Win32;
 

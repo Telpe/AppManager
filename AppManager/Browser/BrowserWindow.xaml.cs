@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows;
-using AppManager.Utils;
+using AppManager.Core.Utils;
 
 namespace AppManager.Browser
 {

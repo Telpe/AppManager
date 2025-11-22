@@ -1,4 +1,4 @@
-﻿using AppManager.Triggers;
+﻿using AppManager.Core.Triggers;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;

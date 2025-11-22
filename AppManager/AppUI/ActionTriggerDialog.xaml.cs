@@ -1,7 +1,7 @@
 using System;
 using System.Windows;
-using AppManager.Actions;
-using AppManager.Triggers;
+using AppManager.Core.Models;
+using AppManager.Core.Triggers;
 
 namespace AppManager.AppUI
 {

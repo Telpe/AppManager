@@ -1,11 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
+    <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <UseWindowsForms>false</UseWindowsForms>
+    <UseWindowsForms>true</UseWindowsForms>
     <UseWPF>false</UseWPF>
+    <!--
+    <StartAction>Program</StartAction>
+    <StartProgram>C:\Users\Arthonor\source\repos\telpe\AppManager\AppManager\bin\Debug\net8.0-windows10.0.22000.0\AppManager.Core.exe</StartProgram>
+    -->
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="System.Management" Version="9.0.10" />
@@ -15,6 +19,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Update="version.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="AppManagerIcon_temp.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

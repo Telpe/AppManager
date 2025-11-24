@@ -66,7 +66,6 @@ namespace AppManager
 
         protected override void OnExit(ExitEventArgs e)
         {
-            //ProfileManager.SaveProfile();
             base.OnExit(e);
         }
 

@@ -8,7 +8,7 @@ namespace AppManager.Core.Actions
     {
         string Description { get; }
         ActionModel Model { get; }
-        Task<bool> ExecuteAsync();
+        Task<bool> ExecuteActionAsync();
         bool CanExecute();
         
         // Condition management

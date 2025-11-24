@@ -23,9 +23,11 @@ namespace AppManager.Core.Actions
             return !string.IsNullOrEmpty(_Model?.AppName) && GetTargetProcesses(_Model).Any();
         }
 
-        public override async Task<bool> ExecuteAsync()
+        protected override Task<bool> ExecuteAsync()
         {
-            if (_Model == null || string.IsNullOrEmpty(_Model.AppName))
+            return Task<bool>.Run(() =>
+            {
+                if (_Model == null || string.IsNullOrEmpty(_Model.AppName))
             {
                 Debug.WriteLine("Invalid ActionModel or AppName is null/empty");
                 return false;
@@ -88,6 +90,7 @@ namespace AppManager.Core.Actions
                 Debug.WriteLine($"Failed to minimize {_Model.AppName}: {ex.Message}");
                 return false;
             }
+                });
         }
 
         private Process[] GetTargetProcesses(ActionModel model)

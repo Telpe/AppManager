@@ -48,7 +48,7 @@ namespace AppManager.Core.Actions
             return CanExecuteAction();
         }
 
-        public abstract Task<bool> ExecuteAsync();
+        protected abstract Task<bool> ExecuteAsync();
 
         protected virtual bool CanExecuteAction() { return true; }
 
@@ -66,6 +66,18 @@ namespace AppManager.Core.Actions
             }
 
             return true;
+        }
+
+        public Task<bool> ExecuteActionAsync()
+        {
+            if (!CanExecute())
+            {
+                return Task.FromResult(false);
+            }
+            else
+            {
+                return ExecuteAsync();
+            }
         }
 
         public void AddCondition(ConditionModel conditionModel)

@@ -11,7 +11,7 @@ namespace AppManager.Core.Triggers
         public override string Description => "Monitors UI button clicks";
 
         private TriggerModel _parameters;
-        private Button _monitoredButton;
+        private System.Windows.Controls.Button _monitoredButton;
 
         public ButtonTrigger(string name = null) : base(name)
         {
@@ -31,7 +31,7 @@ namespace AppManager.Core.Triggers
             {
                 _parameters = parameters;
 
-                if (parameters.CustomProperties.TryGetValue("Button", out var buttonObj) && buttonObj is Button button)
+                if (parameters.CustomProperties.TryGetValue("Button", out var buttonObj) && buttonObj is System.Windows.Controls.Button button)
                 {
                     _monitoredButton = button;
                     _monitoredButton.Click += OnButtonClicked;

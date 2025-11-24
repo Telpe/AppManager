@@ -17,9 +17,11 @@ namespace AppManager.Core.Actions
             return closeAction.CanExecute() && launchAction.CanExecute();
         }
 
-        public override async Task<bool> ExecuteAsync()
+        protected override Task<bool> ExecuteAsync()
         {
-            if (_Model == null || string.IsNullOrEmpty(_Model.AppName))
+            return Task<bool>.Run(async () =>
+            {
+                if (_Model == null || string.IsNullOrEmpty(_Model.AppName))
             {
                 System.Diagnostics.Debug.WriteLine("Invalid ActionModel or AppName is null/empty");
                 return false;
@@ -36,7 +38,7 @@ namespace AppManager.Core.Actions
             var launchAction = new LaunchAction(_Model);
 
             // First close the application
-            bool closed = await closeAction.ExecuteAsync();
+            bool closed = await closeAction.ExecuteActionAsync();
             
             if (!closed)
             {
@@ -48,7 +50,7 @@ namespace AppManager.Core.Actions
             await Task.Delay(1000);
 
             // Then launch it again
-            bool launched = await launchAction.ExecuteAsync();
+            bool launched = await launchAction.ExecuteActionAsync();
             
             if (!launched)
             {
@@ -58,6 +60,7 @@ namespace AppManager.Core.Actions
 
             System.Diagnostics.Debug.WriteLine($"Successfully restarted: {_Model.AppName}");
             return true;
+                });
         }
     }
 }

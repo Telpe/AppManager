@@ -14,63 +14,82 @@ namespace AppManager.Core.Actions
 
         protected override bool CanExecuteAction()
         {
-            if (string.IsNullOrEmpty(_Model?.AppName)) { return false; }
+            if (String.IsNullOrEmpty(_Model?.AppName)) { return false; }
 
-            // Check if executable path is provided and exists
-            if (_Model.ExecutablePath != null) { return FileManager.FileExists(_Model.ExecutablePath); }
+            SetExecutablePath();
 
-            // Try to find the executable in common locations using FileManager
-            return FileManager.FindExecutable(_Model.AppName) != null;
+            return !String.IsNullOrEmpty(_Model.ExecutablePath);
         }
 
-        public override async Task<bool> ExecuteAsync()
+        private void SetExecutablePath()
         {
-            if (_Model == null || string.IsNullOrEmpty(_Model.AppName))
+            if (File.Exists(_Model.ExecutablePath)){ return; }
+
+            string[] executablePaths = Array.Empty<string>();
+
+            if (String.IsNullOrEmpty(_Model.ExecutablePath))
             {
-                Debug.WriteLine("Invalid ActionModel or AppName is null/empty");
-                return false;
+                executablePaths = FileManager.FindExecutables(_Model.AppName);
+
+            }
+            else
+            {
+                executablePaths = FileManager.FindExecutables(_Model.AppName, [_Model.ExecutablePath]);
             }
 
-            // Check conditions before executing
-            if (!CheckConditions())
+            if (executablePaths.Length == 1)
             {
-                Debug.WriteLine($"Conditions not met for launching {_Model.AppName}");
-                return false;
+                _Model.ExecutablePath = executablePaths[0];
+                return;
             }
 
-            try
+            
+            if (executablePaths.Length > 1)
             {
-                string executablePath = _Model.ExecutablePath ?? FileManager.FindExecutable(_Model.AppName);
-                
-                if (string.IsNullOrEmpty(executablePath))
+                string[] newExecutablePaths = executablePaths.Where(p => _Model.AppName == Path.GetFileNameWithoutExtension(p)).ToArray();
+
+                if (0 < newExecutablePaths.Length) 
+                { 
+                    _Model.ExecutablePath = newExecutablePaths[0]; 
+                    return;
+                }
+
+                _Model.ExecutablePath = String.Empty;
+                Debug.WriteLine($"Could not find executable for: {_Model.AppName}");
+            }
+
+        }
+
+        protected override Task<bool> ExecuteAsync()
+        {
+            return Task.Run(() =>
+            {
+                try
                 {
-                    Debug.WriteLine($"Could not find executable for: {_Model.AppName}");
+                    var startInfo = new ProcessStartInfo
+                    {
+                        FileName = _Model.ExecutablePath,
+                        Arguments = _Model.Arguments ?? string.Empty,
+                        UseShellExecute = true
+                    };
+
+                    var process = Process.Start(startInfo);
+
+                    if (process != null)
+                    {
+                        Debug.WriteLine($"Successfully launched: {_Model.AppName}");
+                        return true;
+                    }
+
+                    Debug.WriteLine($"Failed to launch {_Model.AppName}");
                     return false;
                 }
-
-                var startInfo = new ProcessStartInfo
+                catch (Exception ex)
                 {
-                    FileName = executablePath,
-                    Arguments = _Model.Arguments ?? string.Empty,
-                    UseShellExecute = true
-                };
-
-                var process = Process.Start(startInfo);
-                
-                if (process != null)
-                {
-                    Debug.WriteLine($"Successfully launched: {_Model.AppName}");
-                    return true;
+                    Debug.WriteLine($"Failed to launch {_Model.AppName}: {ex.Message}");
+                    return false;
                 }
-
-                Debug.WriteLine($"Failed to launch {_Model.AppName}");
-                return false;
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Failed to launch {_Model.AppName}: {ex.Message}");
-                return false;
-            }
+            });
         }
     }
 }

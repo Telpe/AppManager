@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Windows;
@@ -63,49 +64,53 @@ namespace AppManager.Core.Utils
         // File Dialog Operations
         public static string ShowOpenFileDialog(string filter = "All files (*.*)|*.*", string title = "Select File")
         {
-            var dialog = new OpenFileDialog
+            var dialog = new Microsoft.Win32.OpenFileDialog
             {
                 Filter = filter,
                 Title = title
             };
-            return dialog.ShowDialog() == true ? dialog.FileName : null;
+            return dialog.ShowDialog() == true ? dialog.FileName : String.Empty;
         }
 
         public static string ShowSaveFileDialog(string filter = "All files (*.*)|*.*", string title = "Save File")
         {
-            var dialog = new SaveFileDialog
+            var dialog = new Microsoft.Win32.SaveFileDialog
             {
                 Filter = filter,
                 Title = title
             };
-            return dialog.ShowDialog() == true ? dialog.FileName : null;
+            return dialog.ShowDialog() == true ? dialog.FileName : String.Empty;
         }
 
         // File System Operations
         public static bool FileExists(string path) => !string.IsNullOrEmpty(path) && File.Exists(path);
         
-        public static string FindExecutable(string appName, string[] searchPaths = null)
+        public static string[] FindExecutables(string appName, string[]? searchPaths = null)
         {
             string[] extensions = { ".exe", ".bat", ".cmd", ".msi" };
             searchPaths ??= GetDefaultSearchPaths();
+            var results = new List<string>();
 
             foreach (string basePath in searchPaths)
             {
-                foreach (string ext in extensions)
+                try
                 {
-                    try
+                    foreach (string ext in extensions)
                     {
                         string pattern = $"*{appName}*{ext}";
                         var files = Directory.GetFiles(basePath, pattern, SearchOption.AllDirectories);
-                        if (files.Length > 0) { return files[0]; }
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine($"Error searching in {basePath}: {ex.Message}");
+                        if (files?.Length > 0) 
+                        { 
+                            results.AddRange(files); 
+                        }
                     }
                 }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error searching in {basePath}: {ex.Message}");
+                }
             }
-            return null;
+            return results.ToArray();
         }
 
         // Browser Shortcuts Operations
@@ -237,7 +242,7 @@ namespace AppManager.Core.Utils
             }
         }
 
-        private static BitmapSource ExtractIconFromExecutable(string executablePath)
+        public static BitmapSource ExtractIconFromExecutable(string executablePath)
         {
             try
             {
@@ -269,7 +274,7 @@ namespace AppManager.Core.Utils
             return null;
         }
 
-        private static ImageSource ExtractIconFromShortcut(string shortcutPath)
+        public static ImageSource ExtractIconFromShortcut(string shortcutPath)
         {
             try
             {
@@ -284,7 +289,7 @@ namespace AppManager.Core.Utils
             return null;
         }
 
-        private static string ResolveShortcutTarget(string shortcutPath)
+        public static string ResolveShortcutTarget(string shortcutPath)
         {
             try
             {
@@ -344,9 +349,12 @@ namespace AppManager.Core.Utils
             var pathEnv = Environment.GetEnvironmentVariable("PATH")?.Split(Path.PathSeparator) ?? Array.Empty<string>();
             var commonPaths = new[]
             {
+#if DEBUG
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), $"source{Path.DirectorySeparatorChar}repos{Path.DirectorySeparatorChar}telpe{Path.DirectorySeparatorChar}AppManager{Path.DirectorySeparatorChar}AppManager{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}Debug{Path.DirectorySeparatorChar}net8.0-windows10.0.22000.0"),
+#endif
+                AppDomain.CurrentDomain.BaseDirectory,
                 Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
-                Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)
+                Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86)
             };
             
             return pathEnv.Concat(commonPaths).ToArray();

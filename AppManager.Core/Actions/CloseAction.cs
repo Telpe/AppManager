@@ -13,81 +13,60 @@ namespace AppManager.Core.Actions
 
         public CloseAction(ActionModel model) : base(model) { }
 
-        public override async Task<bool> ExecuteAsync()
+        protected override Task<bool> ExecuteAsync()
         {
-            if (_Model == null || string.IsNullOrEmpty(_Model.AppName))
+            return Task<bool>.Run(() =>
             {
-                Debug.WriteLine("Invalid ActionModel or AppName is null/empty");
-                return false;
-            }
-
-            // Check conditions before executing
-            if (!CheckConditions())
-            {
-                Debug.WriteLine($"Conditions not met for closing {_Model.AppName}");
-                return false;
-            }
-
-            try
-            {
-                var processes = GetProcesses(_Model);
-                
-                if (!processes.Any())
+                try
                 {
-                    Debug.WriteLine($"No processes found for: {_Model.AppName}");
-                    return false;
-                }
-
-                bool allClosed = true;
+                    var processes = GetProcesses(_Model);
                 
-                foreach (var process in processes)
-                {
-                    try
+                    if (!processes.Any())
                     {
-                        if (_Model.ForceOperation)
+                        Debug.WriteLine($"No processes found for: {_Model.AppName}");
+                        return false;
+                    }
+
+                    bool allClosed = true;
+                
+                    foreach (var process in processes)
+                    {
+                        try
                         {
-                            process.Kill();
-                            Debug.WriteLine($"Force killed process: {process.ProcessName} (ID: {process.Id})");
-                        }
-                        else
-                        {
-                            if (!process.CloseMainWindow())
+                            process.CloseMainWindow();
+
+                            if (!process.WaitForExit(_Model.TimeoutMs))
                             {
-                                // If graceful close fails, wait a bit then force close
-                                await Task.Delay(2500);
-                                if (!process.HasExited)
+                                Debug.WriteLine($"Process failed to close gracefully: {process.ProcessName} (ID: {process.Id})");
+                                if (_Model.ForceOperation)
                                 {
                                     process.Kill();
-                                    Debug.WriteLine($"Force killed process after graceful close failed: {process.ProcessName} (ID: {process.Id})");
+                                    Debug.WriteLine($"Force closing: {process.ProcessName} (ID: {process.Id})");
                                 }
                             }
-                            else
-                            {
-                                Debug.WriteLine($"Gracefully closed process: {process.ProcessName} (ID: {process.Id})");
-                            }
-                        }
 
-                        // Wait for process to exit
-                        if (!process.WaitForExit(_Model.TimeoutMs))
+                            if (!process.HasExited) 
+                            {
+                                Debug.WriteLine($"Failed to close process {process.ProcessName}: {process.Id}");
+                                allClosed = false;
+                            }
+
+                        }
+                        catch (Exception ex)
                         {
-                            Debug.WriteLine($"Process {process.ProcessName} did not exit within timeout");
+                            Debug.WriteLine($"Failed to close process {process.ProcessName}: {ex.Message}");
                             allClosed = false;
                         }
                     }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine($"Failed to close process {process.ProcessName}: {ex.Message}");
-                        allClosed = false;
-                    }
-                }
 
-                return allClosed;
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Failed to close {_Model.AppName}: {ex.Message}");
-                return false;
-            }
+                    return allClosed;
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Failed to close {_Model.AppName}: {ex.Message}");
+                    return false;
+                }
+            });
         }
 
         private Process[] GetProcesses(ActionModel model)

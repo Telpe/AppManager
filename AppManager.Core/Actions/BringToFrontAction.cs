@@ -37,9 +37,11 @@ namespace AppManager.Core.Actions
             return !string.IsNullOrEmpty(_Model?.AppName) && GetTargetProcess(_Model) != null;
         }
 
-        public override async Task<bool> ExecuteAsync()
+        protected override Task<bool> ExecuteAsync()
         {
-            if (_Model == null || string.IsNullOrEmpty(_Model.AppName))
+            return Task<bool>.Run(async () =>
+            {
+                if (_Model == null || string.IsNullOrEmpty(_Model.AppName))
             {
                 Debug.WriteLine("Invalid ActionModel or AppName is null/empty");
                 return false;
@@ -98,6 +100,7 @@ namespace AppManager.Core.Actions
                 Debug.WriteLine($"Failed to bring to front {_Model.AppName}: {ex.Message}");
                 return false;
             }
+                });
         }
 
         private Process GetTargetProcess(ActionModel model)

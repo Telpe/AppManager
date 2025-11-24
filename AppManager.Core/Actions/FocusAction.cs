@@ -30,68 +30,58 @@ namespace AppManager.Core.Actions
             return !string.IsNullOrEmpty(_Model?.AppName) && GetTargetProcess(_Model) != null;
         }
 
-        public override async Task<bool> ExecuteAsync()
+        protected override Task<bool> ExecuteAsync()
         {
-            if (_Model == null || string.IsNullOrEmpty(_Model.AppName))
+            return Task<bool>.Run(() =>
             {
-                Debug.WriteLine("Invalid ActionModel or AppName is null/empty");
-                return false;
-            }
-
-            // Check conditions before executing
-            if (!CheckConditions())
-            {
-                Debug.WriteLine($"Conditions not met for focusing {_Model.AppName}");
-                return false;
-            }
-
-            try
-            {
-                var process = GetTargetProcess(_Model);
-                
-                if (process == null)
+                try
                 {
-                    Debug.WriteLine($"No process found to focus: {_Model.AppName}");
+                    var process = GetTargetProcess(_Model);
+                
+                    if (process == null)
+                    {
+                        Debug.WriteLine($"No process found to focus: {_Model.AppName}");
+                        return false;
+                    }
+
+                    IntPtr mainWindowHandle = process.MainWindowHandle;
+                
+                    if (mainWindowHandle == IntPtr.Zero)
+                    {
+                        Debug.WriteLine($"No main window found for process: {process.ProcessName}");
+                        return false;
+                    }
+
+                    // If window is minimized, restore it first
+                    if (IsIconic(mainWindowHandle))
+                    {
+                        ShowWindow(mainWindowHandle, SW_RESTORE);
+                    }
+                    else
+                    {
+                        ShowWindow(mainWindowHandle, SW_SHOW);
+                    }
+
+                    // Bring window to foreground
+                    bool success = SetForegroundWindow(mainWindowHandle);
+                
+                    if (success)
+                    {
+                        Debug.WriteLine($"Successfully focused window for: {_Model.AppName}");
+                    }
+                    else
+                    {
+                        Debug.WriteLine($"Failed to focus window for: {_Model.AppName}");
+                    }
+
+                    return success;
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Failed to focus {_Model.AppName}: {ex.Message}");
                     return false;
                 }
-
-                IntPtr mainWindowHandle = process.MainWindowHandle;
-                
-                if (mainWindowHandle == IntPtr.Zero)
-                {
-                    Debug.WriteLine($"No main window found for process: {process.ProcessName}");
-                    return false;
-                }
-
-                // If window is minimized, restore it first
-                if (IsIconic(mainWindowHandle))
-                {
-                    ShowWindow(mainWindowHandle, SW_RESTORE);
-                }
-                else
-                {
-                    ShowWindow(mainWindowHandle, SW_SHOW);
-                }
-
-                // Bring window to foreground
-                bool success = SetForegroundWindow(mainWindowHandle);
-                
-                if (success)
-                {
-                    Debug.WriteLine($"Successfully focused window for: {_Model.AppName}");
-                }
-                else
-                {
-                    Debug.WriteLine($"Failed to focus window for: {_Model.AppName}");
-                }
-
-                return success;
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Failed to focus {_Model.AppName}: {ex.Message}");
-                return false;
-            }
+            });
         }
 
         private Process GetTargetProcess(ActionModel model)

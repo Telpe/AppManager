@@ -9,28 +9,32 @@ namespace AppManager.Core.Actions
 {
     public abstract class BaseAction : IAppAction
     {
+        public string AppName { get; set; }
+        public AppActionEnum ActionName { get; }
+
         private ICondition[] _Conditions = Array.Empty<ICondition>();
-        protected readonly ActionModel _Model;
 
         public abstract string Description { get; }
-        public ActionModel Model => _Model;
         public ICondition[] Conditions 
         {
-            get { return _Conditions; }
+            get => _Conditions;
         }
 
-        protected BaseAction(ActionModel model)
+        public BaseAction(ActionModel model)
         {
-            _Model = model ?? throw new ArgumentNullException(nameof(model));
-            InitializeConditions();
+            AppName = model.AppName;
+
+            ActionName = model.ActionName;
+
+            InitializeConditions(model);
         }
 
-        private void InitializeConditions()
+        protected void InitializeConditions(ActionModel model)
         {
-            if (_Model.Conditions != null && _Model.Conditions.Length > 0)
+            if (model.Conditions != null && model.Conditions.Length > 0)
             {
                 var conditions = new List<ICondition>();
-                foreach (var conditionModel in _Model.Conditions)
+                foreach (var conditionModel in model.Conditions)
                 {
                     var condition = ConditionFactory.CreateCondition(conditionModel);
                     if (condition != null) { conditions.Add(condition); }
@@ -47,6 +51,8 @@ namespace AppManager.Core.Actions
             // Then check action-specific logic
             return CanExecuteAction();
         }
+
+        public abstract ActionModel ToModel();
 
         protected abstract Task<bool> ExecuteAsync();
 
@@ -85,83 +91,62 @@ namespace AppManager.Core.Actions
             if (null == conditionModel) { return; }
 
             var condition = ConditionFactory.CreateCondition(conditionModel);
-            if (condition != null)
-            {
-                _Conditions = _Conditions.Append(condition).ToArray();
-            }
+
+            AddCondition(condition);
         }
 
         public void AddCondition(ICondition condition)
         {
-            if (condition != null && !_Conditions.Contains(condition))
+            if (null == condition) { return; }
+
+            if (_Conditions.Contains(condition))
             {
-                _Conditions = _Conditions.Append(condition).ToArray();
+                throw new InvalidOperationException("Condition already exists in the action.");
             }
+
+            _Conditions = [.._Conditions, condition];
         }
 
         public void AddConditions(ConditionModel[] conditionModels)
         {
-            if (null == conditionModels || conditionModels.Length == 0)
+            if (null == conditionModels) { return; }
+            
+            foreach (var conditionModel in conditionModels)
             {
-                System.Diagnostics.Debug.WriteLine("conditionModels array must be provided and cannot be empty");
-                return;
+                AddCondition(conditionModel);
             }
-
-            for (int i = 0; i < conditionModels.Length; i++)
-            {
-                AddCondition(conditionModels[i]);
-            }
+            
         }
 
         public void AddConditions(ICondition[] conditions)
         {
-            if (conditions != null)
+            if (null == conditions) { return; }
+            
+            foreach(ICondition condition in conditions)
             {
-                foreach (var condition in conditions)
-                {
-                    AddCondition(condition);
-                }
+                AddCondition(condition);
             }
+            
         }
 
         public bool RemoveCondition(ICondition condition)
         {
-            if (condition == null) { return false; }
-
-            var conditionArray = _Conditions.ToList();
-            bool removed = conditionArray.Remove(condition);
-            
-            if (removed)
-            {
-                _Conditions = conditionArray.ToArray();
-                
-                // Also remove from the model's conditions array
-                _Model.RemoveCondition(condition.Model);
-            }
-
-            return removed;
+            int conditions = _Conditions.Length;
+            _Conditions = _Conditions.Where(c => c != condition).ToArray();
+            return _Conditions.Length < conditions;
         }
 
         public bool RemoveCondition(int conditionIndex)
         {
-            if (conditionIndex < 0 || conditionIndex >= _Conditions.Length)
-            {
-                return false;
-            }
-
-            var conditionToRemove = _Conditions[conditionIndex];
-            _Conditions = _Conditions.Where((c, i) => i != conditionIndex).ToArray();
-            
-            // Also remove from the model's conditions array
-            _Model.RemoveCondition(conditionToRemove.Model);
-            
-            return true;
+            int conditions = _Conditions.Length;
+            _Conditions = _Conditions.Where((c,i) => i != conditionIndex).ToArray();
+            return _Conditions.Length < conditions;
         }
 
         public void ClearConditions()
         {
             _Conditions = Array.Empty<ICondition>();
-            _Model.ClearConditions();
         }
+
     }
 }

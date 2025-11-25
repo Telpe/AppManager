@@ -45,12 +45,14 @@ namespace AppManager.Core.Actions
             
         }
 
-        public bool CanExecuteAction(AppActionEnum actionName, string appName, ActionModel? parameters = null)
+        public bool CanExecuteAction(AppActionEnum actionName, string appName)
         {
-            var model = parameters ?? new ActionModel();
-            model.ActionName = actionName;
-            model.AppName = appName;
-            
+            ActionModel model = new()
+            {
+                ActionName = actionName,
+                AppName = appName
+            };
+
             return CanExecuteAction(model);
         }
 
@@ -74,23 +76,28 @@ namespace AppManager.Core.Actions
             }
         }
 
-        public Task<bool> ExecuteActionAsync(AppActionEnum actionName, string appName, ActionModel? parameters = null)
+        public Task<bool> ExecuteActionAsync(AppActionEnum actionName, string appName)
         {
-            var model = parameters ?? new ActionModel();
-            model.ActionName = actionName;
-            model.AppName = appName;
-            
+            ActionModel model = new()
+            {
+                ActionName = actionName,
+                AppName = appName
+            };
+
             return ExecuteActionAsync(model);
         }
 
-        public Dictionary<string, Task<bool>> ExecuteMultipleActionsAsync(IEnumerable<ActionModel> actions)
+        public Task<bool>[] ExecuteMultipleActionsAsync(IEnumerable<ActionModel> actions)
         {
-            var results = new Dictionary<string, Task<bool>>();
-            
-            foreach (var model in actions)
+            int n = actions.Count();
+            if (n == 0) { return Array.Empty<Task<bool>>(); }
+            var results = new Task<bool>[n];
+
+            int i = 0;
+            foreach (ActionModel model in actions)
             {
-                var key = $"{model.ActionName}_{model.AppName}";
-                results[key] = ExecuteActionAsync(model);
+                results[i] = ExecuteActionAsync(model);
+                i++;
             }
 
             return results;

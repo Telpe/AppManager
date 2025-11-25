@@ -2,6 +2,7 @@ using AppManager.Core.Actions;
 using AppManager.Core.Conditions;
 using System;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace AppManager.Core.Models
 {
@@ -94,6 +95,8 @@ namespace AppManager.Core.Models
         {
             Conditions = Array.Empty<ConditionModel>();
         }
+
+        
 
         public ActionModel Clone()
         {

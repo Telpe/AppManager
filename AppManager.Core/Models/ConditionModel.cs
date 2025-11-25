@@ -7,7 +7,8 @@ namespace AppManager.Core.Models
     public class ConditionModel
     {
         public ConditionTypeEnum ConditionType { get; set; }
-        
+        public bool IsNot { get; set; } = false;
+
         // Process-related parameters
         public string ProcessName { get; set; }
         public string ExecutablePath { get; set; }
@@ -19,9 +20,9 @@ namespace AppManager.Core.Models
         // Window-related parameters
         public string WindowTitle { get; set; }
         public string WindowClassName { get; set; }
-        
+
         // Network-related parameters
-        public int Port { get; set; }
+        public int Port { get; set; } = 9011;
         public string IPAddress { get; set; } = "127.0.0.1";
         
         // Time-related parameters

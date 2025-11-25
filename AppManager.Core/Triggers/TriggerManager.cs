@@ -98,7 +98,7 @@ namespace AppManager.Core.Triggers
                 System.Diagnostics.Debug.WriteLine($"Trigger '{e.TriggerName}' activated - executing action '{e.ActionToExecute}' on '{e.TargetAppName}'");
 
                 // Execute the associated action
-                bool success = await _actionManager.ExecuteActionAsync(e.ActionToExecute, e.TargetAppName, e.ActionParameters);
+                bool success = await _actionManager.ExecuteActionAsync(e.ActionParameters);
                 
                 if (success)
                 {

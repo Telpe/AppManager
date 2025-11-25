@@ -11,6 +11,9 @@ namespace AppManager.Core.Actions
     {
         public override string Description => "Brings an application window to the foreground";
 
+        public bool IncludeSimilarNames { get; set; }
+        public string WindowTitle { get; set; }
+
         [DllImport("user32.dll")]
         private static extern bool SetForegroundWindow(IntPtr hWnd);
 
@@ -23,11 +26,16 @@ namespace AppManager.Core.Actions
         private const int SW_RESTORE = 9;
         private const int SW_SHOW = 5;
 
-        public FocusAction(ActionModel model) : base(model) { }
+        public FocusAction(ActionModel model) : base(model)
+        {
+            IncludeSimilarNames = model.IncludeSimilarNames;
+            WindowTitle = model.WindowTitle;
+
+        }
 
         protected override bool CanExecuteAction()
         {
-            return !string.IsNullOrEmpty(_Model?.AppName) && GetTargetProcess(_Model) != null;
+            return !string.IsNullOrEmpty(AppName);
         }
 
         protected override Task<bool> ExecuteAsync()
@@ -36,11 +44,11 @@ namespace AppManager.Core.Actions
             {
                 try
                 {
-                    var process = GetTargetProcess(_Model);
+                    var process = GetTargetProcess();
                 
                     if (process == null)
                     {
-                        Debug.WriteLine($"No process found to focus: {_Model.AppName}");
+                        Debug.WriteLine($"No process found to focus: {AppName}");
                         return false;
                     }
 
@@ -67,48 +75,48 @@ namespace AppManager.Core.Actions
                 
                     if (success)
                     {
-                        Debug.WriteLine($"Successfully focused window for: {_Model.AppName}");
+                        Debug.WriteLine($"Successfully focused window for: {AppName}");
                     }
                     else
                     {
-                        Debug.WriteLine($"Failed to focus window for: {_Model.AppName}");
+                        Debug.WriteLine($"Failed to focus window for: {AppName}");
                     }
 
                     return success;
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"Failed to focus {_Model.AppName}: {ex.Message}");
+                    Debug.WriteLine($"Failed to focus {AppName}: {ex.Message}");
                     return false;
                 }
             });
         }
 
-        private Process GetTargetProcess(ActionModel model)
+        private Process GetTargetProcess()
         {
             try
             {
                 Process[] processes;
                 
-                if (model.IncludeSimilarNames)
+                if (IncludeSimilarNames)
                 {
                     processes = Process.GetProcesses()
-                        .Where(p => p.ProcessName.IndexOf(model.AppName, StringComparison.OrdinalIgnoreCase) >= 0)
+                        .Where(p => p.ProcessName.IndexOf(AppName, StringComparison.OrdinalIgnoreCase) >= 0)
                         .Where(p => p.MainWindowHandle != IntPtr.Zero)
                         .ToArray();
                 }
                 else
                 {
-                    processes = Process.GetProcessesByName(model.AppName)
+                    processes = Process.GetProcessesByName(AppName)
                         .Where(p => p.MainWindowHandle != IntPtr.Zero)
                         .ToArray();
                 }
 
                 // If window title is specified, filter by it
-                if (!string.IsNullOrEmpty(model.WindowTitle))
+                if (!string.IsNullOrEmpty(WindowTitle))
                 {
                     processes = processes
-                        .Where(p => p.MainWindowTitle.IndexOf(model.WindowTitle, StringComparison.OrdinalIgnoreCase) >= 0)
+                        .Where(p => p.MainWindowTitle.IndexOf(WindowTitle, StringComparison.OrdinalIgnoreCase) >= 0)
                         .ToArray();
                 }
 
@@ -117,9 +125,21 @@ namespace AppManager.Core.Actions
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error finding process for focusing {model.AppName}: {ex.Message}");
+                Debug.WriteLine($"Error finding process for focusing {AppName}: {ex.Message}");
                 return null;
             }
+        }
+
+        public override ActionModel ToModel()
+        {
+            return new ActionModel
+            {
+                AppName = AppName,
+                ActionName = ActionName,
+                IncludeSimilarNames = IncludeSimilarNames,
+                WindowTitle = WindowTitle,
+                Conditions = Conditions.Select(c => c.ToModel()).ToArray()
+            };
         }
     }
 }

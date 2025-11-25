@@ -6,7 +6,7 @@ namespace AppManager.Core.Conditions
     public abstract class BaseCondition : ICondition
     {
         public string Id { get; } = Guid.NewGuid().ToString();
-        public abstract ConditionTypeEnum ConditionType { get; }
+        public ConditionTypeEnum ConditionType { get => Model.ConditionType; }
         public abstract string Description { get; }
         public ConditionModel Model { get; set; }
 

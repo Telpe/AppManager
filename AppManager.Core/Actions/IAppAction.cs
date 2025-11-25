@@ -6,8 +6,9 @@ namespace AppManager.Core.Actions
 {
     public interface IAppAction
     {
+        public string AppName { get; set; }
+        public AppActionEnum ActionName { get; }
         string Description { get; }
-        ActionModel Model { get; }
         Task<bool> ExecuteActionAsync();
         bool CanExecute();
         
@@ -19,5 +20,9 @@ namespace AppManager.Core.Actions
         void AddConditions(ICondition[] conditions);
         bool RemoveCondition(ICondition condition);
         void ClearConditions();
+
+        ActionModel ToModel();
+
+
     }
 }

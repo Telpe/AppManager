@@ -6,14 +6,13 @@ namespace AppManager.Core.Conditions
 {
     public static class ConditionFactory
     {
-        private static readonly Dictionary<ConditionTypeEnum, Func<ConditionModel, ICondition>> _conditionFactories =
-            new Dictionary<ConditionTypeEnum, Func<ConditionModel, ICondition>>
-            {
-                { ConditionTypeEnum.ProcessRunning, (model) => new ProcessRunningCondition(){ Model=model } },
-                { ConditionTypeEnum.ProcessNotRunning, (model) => new ProcessNotRunningCondition(){ Model=model } },
-                { ConditionTypeEnum.FileExists, (model) => new FileExistsCondition(){ Model=model } },
-                { ConditionTypeEnum.FileNotExists, (model) => new FileNotExistsCondition(){ Model=model } }
-            };
+        private static readonly Dictionary<ConditionTypeEnum, Func<ConditionModel, ICondition>> _conditionFactories = new Dictionary<ConditionTypeEnum, Func<ConditionModel, ICondition>>
+        {
+            { ConditionTypeEnum.ProcessRunning, (model) => new ProcessRunningCondition(){ Model=model } },
+            { ConditionTypeEnum.ProcessNotRunning, (model) => new ProcessNotRunningCondition(){ Model=model } },
+            { ConditionTypeEnum.FileExists, (model) => new FileExistsCondition(){ Model=model } },
+            { ConditionTypeEnum.FileNotExists, (model) => new FileNotExistsCondition(){ Model=model } }
+        };
 
         public static ICondition CreateCondition(ConditionModel model)
         {

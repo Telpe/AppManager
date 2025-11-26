@@ -18,7 +18,7 @@ namespace AppManager
     /// </summary>
     public partial class App : Application
     {
-        private static GlobalKeyboardHook _GlobalKeyboardHook;
+        private static GlobalKeyboardHook GlobalKeyboardHookStored;
 
         private static Dictionary<string,string> UnsavedPages = new();
 
@@ -134,11 +134,11 @@ namespace AppManager
         public static void buttonHook_Click(object sender, EventArgs e)
         {
             // Hooks only into specified Keys (here "A" and "B").
-            _GlobalKeyboardHook = new GlobalKeyboardHook(new Key[] { Key.A, Key.B });
+            GlobalKeyboardHookStored = new GlobalKeyboardHook(new Key[] { Key.A, Key.B });
 
             // Hooks into all keys.
-            _GlobalKeyboardHook = new GlobalKeyboardHook();
-            _GlobalKeyboardHook.KeyboardPressed += OnKeyPressed;
+            GlobalKeyboardHookStored = new GlobalKeyboardHook();
+            GlobalKeyboardHookStored.KeyboardPressed += OnKeyPressed;
         }
 
         internal static void OnKeyPressed(object sender, GlobalKeyboardHookEventArgs e)

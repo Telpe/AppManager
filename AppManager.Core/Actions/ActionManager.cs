@@ -12,22 +12,22 @@ namespace AppManager.Core.Actions
         {
         }
 
-        public IEnumerable<AppActionEnum> GetAvailableActions()
+        public IEnumerable<AppActionTypeEnum> GetAvailableActions()
         {
-            return Enum.GetValues(typeof(AppActionEnum)).Cast<AppActionEnum>();
+            return Enum.GetValues(typeof(AppActionTypeEnum)).Cast<AppActionTypeEnum>();
         }
 
         private IAppAction CreateAction(ActionModel model)
         {
-            return model.ActionName switch
+            return model.ActionType switch
             {
-                AppActionEnum.Launch => new LaunchAction(model),
-                AppActionEnum.Close => new CloseAction(model),
-                AppActionEnum.Restart => new RestartAction(model),
-                AppActionEnum.Focus => new FocusAction(model),
-                AppActionEnum.BringToFront => new BringToFrontAction(model),
-                AppActionEnum.Minimize => new MinimizeAction(model),
-                _ => throw new Exception($"Action not found: {model.ActionName}")
+                AppActionTypeEnum.Launch => new LaunchAction(model),
+                AppActionTypeEnum.Close => new CloseAction(model),
+                AppActionTypeEnum.Restart => new RestartAction(model),
+                AppActionTypeEnum.Focus => new FocusAction(model),
+                AppActionTypeEnum.BringToFront => new BringToFrontAction(model),
+                AppActionTypeEnum.Minimize => new MinimizeAction(model),
+                _ => throw new Exception($"Action not found: {model.ActionType}")
             };
         }
 
@@ -45,11 +45,11 @@ namespace AppManager.Core.Actions
             
         }
 
-        public bool CanExecuteAction(AppActionEnum actionName, string appName)
+        public bool CanExecuteAction(AppActionTypeEnum actionName, string appName)
         {
             ActionModel model = new()
             {
-                ActionName = actionName,
+                ActionType = actionName,
                 AppName = appName
             };
 
@@ -71,16 +71,17 @@ namespace AppManager.Core.Actions
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error executing action {model.ActionName} on {model.AppName}: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Error executing action {model.ActionType} on {model.AppName}: {ex.Message}");
                 return Task.FromResult(false);
             }
+            
         }
 
-        public Task<bool> ExecuteActionAsync(AppActionEnum actionName, string appName)
+        public Task<bool> ExecuteActionAsync(AppActionTypeEnum actionName, string appName)
         {
             ActionModel model = new()
             {
-                ActionName = actionName,
+                ActionType = actionName,
                 AppName = appName
             };
 

@@ -7,69 +7,57 @@ namespace AppManager.Core.Triggers
 {
     internal class ButtonTrigger : BaseTrigger
     {
+        private bool _IsOn { get; set; } = false;
         public override TriggerTypeEnum TriggerType => TriggerTypeEnum.Button;
-        public override string Description => "Monitors UI button clicks";
 
-        private TriggerModel _parameters;
-        private System.Windows.Controls.Button _monitoredButton;
+        private System.Windows.Controls.Button MonitoredButtonStored;
 
-        public ButtonTrigger(string name = null) : base(name)
+        public Dictionary<string, object> CustomProperties { get; set; }
+
+        public ButtonTrigger(TriggerModel model) : base(model)
         {
+            Description = "Monitors UI button clicks";
+
+            CustomProperties = model.CustomProperties ?? [];
         }
 
-        public override bool CanStart(TriggerModel parameters = null)
+        public override bool CanStart()
         {
-            return parameters?.CustomProperties?.ContainsKey("Button") == true;
+            return CustomProperties.ContainsKey("Button") == true;
         }
 
-        public override async Task<bool> StartAsync(TriggerModel parameters = null)
+        public override Task<bool> StartAsync()
         {
-            if (IsActive || parameters == null)
-                return false;
-
-            try
+            return Task.Run<bool>(() =>
             {
-                _parameters = parameters;
+                if (!IsActive) { return false; }
 
-                if (parameters.CustomProperties.TryGetValue("Button", out var buttonObj) && buttonObj is System.Windows.Controls.Button button)
+                try
                 {
-                    _monitoredButton = button;
-                    _monitoredButton.Click += OnButtonClicked;
-                    
-                    IsActive = true;
-                    System.Diagnostics.Debug.WriteLine($"Button trigger '{Name}' started monitoring button '{button.Name}'");
-                    return true;
-                }
+                    if (CustomProperties.TryGetValue("Button", out var buttonObj) && buttonObj is System.Windows.Controls.Button button)
+                    {
+                        MonitoredButtonStored = button;
+                        MonitoredButtonStored.Click += OnButtonClicked;
 
-                return false;
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error starting button trigger '{Name}': {ex.Message}");
-                return false;
-            }
+                        System.Diagnostics.Debug.WriteLine($"Button trigger '{Name}' started monitoring button '{button.Name}'");
+                        return true;
+                    }
+
+                    return false;
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error starting button trigger '{Name}': {ex.Message}");
+                    return false;
+                }
+            });
         }
 
-        public override async Task<bool> StopAsync()
+        public override void Stop()
         {
-            if (!IsActive)
-                return true;
-
-            try
+            if (MonitoredButtonStored != null)
             {
-                if (_monitoredButton != null)
-                {
-                    _monitoredButton.Click -= OnButtonClicked;
-                }
-                
-                IsActive = false;
-                System.Diagnostics.Debug.WriteLine($"Button trigger '{Name}' stopped");
-                return true;
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error stopping button trigger '{Name}': {ex.Message}");
-                return false;
+                MonitoredButtonStored.Click -= OnButtonClicked;
             }
         }
 
@@ -78,13 +66,17 @@ namespace AppManager.Core.Triggers
             System.Diagnostics.Debug.WriteLine($"Button trigger '{Name}' activated");
             
             // Trigger the configured action
-            OnTriggerActivated("target_app", AppActionEnum.Launch, null, new { ButtonName = _monitoredButton?.Name });
+            OnTriggerActivated("target_app", AppActionTypeEnum.Launch, null, new { ButtonName = MonitoredButtonStored?.Name });
         }
 
-        public override void Dispose()
+        public override TriggerModel ToModel()
         {
-            _ = StopAsync();
-            base.Dispose();
+            return new TriggerModel
+            {
+                TriggerType = TriggerType,
+                IsActive = IsActive,
+                CustomProperties = CustomProperties
+            };
         }
     }
 }

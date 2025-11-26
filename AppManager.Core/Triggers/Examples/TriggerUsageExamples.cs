@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using AppManager.Core.Actions;
+using AppManager.Core.Models;
 
 namespace AppManager.Core.Triggers.Examples
 {
@@ -13,46 +14,61 @@ namespace AppManager.Core.Triggers.Examples
             var triggerManager = new TriggerManager(actionManager);
 
             // Example 1: Global shortcut (Ctrl+Shift+N) to launch Notepad
-            var shortcutTrigger = triggerManager.CreateTrigger(TriggerTypeEnum.Shortcut, "LaunchNotepad");
-            var shortcutParams = new TriggerModel
-            {
+            var shortcutModel = new TriggerModel 
+            { 
+                TriggerType = TriggerTypeEnum.Shortcut,
                 Key = Key.N,
-                Modifiers = ModifierKeys.Control | ModifierKeys.Shift
+                Modifiers = ModifierKeys.Control | ModifierKeys.Shift,
+                IsActive = true
             };
-            await triggerManager.RegisterTriggerAsync(shortcutTrigger, shortcutParams);
+            var shortcutTrigger = triggerManager.CreateTrigger(shortcutModel);
+            shortcutTrigger.Name = "LaunchNotepad";
+            triggerManager.RegisterTrigger(shortcutTrigger);
 
             // Example 2: Monitor for Chrome launch to auto-focus it
-            var chromeLaunchTrigger = triggerManager.CreateTrigger(TriggerTypeEnum.AppLaunch, "AutoFocusChrome");
-            var chromeParams = new TriggerModel
+            var chromeLaunchModel = new TriggerModel
             {
-                ProcessName = "chrome"
+                TriggerType = TriggerTypeEnum.AppLaunch,
+                ProcessName = "chrome",
+                IsActive = true
             };
-            await triggerManager.RegisterTriggerAsync(chromeLaunchTrigger, chromeParams);
+            var chromeLaunchTrigger = triggerManager.CreateTrigger(chromeLaunchModel);
+            chromeLaunchTrigger.Name = "AutoFocusChrome";
+            triggerManager.RegisterTrigger(chromeLaunchTrigger);
 
             // Example 3: Monitor for Steam close to launch Epic Games
-            var steamCloseTrigger = triggerManager.CreateTrigger(TriggerTypeEnum.AppClose, "SteamToEpic");
-            var steamParams = new TriggerModel
+            var steamCloseModel = new TriggerModel
             {
-                ProcessName = "Steam"
+                TriggerType = TriggerTypeEnum.AppClose,
+                ProcessName = "Steam",
+                IsActive = true
             };
-            await triggerManager.RegisterTriggerAsync(steamCloseTrigger, steamParams);
+            var steamCloseTrigger = triggerManager.CreateTrigger(steamCloseModel);
+            steamCloseTrigger.Name = "SteamToEpic";
+            triggerManager.RegisterTrigger(steamCloseTrigger);
 
             // Example 4: Monitor system unlock to launch Discord
-            var unlockTrigger = triggerManager.CreateTrigger(TriggerTypeEnum.SystemEvent, "UnlockToDiscord");
-            var unlockParams = new TriggerModel
+            var unlockModel = new TriggerModel
             {
-                EventName = "Unlocked"
+                TriggerType = TriggerTypeEnum.SystemEvent,
+                EventName = "Unlocked",
+                IsActive = true
             };
-            await triggerManager.RegisterTriggerAsync(unlockTrigger, unlockParams);
+            var unlockTrigger = triggerManager.CreateTrigger(unlockModel);
+            unlockTrigger.Name = "UnlockToDiscord";
+            triggerManager.RegisterTrigger(unlockTrigger);
 
             // Example 5: Network port trigger for remote commands
-            var networkTrigger = triggerManager.CreateTrigger(TriggerTypeEnum.NetworkPort, "RemoteCommands");
-            var networkParams = new TriggerModel
+            var networkModel = new TriggerModel
             {
+                TriggerType = TriggerTypeEnum.NetworkPort,
                 Port = 8080,
-                IPAddress = "127.0.0.1"
+                IPAddress = "127.0.0.1",
+                IsActive = true
             };
-            await triggerManager.RegisterTriggerAsync(networkTrigger, networkParams);
+            var networkTrigger = triggerManager.CreateTrigger(networkModel);
+            networkTrigger.Name = "RemoteCommands";
+            triggerManager.RegisterTrigger(networkTrigger);
 
             // Subscribe to trigger events for logging
             triggerManager.TriggerActivated += (sender, args) =>
@@ -61,7 +77,7 @@ namespace AppManager.Core.Triggers.Examples
             };
 
             return triggerManager;
-        }
+        }   
 
         public static async Task RunExampleAsync()
         {
@@ -70,7 +86,7 @@ namespace AppManager.Core.Triggers.Examples
             Console.WriteLine("Trigger system started. Press any key to stop...");
             Console.ReadKey();
 
-            await triggerManager.StopAllTriggersAsync();
+            triggerManager.StopAllTriggersAsync();
             triggerManager.Dispose();
             
             Console.WriteLine("Trigger system stopped.");

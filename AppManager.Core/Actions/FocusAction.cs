@@ -7,27 +7,33 @@ using System.Threading.Tasks;
 
 namespace AppManager.Core.Actions
 {
-    public class FocusAction : BaseAction
+    public partial class FocusAction : BaseAction
     {
+        public override AppActionTypeEnum ActionType => AppActionTypeEnum.Focus;
         public override string Description => "Brings an application window to the foreground";
+        public string? AppName { get; set; }
 
-        public bool IncludeSimilarNames { get; set; }
-        public string WindowTitle { get; set; }
+        public bool? IncludeSimilarNames { get; set; }
+        public string? WindowTitle { get; set; }
 
-        [DllImport("user32.dll")]
-        private static extern bool SetForegroundWindow(IntPtr hWnd);
+        [return: MarshalAs(UnmanagedType.Bool)]
+        [LibraryImport("user32.dll", StringMarshalling = StringMarshalling.Utf16, SetLastError = true)]
+        public static partial bool SetForegroundWindow(IntPtr hWnd);
 
-        [DllImport("user32.dll")]
-        private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+        [return: MarshalAs(UnmanagedType.Bool)]
+        [LibraryImport("user32.dll", StringMarshalling = StringMarshalling.Utf16, SetLastError = true)]
+        public static partial bool ShowWindow(IntPtr hWnd, int nCmdShow);
 
-        [DllImport("user32.dll")]
-        private static extern bool IsIconic(IntPtr hWnd);
+        [return: MarshalAs(UnmanagedType.Bool)]
+        [LibraryImport("user32.dll", StringMarshalling = StringMarshalling.Utf16, SetLastError = true)]
+        public static partial bool IsIconic(IntPtr hWnd);
 
         private const int SW_RESTORE = 9;
         private const int SW_SHOW = 5;
 
         public FocusAction(ActionModel model) : base(model)
         {
+            AppName = model.AppName;
             IncludeSimilarNames = model.IncludeSimilarNames;
             WindowTitle = model.WindowTitle;
 
@@ -98,7 +104,7 @@ namespace AppManager.Core.Actions
             {
                 Process[] processes;
                 
-                if (IncludeSimilarNames)
+                if (IncludeSimilarNames ?? false)
                 {
                     processes = Process.GetProcesses()
                         .Where(p => p.ProcessName.IndexOf(AppName, StringComparison.OrdinalIgnoreCase) >= 0)
@@ -135,7 +141,7 @@ namespace AppManager.Core.Actions
             return new ActionModel
             {
                 AppName = AppName,
-                ActionName = ActionName,
+                ActionType = ActionType,
                 IncludeSimilarNames = IncludeSimilarNames,
                 WindowTitle = WindowTitle,
                 Conditions = Conditions.Select(c => c.ToModel()).ToArray()

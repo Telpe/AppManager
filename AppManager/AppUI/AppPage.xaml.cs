@@ -22,27 +22,27 @@ namespace AppManager.AppUI
     /// </summary>
     public partial class AppPage : Page, IPageWithParameter
     {
-        private string _PageName = "";
-        private int _MaxBackupModels = 5;
+        private string PageNameStored = "";
+        private int MaxBackupModelsStored = 5;
 
-        private Dictionary<string, AppPageModel> _LoadedPages = new();
-        private AppPageModel _CurrentPage { get; set; } = new AppPageModel();
-        private AppManagedModel _CurrentModel
+        private Dictionary<string, AppPageModel> LoadedPagesStored = new();
+        private AppPageModel CurrentPageStored { get; set; } = new AppPageModel();
+        private AppManagedModel CurrentModelStored
         { 
-            get { return _CurrentPage.CurrentModel ?? new AppManagedModel(); } 
-            set { _CurrentPage.CurrentModel = value; }
+            get { return CurrentPageStored.CurrentModel ?? new AppManagedModel(); } 
+            set { CurrentPageStored.CurrentModel = value; }
         }
 
-        private ObservableCollection<TriggerViewModel> _TriggerViewModels = new();
-        private ObservableCollection<ActionViewModel> _ActionViewModels = new();
+        private ObservableCollection<TriggerViewModel> TriggerViewModelsStored = new();
+        private ObservableCollection<ActionViewModel> ActionViewModelsStored = new();
 
         public AppPage()
         {
             InitializeComponent();
 
             // Set ItemsSource for ListBoxes
-            TriggersListBox.ItemsSource = _TriggerViewModels;
-            ActionsListBox.ItemsSource = _ActionViewModels;
+            TriggersListBox.ItemsSource = TriggerViewModelsStored;
+            ActionsListBox.ItemsSource = ActionViewModelsStored;
 
             DisableButtons();
         }
@@ -51,21 +51,21 @@ namespace AppManager.AppUI
         {
             DisableButtons();
 
-            _PageName = pageName;
+            PageNameStored = pageName;
 
             try
             {
-                if (!_LoadedPages.ContainsKey(_PageName))
+                if (!LoadedPagesStored.ContainsKey(PageNameStored))
                 {
-                    var model = ProfileManager.CurrentProfile.Apps.Where(app => app.AppName == _PageName).FirstOrDefault();
-                    _LoadedPages[_PageName] = new AppPageModel()
+                    var model = ProfileManager.CurrentProfile.Apps.Where(app => app.AppName == PageNameStored).FirstOrDefault();
+                    LoadedPagesStored[PageNameStored] = new AppPageModel()
                     {
                         CurrentModel = model.Clone(),
                         BackupModels = [model.Clone()]
                     };
                 }
 
-                _CurrentPage = _LoadedPages[_PageName];
+                CurrentPageStored = LoadedPagesStored[PageNameStored];
 
                 // Load data into UI
                 LoadFromModel();
@@ -83,7 +83,7 @@ namespace AppManager.AppUI
 
         private void Edited()
         {
-            _CurrentPage.IsStored = false;
+            CurrentPageStored.IsStored = false;
             
             CancelButton.IsEnabled = true;
             SaveButton.IsEnabled = true;
@@ -92,7 +92,7 @@ namespace AppManager.AppUI
         private void Unedited()
         {
 
-            _CurrentPage.IsStored = true;
+            CurrentPageStored.IsStored = true;
             
             CancelButton.IsEnabled = false;
             SaveButton.IsEnabled = false;
@@ -100,10 +100,10 @@ namespace AppManager.AppUI
 
         private void SetBackupModel()
         {
-            AppManagedModel temp = ProfileManager.CurrentProfile.Apps.Where(app => app.AppName == _PageName).FirstOrDefault();
+            AppManagedModel temp = ProfileManager.CurrentProfile.Apps.Where(app => app.AppName == PageNameStored).FirstOrDefault();
             if (temp != null)
             {
-                _CurrentPage.BackupModels = [temp.Clone(), .._CurrentPage.BackupModels.Take(_MaxBackupModels - 1)];
+                CurrentPageStored.BackupModels = [temp.Clone(), ..CurrentPageStored.BackupModels.Take(MaxBackupModelsStored - 1)];
             }
         }
 
@@ -112,8 +112,8 @@ namespace AppManager.AppUI
             
 
             // Load UI controls from model (without triggering change events)
-            AppNameBox.Text = _CurrentModel.AppName;
-            ActiveBox.IsChecked = _CurrentModel.Active;
+            AppNameBox.Text = CurrentModelStored.AppName;
+            ActiveBox.IsChecked = CurrentModelStored.Active;
             
 
             // Refresh the UI lists
@@ -125,19 +125,19 @@ namespace AppManager.AppUI
 
         private void RefreshTriggersListBox()
         {
-            _TriggerViewModels.Clear();
-            foreach (var kvp in _CurrentModel.AppTriggers)
+            TriggerViewModelsStored.Clear();
+            foreach (var kvp in CurrentModelStored.AppTriggers)
             {
-                _TriggerViewModels.Add(new TriggerViewModel(kvp.Key, kvp.Value, this));
+                TriggerViewModelsStored.Add(new TriggerViewModel(kvp.Key, kvp.Value, this));
             }
         }
 
         private void RefreshActionsListBox()
         {
-            _ActionViewModels.Clear();
-            foreach (var kvp in _CurrentModel.AppActions)
+            ActionViewModelsStored.Clear();
+            foreach (var kvp in CurrentModelStored.AppActions)
             {
-                _ActionViewModels.Add(new ActionViewModel(kvp.Key, kvp.Value, this));
+                ActionViewModelsStored.Add(new ActionViewModel(kvp.Key, kvp.Value, this));
             }
         }
         private void DisableButtons()   
@@ -166,8 +166,8 @@ namespace AppManager.AppUI
             ActiveBox.Unchecked += ActiveBox_Changed;
             
             // Set Cancel and Save buttons based on IsStored status
-            CancelButton.IsEnabled = !_CurrentPage.IsStored;
-            SaveButton.IsEnabled = !_CurrentPage.IsStored;
+            CancelButton.IsEnabled = !CurrentPageStored.IsStored;
+            SaveButton.IsEnabled = !CurrentPageStored.IsStored;
         }
 
         private void AppNameBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -175,7 +175,7 @@ namespace AppManager.AppUI
             Edited();
 
             // Update the model directly when text changes
-            _CurrentModel.AppName = AppNameBox.Text;
+            CurrentModelStored.AppName = AppNameBox.Text;
         }
 
         private void ActiveBox_Changed(object sender, RoutedEventArgs e)
@@ -183,7 +183,7 @@ namespace AppManager.AppUI
             Edited();
 
             // Update the model directly when checkbox changes
-            _CurrentModel.Active = ActiveBox.IsChecked ?? false;
+            CurrentModelStored.Active = ActiveBox.IsChecked ?? false;
         }
 
         private void AddTriggerButton_Click(object sender, RoutedEventArgs e)
@@ -195,10 +195,10 @@ namespace AppManager.AppUI
                 TriggerType = TriggerTypeEnum.Shortcut // Default type
             };
 
-            var triggers = _CurrentModel.AppTriggers ?? new Dictionary<int, TriggerModel>();
+            var triggers = CurrentModelStored.AppTriggers ?? new Dictionary<int, TriggerModel>();
             int newId = triggers.Count > 0 ? triggers.Keys.Max() + 1 : 1;
             triggers.Add(newId, newTrigger);
-            _CurrentModel.AppTriggers = triggers;
+            CurrentModelStored.AppTriggers = triggers;
             
             RefreshTriggersListBox();
         }
@@ -209,14 +209,14 @@ namespace AppManager.AppUI
 
             var newAction = new ActionModel
             {
-                AppName = _CurrentModel.AppName,
-                ActionName = AppActionEnum.Launch // Default action
+                AppName = CurrentModelStored.AppName,
+                ActionType = AppActionTypeEnum.Launch // Default action
             };
 
-            var actions = _CurrentModel.AppActions ?? new Dictionary<int, ActionModel>();
+            var actions = CurrentModelStored.AppActions ?? new Dictionary<int, ActionModel>();
             int newId = actions.Count > 0 ? actions.Keys.Max() + 1 : 1;
             actions.Add(newId, newAction);
-            _CurrentModel.AppActions = actions;
+            CurrentModelStored.AppActions = actions;
             
             RefreshActionsListBox();
         }
@@ -237,7 +237,7 @@ namespace AppManager.AppUI
                     triggerEditor.TriggerSaved += (s, updatedTrigger) =>
                     {
                         // Update the model in the dictionary
-                        _CurrentModel.AppTriggers[viewModel.Id] = updatedTrigger;
+                        CurrentModelStored.AppTriggers[viewModel.Id] = updatedTrigger;
                         
                         // Refresh the UI to show changes
                         RefreshTriggersListBox();
@@ -280,7 +280,7 @@ namespace AppManager.AppUI
                     actionEditor.ActionSaved += (s, updatedAction) =>
                     {
                         // Update the model in the dictionary
-                        _CurrentModel.AppActions[viewModel.Id] = updatedAction;
+                        CurrentModelStored.AppActions[viewModel.Id] = updatedAction;
                         
                         // Refresh the UI to show changes
                         RefreshActionsListBox();
@@ -310,32 +310,32 @@ namespace AppManager.AppUI
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
             // Save profile to file
-            int id = ProfileManager.CurrentProfile.Apps.Select((app, index) => new { app, index }).Where(x => x.app.AppName == _PageName).Select(x => x.index).FirstOrDefault();
-            ProfileManager.CurrentProfile.Apps[id] = _CurrentModel.Clone();
+            int id = ProfileManager.CurrentProfile.Apps.Select((app, index) => new { app, index }).Where(x => x.app.AppName == PageNameStored).Select(x => x.index).FirstOrDefault();
+            ProfileManager.CurrentProfile.Apps[id] = CurrentModelStored.Clone();
             ProfileManager.SaveProfile();
             SetBackupModel();
 
             Unedited();
 
-            Debug.WriteLine($"App {_CurrentModel.AppName} saved successfully.", "Save Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+            Debug.WriteLine($"App {CurrentModelStored.AppName} saved successfully.", "Save Complete", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
-            var model = _CurrentPage.BackupModels?.FirstOrDefault();
+            var model = CurrentPageStored.BackupModels?.FirstOrDefault();
             if (model != null)
             {
                 DisableButtons();
-                _CurrentModel = model.Clone();
+                CurrentModelStored = model.Clone();
                 LoadFromModel();
                 Unedited();
-                Debug.WriteLine($"App {_CurrentModel.AppName} reloaded successfully.", "Reload Complete", MessageBoxButton.OK, MessageBoxImage.Information);
+                Debug.WriteLine($"App {CurrentModelStored.AppName} reloaded successfully.", "Reload Complete", MessageBoxButton.OK, MessageBoxImage.Information);
             }
         }
 
         public bool HasUnsavedChanges()
         {
-            return _LoadedPages?.Values.Any(page => !page.IsStored) ?? false;
+            return LoadedPagesStored?.Values.Any(page => !page.IsStored) ?? false;
         }
     }
 

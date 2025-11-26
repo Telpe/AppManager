@@ -10,35 +10,35 @@ namespace AppManager.Core.Models
         public bool IsNot { get; set; } = false;
 
         // Process-related parameters
-        public string ProcessName { get; set; }
-        public string ExecutablePath { get; set; }
-        public bool IncludeChildProcesses { get; set; } = false;
+        public string? ProcessName { get; set; }
+        public string? ExecutablePath { get; set; }
+        public bool? IncludeChildProcesses { get; set; }
         
         // File-related parameters
-        public string FilePath { get; set; }
+        public string? FilePath { get; set; }
         
         // Window-related parameters
-        public string WindowTitle { get; set; }
-        public string WindowClassName { get; set; }
+        public string? WindowTitle { get; set; }
+        public string? WindowClassName { get; set; }
 
         // Network-related parameters
-        public int Port { get; set; } = 9011;
-        public string IPAddress { get; set; } = "127.0.0.1";
+        public int? Port { get; set; }
+        public string? IPAddress { get; set; } 
         
         // Time-related parameters
-        public System.TimeSpan StartTime { get; set; }
-        public System.TimeSpan EndTime { get; set; }
-        public System.DayOfWeek[] AllowedDays { get; set; }
+        public System.TimeSpan? StartTime { get; set; }
+        public System.TimeSpan? EndTime { get; set; }
+        public System.DayOfWeek[]? AllowedDays { get; set; }
         
         // System-related parameters
-        public int MinSystemUptimeMinutes { get; set; }
-        public int MaxSystemUptimeMinutes { get; set; }
+        public int? MinSystemUptimeMinutes { get; set; }
+        public int? MaxSystemUptimeMinutes { get; set; }
         
         // Timeout parameters
-        public int TimeoutMs { get; set; } = 5000;
+        public int? TimeoutMs { get; set; }
         
         // Additional configuration
-        public Dictionary<string, object> CustomProperties { get; set; } = new Dictionary<string, object>();
+        public Dictionary<string, object>? CustomProperties { get; set; }
 
         public ConditionModel()
         {
@@ -49,6 +49,7 @@ namespace AppManager.Core.Models
             return new ConditionModel
             {
                 ConditionType = this.ConditionType,
+                IsNot = this.IsNot,
                 ProcessName = this.ProcessName,
                 ExecutablePath = this.ExecutablePath,
                 IncludeChildProcesses = this.IncludeChildProcesses,
@@ -63,7 +64,7 @@ namespace AppManager.Core.Models
                 MinSystemUptimeMinutes = this.MinSystemUptimeMinutes,
                 MaxSystemUptimeMinutes = this.MaxSystemUptimeMinutes,
                 TimeoutMs = this.TimeoutMs,
-                CustomProperties = new Dictionary<string, object>(this.CustomProperties)
+                CustomProperties = null != CustomProperties ? new Dictionary<string, object>(CustomProperties) : null
             };
         }
     }

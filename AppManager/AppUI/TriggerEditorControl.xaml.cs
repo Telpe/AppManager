@@ -11,19 +11,19 @@ namespace AppManager.AppUI
 {
     public partial class TriggerEditorControl : OverlayContent
     {
-        private TriggerModel _currentTrigger;
-        private TriggerManager _triggerManager;
-        private bool _isCapturingShortcut = false;
+        private TriggerModel CurrentTriggerStored;
+        private TriggerManager TriggerManagerStored;
+        private bool IsCapturingShortcutStored = false;
 
         public event EventHandler<TriggerModel> TriggerSaved;
         public event EventHandler TriggerCancelled;
 
         public TriggerModel CurrentTrigger
         {
-            get => _currentTrigger;
+            get => CurrentTriggerStored;
             set
             {
-                _currentTrigger = value;
+                CurrentTriggerStored = value;
                 LoadTriggerData();
             }
         }
@@ -31,7 +31,7 @@ namespace AppManager.AppUI
         public TriggerEditorControl()
         {
             InitializeComponent();
-            _triggerManager = new TriggerManager();
+            TriggerManagerStored = new TriggerManager();
             
             InitializeComboBoxes();
             UpdatePreview();
@@ -46,32 +46,32 @@ namespace AppManager.AppUI
 
         private void LoadTriggerData()
         {
-            if (_currentTrigger == null) return;
+            if (CurrentTriggerStored == null) return;
 
-            TriggerTypeComboBox.SelectedItem = _currentTrigger.TriggerType;
-            TriggerNameTextBox.Text = GenerateTriggerName(_currentTrigger.TriggerType);
+            TriggerTypeComboBox.SelectedItem = CurrentTriggerStored.TriggerType;
+            TriggerNameTextBox.Text = GenerateTriggerName(CurrentTriggerStored.TriggerType);
             
             // Load shortcut data
-            ShortcutTextBox.Text = _currentTrigger.ShortcutCombination ?? string.Empty;
-            CtrlModifierCheckBox.IsChecked = _currentTrigger.Modifiers.HasFlag(ModifierKeys.Control);
-            ShiftModifierCheckBox.IsChecked = _currentTrigger.Modifiers.HasFlag(ModifierKeys.Shift);
-            AltModifierCheckBox.IsChecked = _currentTrigger.Modifiers.HasFlag(ModifierKeys.Alt);
-            WinModifierCheckBox.IsChecked = _currentTrigger.Modifiers.HasFlag(ModifierKeys.Windows);
+            ShortcutTextBox.Text = CurrentTriggerStored.ShortcutCombination ?? string.Empty;
+            CtrlModifierCheckBox.IsChecked = CurrentTriggerStored.Modifiers?.HasFlag(ModifierKeys.Control);
+            ShiftModifierCheckBox.IsChecked = CurrentTriggerStored.Modifiers?.HasFlag(ModifierKeys.Shift);
+            AltModifierCheckBox.IsChecked = CurrentTriggerStored.Modifiers?.HasFlag(ModifierKeys.Alt);
+            WinModifierCheckBox.IsChecked = CurrentTriggerStored.Modifiers?.HasFlag(ModifierKeys.Windows);
 
             // Load app monitoring data
-            ProcessNameTextBox.Text = _currentTrigger.ProcessName ?? string.Empty;
-            ExecutablePathMonitorTextBox.Text = _currentTrigger.ExecutablePath ?? string.Empty;
-            MonitorChildProcessesCheckBox.IsChecked = _currentTrigger.MonitorChildProcesses;
+            ProcessNameTextBox.Text = CurrentTriggerStored.ProcessName ?? string.Empty;
+            ExecutablePathMonitorTextBox.Text = CurrentTriggerStored.ExecutablePath ?? string.Empty;
+            MonitorChildProcessesCheckBox.IsChecked = CurrentTriggerStored.MonitorChildProcesses;
 
             // Load network/system data
-            IPAddressTextBox.Text = _currentTrigger.IPAddress ?? "127.0.0.1";
-            PortTextBox.Text = _currentTrigger.Port.ToString();
-            EventNameTextBox.Text = _currentTrigger.EventName ?? string.Empty;
-            EventSourceTextBox.Text = _currentTrigger.EventSource ?? string.Empty;
+            IPAddressTextBox.Text = CurrentTriggerStored.IPAddress ?? "127.0.0.1";
+            PortTextBox.Text = CurrentTriggerStored.Port.ToString();
+            EventNameTextBox.Text = CurrentTriggerStored.EventName ?? string.Empty;
+            EventSourceTextBox.Text = CurrentTriggerStored.EventSource ?? string.Empty;
 
             // Load timing data
-            PollingIntervalTextBox.Text = _currentTrigger.PollingIntervalMs.ToString();
-            TriggerTimeoutTextBox.Text = _currentTrigger.TimeoutMs.ToString();
+            PollingIntervalTextBox.Text = CurrentTriggerStored.PollingIntervalMs.ToString();
+            TriggerTimeoutTextBox.Text = CurrentTriggerStored.TimeoutMs.ToString();
 
             UpdatePreview();
         }
@@ -197,9 +197,9 @@ namespace AppManager.AppUI
 
         private void CaptureShortcutButton_Click(object sender, RoutedEventArgs e)
         {
-            if (!_isCapturingShortcut)
+            if (!IsCapturingShortcutStored)
             {
-                _isCapturingShortcut = true;
+                IsCapturingShortcutStored = true;
                 ((Button)sender).Content = "Press key combination...";
                 ShortcutTextBox.Text = "Press key combination...";
                 ShortcutTextBox.Focus();
@@ -212,7 +212,7 @@ namespace AppManager.AppUI
 
         private void StopCapturing()
         {
-            _isCapturingShortcut = false;
+            IsCapturingShortcutStored = false;
             var button = this.FindName("CaptureShortcutButton") as Button;
             if (button != null)
                 button.Content = "Capture";
@@ -220,7 +220,7 @@ namespace AppManager.AppUI
 
         protected override void OnKeyDown(KeyEventArgs e)
         {
-            if (_isCapturingShortcut)
+            if (IsCapturingShortcutStored)
             {
                 var modifiers = Keyboard.Modifiers;
                 var key = e.Key == Key.System ? e.SystemKey : e.Key;
@@ -296,8 +296,8 @@ namespace AppManager.AppUI
             try
             {
                 var trigger = CreateTriggerModel();
-                var triggerInstance = _triggerManager.CreateTrigger(trigger.TriggerType, TriggerNameTextBox.Text);
-                var canStart = triggerInstance.CanStart(trigger);
+                var triggerInstance = TriggerManagerStored.CreateTrigger(trigger);
+                var canStart = triggerInstance.CanStart();
                 
                 var result = canStart ? "✓ Trigger configuration is valid" : "✗ Trigger configuration is invalid";
                 MessageBox.Show(result, "Test Result", MessageBoxButton.OK, 
@@ -316,7 +316,7 @@ namespace AppManager.AppUI
             try
             {
                 var trigger = CreateTriggerModel();
-                _currentTrigger = trigger;
+                CurrentTriggerStored = trigger;
                 TriggerSaved?.Invoke(this, trigger);
                 DisableOverlay(); // Close the overlay after saving
             }

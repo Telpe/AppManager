@@ -30,7 +30,7 @@ namespace AppManager.AppUI
             }
         }
 
-        public string DisplayName => $"Action: {Model.ActionName}";
+        public string DisplayName => $"Action: {Model.ActionType}";
         public int ConditionCount => Model.Conditions?.Length ?? 0;
         public bool HasConditions => ConditionCount > 0;
 

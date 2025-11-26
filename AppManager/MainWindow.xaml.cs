@@ -26,7 +26,7 @@ namespace AppManager
         private readonly AppPage AppsPage = new();
         private readonly AppGroupsPage AppGroupsPage = new();
         private readonly ShortcutsPage ShortcutsPage = new();
-        private OverlayManager _overlayManager;
+        private OverlayManager OverlayManagerStored;
 
         public MainWindow()
         {
@@ -37,10 +37,10 @@ namespace AppManager
             this.Closing += Window_Closing;
 
             // Initialize overlay manager
-            _overlayManager = new OverlayManager(this);
+            OverlayManagerStored = new OverlayManager(this);
 
             // Handle window size changes
-            this.SizeChanged += (sender, e) => _overlayManager.UpdateSize();
+            this.SizeChanged += (sender, e) => OverlayManagerStored.UpdateSize();
 
             // Apply settings to window
             ApplyWindowSettings();
@@ -57,7 +57,7 @@ namespace AppManager
         /// <param name="heightPercent">Height of active area as percentage (0-100)</param>
         public void ShowOverlay(OverlayContent content, double widthPercent = 50, double heightPercent = 50, bool clickHide = true)
         {
-            _overlayManager.ShowOverlay(content, widthPercent, heightPercent, clickHide);
+            OverlayManagerStored.ShowOverlay(content, widthPercent, heightPercent, clickHide);
         }
 
         /// <summary>
@@ -65,13 +65,13 @@ namespace AppManager
         /// </summary>
         public void HideOverlay()
         {
-            _overlayManager.HideOverlay();
+            OverlayManagerStored.HideOverlay();
         }
 
         /// <summary>
         /// Gets whether an overlay is currently visible
         /// </summary>
-        public bool IsOverlayVisible => _overlayManager.IsOverlayVisible;
+        public bool IsOverlayVisible => OverlayManagerStored.IsOverlayVisible;
 
         private void BrowserButton_Click(object sender, RoutedEventArgs e)
         {

@@ -8,7 +8,7 @@ namespace AppManager.Pages
     /// </summary>
     public partial class ShortcutsPage : Page, IPageWithParameter
     {
-        private string _PageName = "";
+        private string PageNameStored = "";
 
         public ShortcutsPage()
         {
@@ -19,7 +19,7 @@ namespace AppManager.Pages
         {
             
 
-            _PageName = pageName;
+            PageNameStored = pageName;
             // Use the pageName parameter as needed
             // For example, you can set it to a label or use it for navigation logic
             // This is just a placeholder implementation

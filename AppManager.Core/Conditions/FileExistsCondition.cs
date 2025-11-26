@@ -1,33 +1,45 @@
+using AppManager.Core.Models;
 using AppManager.Core.Utils;
+using System;
 using System.IO;
 
 namespace AppManager.Core.Conditions
 {
-    public class FileExistsCondition : BaseCondition
+    public class FileExistsCondition(ConditionModel model) : BaseCondition(model)
     {
-        public override string Description => "Checks if a specific file exists";
+        public override ConditionTypeEnum ConditionType => ConditionTypeEnum.FileExists;
+        public override string Description { get; set; } = "Checks if a specific file exists";
+        public string? ExecutablePath { get; set; } = model.ExecutablePath;
 
         public override bool Execute()
         {
-            if (null == Model) { throw new ArgumentNullException("Condition Model can not be null."); }
             try
             {
-                var targetPath = Model.FilePath ?? Model.ExecutablePath;
-                if (string.IsNullOrEmpty(targetPath))
+                if (string.IsNullOrEmpty(ExecutablePath))
                 {
                     LogConditionResult(false, "No file path specified");
                     return false;
                 }
 
-                bool exists = FileManager.FileExists(targetPath);
-                LogConditionResult(exists, $"File '{targetPath}' exists: {exists}");
+                bool exists = FileManager.FileExists(ExecutablePath);
+                //LogConditionResult(exists, $"File '{FilePath}' exists: {exists}");
                 return exists;
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
-                LogConditionResult(false, $"Error checking file: {ex.Message}");
+                LogConditionResult(false, $"Error checking file: '{ExecutablePath}'\n{ex.Message}");
                 return false;
             }
+        }
+
+        public override ConditionModel ToModel()
+        {
+            return new ConditionModel
+            {
+                ConditionType = ConditionTypeEnum.FileExists,
+                IsNot = IsNot,
+                ExecutablePath = ExecutablePath
+            };
         }
     }
 }

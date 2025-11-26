@@ -5,74 +5,77 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using AppManager.Core.Actions;
+using System.Collections.Generic;
 
 namespace AppManager.Core.Triggers
 {
     internal class NetworkPortTrigger : BaseTrigger
     {
         public override TriggerTypeEnum TriggerType => TriggerTypeEnum.NetworkPort;
-        public override string Description => "Monitors network port for incoming connections or data";
 
-        private TriggerModel _parameters;
         private TcpListener _tcpListener;
         private CancellationTokenSource _cancellationTokenSource;
 
-        public NetworkPortTrigger(string name = null) : base(name)
+        public int? Port { get; set; }
+        public string? IPAddress { get; set; }
+        public int? TimeoutMs { get; set; }
+        public Dictionary<string, object> CustomProperties { get; set; }
+
+        public NetworkPortTrigger(TriggerModel model) : base(model)
         {
+            Description = "Monitors network port for incoming connections or data";
+            
+            Port = model.Port;
+            IPAddress = model.IPAddress;
+            TimeoutMs = model.TimeoutMs;
+            CustomProperties = model.CustomProperties ?? [];
         }
 
-        public override bool CanStart(TriggerModel parameters = null)
+        public override bool CanStart()
         {
-            return parameters?.Port > 0 && parameters.Port <= 65535;
+            return Port > 0 && Port <= 65535;
         }
 
-        public override async Task<bool> StartAsync(TriggerModel parameters = null)
+        public override Task<bool> StartAsync()
         {
-            if (IsActive || parameters == null)
-                return false;
-
-            try
+            return Task.Run<bool>(() =>
             {
-                _parameters = parameters;
-                _cancellationTokenSource = new CancellationTokenSource();
+                if (!IsActive) { return false; }
 
-                var ipAddress = IPAddress.Parse(parameters.IPAddress ?? "127.0.0.1");
-                _tcpListener = new TcpListener(ipAddress, parameters.Port);
-                _tcpListener.Start();
+                try
+                {
+                    _cancellationTokenSource = new CancellationTokenSource();
 
-                IsActive = true;
-                
-                // Start listening for connections in background
-                _ = Task.Run(async () => await ListenForConnectionsAsync(_cancellationTokenSource.Token));
+                    var ipAddress = System.Net.IPAddress.Parse(IPAddress ?? "127.0.0.1");
+                    _tcpListener = new TcpListener(ipAddress, Port.Value);
+                    _tcpListener.Start();
 
-                System.Diagnostics.Debug.WriteLine($"Network port trigger '{Name}' started listening on {ipAddress}:{parameters.Port}");
-                return true;
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error starting network port trigger '{Name}': {ex.Message}");
-                return false;
-            }
+                    // Start listening for connections in background
+                    _ = Task.Run(async () => await ListenForConnectionsAsync(_cancellationTokenSource.Token));
+
+                    System.Diagnostics.Debug.WriteLine($"Network port trigger '{Name}' started listening on {ipAddress}:{Port}");
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"Error starting network port trigger '{Name}': {ex.Message}");
+                    return false;
+                }
+            });
         }
 
-        public override async Task<bool> StopAsync()
+        public override void Stop()
         {
-            if (!IsActive)
-                return true;
-
             try
             {
                 _cancellationTokenSource?.Cancel();
                 _tcpListener?.Stop();
                 
-                IsActive = false;
                 System.Diagnostics.Debug.WriteLine($"Network port trigger '{Name}' stopped");
-                return true;
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error stopping network port trigger '{Name}': {ex.Message}");
-                return false;
             }
         }
 
@@ -116,7 +119,7 @@ namespace AppManager.Core.Triggers
                         System.Diagnostics.Debug.WriteLine($"Network port trigger '{Name}' received data: {data}");
                         
                         // Trigger the configured action
-                        OnTriggerActivated("network_target", AppActionEnum.Launch, null, new { Data = data, Client = client.Client.RemoteEndPoint });
+                        OnTriggerActivated("network_target", AppActionTypeEnum.Launch, null, new { Data = data, Client = client.Client.RemoteEndPoint });
                     }
                 }
             }
@@ -128,9 +131,22 @@ namespace AppManager.Core.Triggers
 
         public override void Dispose()
         {
-            _ = StopAsync();
+            Stop();
             _cancellationTokenSource?.Dispose();
             base.Dispose();
+        }
+
+        public override TriggerModel ToModel()
+        {
+            return new TriggerModel
+            {
+                TriggerType = TriggerType,
+                IsActive = IsActive,
+                Port = Port,
+                IPAddress = IPAddress,
+                TimeoutMs = TimeoutMs,
+                CustomProperties = CustomProperties
+            };
         }
     }
 }

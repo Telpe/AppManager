@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <UseWPF>false</UseWPF>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <!--
     <StartAction>Program</StartAction>
     <StartProgram>C:\Users\Arthonor\source\repos\telpe\AppManager\AppManager\bin\Debug\net8.0-windows10.0.22000.0\AppManager.Core.exe</StartProgram>
@@ -24,5 +25,11 @@
     <None Update="AppManagerIcon_temp.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <EditorConfigFiles Remove="C:\Users\Arthonor\source\repos\telpe\AppManager\AppManager.Core\.editorconfig" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="C:\Users\Arthonor\source\repos\telpe\AppManager\AppManager.Core\.editorconfig" />
   </ItemGroup>
 </Project>

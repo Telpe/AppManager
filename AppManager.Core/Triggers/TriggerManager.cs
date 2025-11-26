@@ -19,17 +19,17 @@ namespace AppManager.Core.Triggers
             _actionManager = actionManager ?? new ActionManager();
         }
 
-        public ITrigger CreateTrigger(TriggerTypeEnum triggerType, string name = null)
+        public ITrigger CreateTrigger(TriggerModel model)
         {
-            ITrigger trigger = triggerType switch
+            ITrigger trigger = model.TriggerType switch
             {
-                TriggerTypeEnum.Shortcut => new ShortcutTrigger(name),
-                TriggerTypeEnum.Button => new ButtonTrigger(name),
-                TriggerTypeEnum.AppLaunch => new AppLaunchTrigger(name),
-                TriggerTypeEnum.AppClose => new AppCloseTrigger(name),
-                TriggerTypeEnum.SystemEvent => new SystemEventTrigger(name),
-                TriggerTypeEnum.NetworkPort => new NetworkPortTrigger(name),
-                _ => throw new ArgumentException($"Unsupported trigger type: {triggerType}")
+                TriggerTypeEnum.Shortcut => new ShortcutTrigger(model),
+                TriggerTypeEnum.Button => new ButtonTrigger(model),
+                TriggerTypeEnum.AppLaunch => new AppLaunchTrigger(model),
+                TriggerTypeEnum.AppClose => new AppCloseTrigger(model),
+                TriggerTypeEnum.SystemEvent => new SystemEventTrigger(model),
+                TriggerTypeEnum.NetworkPort => new NetworkPortTrigger(model),
+                _ => throw new ArgumentException($"Unsupported trigger type: {model.TriggerType}")
             };
 
             // Subscribe to trigger activation events
@@ -38,33 +38,33 @@ namespace AppManager.Core.Triggers
             return trigger;
         }
 
-        public async Task<bool> RegisterTriggerAsync(ITrigger trigger, TriggerModel parameters = null)
+        public bool RegisterTrigger(ITrigger trigger)
         {
             if (trigger == null || _triggers.ContainsKey(trigger.Name))
                 return false;
 
-            if (!trigger.CanStart(parameters))
+            if (!trigger.CanStart())
                 return false;
 
-            bool started = await trigger.StartAsync(parameters);
-            if (started)
-            {
-                _triggers[trigger.Name] = trigger;
-                trigger.TriggerActivated += OnTriggerActivated;
-                System.Diagnostics.Debug.WriteLine($"Trigger '{trigger.Name}' registered successfully");
-            }
+            _ = trigger.StartAsync();
 
-            return started;
+                
+            _triggers[trigger.Name] = trigger;
+            trigger.TriggerActivated += OnTriggerActivated;
+            System.Diagnostics.Debug.WriteLine($"Trigger '{trigger.Name}' registered successfully");
+                
+
+            return true;
         }
 
-        public async Task<bool> UnregisterTriggerAsync(string triggerName)
+        public bool UnregisterTrigger(string triggerName)
         {
             if (!_triggers.TryGetValue(triggerName, out ITrigger trigger))
                 return false;
 
             trigger.TriggerActivated -= OnTriggerActivated;
-            bool stopped = await trigger.StopAsync();
-            
+            trigger.Stop(); // TODO: Make Stop async if needed
+            var stopped = true;
             if (stopped)
             {
                 _triggers.Remove(triggerName);
@@ -91,23 +91,15 @@ namespace AppManager.Core.Triggers
             return trigger;
         }
 
-        private async void OnTriggerActivated(object sender, TriggerActivatedEventArgs e)
+        private void OnTriggerActivated(object? sender, TriggerActivatedEventArgs? e)
         {
             try
             {
                 System.Diagnostics.Debug.WriteLine($"Trigger '{e.TriggerName}' activated - executing action '{e.ActionToExecute}' on '{e.TargetAppName}'");
 
                 // Execute the associated action
-                bool success = await _actionManager.ExecuteActionAsync(e.ActionParameters);
+                _ = _actionManager.ExecuteActionAsync(e.ActionParameters);
                 
-                if (success)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Action '{e.ActionToExecute}' executed successfully");
-                }
-                else
-                {
-                    System.Diagnostics.Debug.WriteLine($"Failed to execute action '{e.ActionToExecute}'");
-                }
 
                 // Forward the event
                 TriggerActivated?.Invoke(this, e);
@@ -118,23 +110,24 @@ namespace AppManager.Core.Triggers
             }
         }
 
-        public async Task StopAllTriggersAsync()
+        public void StopAllTriggersAsync()
         {
-            var tasks = _triggers.Values.Select(t => t.StopAsync());
-            await Task.WhenAll(tasks);
-
             foreach (var trigger in _triggers.Values)
             {
-                trigger.Dispose();
+                trigger.Stop();
             }
-            
-            _triggers.Clear();
+
             System.Diagnostics.Debug.WriteLine("All triggers stopped");
         }
 
         public void Dispose()
         {
-            _ = StopAllTriggersAsync();
+            foreach (var trigger in _triggers.Values)
+            {
+                trigger.Dispose();
+            }
+
+            _triggers.Clear();
         }
     }
 }

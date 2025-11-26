@@ -9,8 +9,7 @@ namespace AppManager.Core.Actions
 {
     public abstract class BaseAction : IAppAction
     {
-        public string AppName { get; set; }
-        public AppActionEnum ActionName { get; }
+        public abstract AppActionTypeEnum ActionType { get; }
 
         private ICondition[] _Conditions = Array.Empty<ICondition>();
 
@@ -22,9 +21,10 @@ namespace AppManager.Core.Actions
 
         public BaseAction(ActionModel model)
         {
-            AppName = model.AppName;
-
-            ActionName = model.ActionName;
+            if (model.ActionType != ActionType)
+            {
+                throw new ArgumentException($"model type '{model.ActionType}' does not match trigger type '{ActionType}'.");
+            }
 
             InitializeConditions(model);
         }

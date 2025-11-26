@@ -4,88 +4,92 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using AppManager.Core.Actions;
 using AppManager.Core.Shortcuts;
+using System.Collections.Generic;
 
 namespace AppManager.Core.Triggers
 {
     internal class ShortcutTrigger : BaseTrigger
     {
         public override TriggerTypeEnum TriggerType => TriggerTypeEnum.Shortcut;
-        public override string Description => "Monitors global keyboard shortcuts with high compatibility using GlobalKeyboardHook";
 
-        private TriggerModel _parameters;
-        private GlobalKeyboardHook _globalKeyboardHook;
-        private Key _targetKey;
-        private ModifierKeys _targetModifiers;
-        private bool _keyPressed;
-        private bool _modifiersPressed;
+        private GlobalKeyboardHook GlobalKeyboardHookStored;
+        private Key TargetKeyStored;
+        private ModifierKeys TargetModifiersStored;
+        private bool KeyPressedStored;
+        private bool ModifiersPressedStored;
 
-        public ShortcutTrigger(string name = null) : base(name)
+        public Key? Key { get; set; }
+        public ModifierKeys? Modifiers { get; set; }
+        public string? ShortcutCombination { get; set; }
+        public Dictionary<string, object> CustomProperties { get; set; }
+
+        public ShortcutTrigger(TriggerModel model) : base(model)
         {
+            Description = "Monitors global keyboard shortcuts with high compatibility using GlobalKeyboardHook";
+            
+            Key = model.Key;
+            Modifiers = model.Modifiers;
+            ShortcutCombination = model.ShortcutCombination;
+            CustomProperties = model.CustomProperties ?? new Dictionary<string, object>();
+
+            TargetKeyStored = Key ?? System.Windows.Input.Key.None;
+            TargetModifiersStored = Modifiers ?? ModifierKeys.None;
         }
 
-        public override bool CanStart(TriggerModel parameters = null)
+        public override bool CanStart()
         {
-            return parameters?.Key != Key.None || !string.IsNullOrEmpty(parameters?.ShortcutCombination);
+            return Key != System.Windows.Input.Key.None || !string.IsNullOrEmpty(ShortcutCombination);
         }
 
-        public override async Task<bool> StartAsync(TriggerModel parameters = null)
+        public override Task<bool> StartAsync()
         {
-            if (IsActive || parameters == null)
-                return false;
+            return Task.Run<bool>(() =>
+            {
+                if (!IsActive) { return false; }
 
+                try
+                {
+                    // Create GlobalKeyboardHook instance
+                    // Pass null to monitor all keys (we'll filter in the event handler)
+                    GlobalKeyboardHookStored = new GlobalKeyboardHook();
+                    GlobalKeyboardHookStored.KeyboardPressed += OnKeyboardPressed;
+
+                    Debug.WriteLine($"Shortcut trigger '{Name}' started for {Key} + {Modifiers}");
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error starting shortcut trigger '{Name}': {ex.Message}");
+                    Cleanup();
+                    return false;
+                }
+            });
+        }
+
+        public override void Stop()
+        {
             try
             {
-                _parameters = parameters;
-                _targetKey = parameters.Key;
-                _targetModifiers = parameters.Modifiers;
-
-                // Create GlobalKeyboardHook instance
-                // Pass null to monitor all keys (we'll filter in the event handler)
-                _globalKeyboardHook = new GlobalKeyboardHook();
-                _globalKeyboardHook.KeyboardPressed += OnKeyboardPressed;
-
-                IsActive = true;
-                Debug.WriteLine($"Shortcut trigger '{Name}' started for {parameters.Key} + {parameters.Modifiers}");
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error starting shortcut trigger '{Name}': {ex.Message}");
                 Cleanup();
-                return false;
-            }
-        }
-
-        public override async Task<bool> StopAsync()
-        {
-            if (!IsActive)
-                return true;
-
-            try
-            {
-                Cleanup();
-                IsActive = false;
                 Debug.WriteLine($"Shortcut trigger '{Name}' stopped");
-                return true;
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error stopping shortcut trigger '{Name}': {ex.Message}");
-                return false;
             }
         }
 
         private void Cleanup()
         {
-            if (_globalKeyboardHook != null)
+            if (GlobalKeyboardHookStored != null)
             {
-                _globalKeyboardHook.KeyboardPressed -= OnKeyboardPressed;
-                _globalKeyboardHook.Dispose();
-                _globalKeyboardHook = null;
+                GlobalKeyboardHookStored.KeyboardPressed -= OnKeyboardPressed;
+                GlobalKeyboardHookStored.Dispose();
+                GlobalKeyboardHookStored = null;
             }
 
-            _keyPressed = false;
-            _modifiersPressed = false;
+            KeyPressedStored = false;
+            ModifiersPressedStored = false;
         }
 
         private void OnKeyboardPressed(object sender, GlobalKeyboardHookEventArgs e)
@@ -97,16 +101,16 @@ namespace AppManager.Core.Triggers
                 var isKeyUp = e.KeyboardState == KeyboardState.KeyUp;
 
                 // Check if this is our target key
-                if (pressedKey == _targetKey)
+                if (pressedKey == TargetKeyStored)
                 {
                     if (isKeyDown)
                     {
-                        _keyPressed = true;
+                        KeyPressedStored = true;
                         CheckForShortcutActivation();
                     }
                     else if (isKeyUp)
                     {
-                        _keyPressed = false;
+                        KeyPressedStored = false;
                     }
                 }
                 // Check for modifier keys
@@ -128,21 +132,21 @@ namespace AppManager.Core.Triggers
             }
         }
 
-        private bool IsModifierKey(Key key)
+        private bool IsModifierKey(System.Windows.Input.Key key)
         {
-            return key == Key.LeftCtrl || key == Key.RightCtrl ||
-                   key == Key.LeftAlt || key == Key.RightAlt ||
-                   key == Key.LeftShift || key == Key.RightShift ||
-                   key == Key.LWin || key == Key.RWin;
+            return key == System.Windows.Input.Key.LeftCtrl || key == System.Windows.Input.Key.RightCtrl ||
+                   key == System.Windows.Input.Key.LeftAlt || key == System.Windows.Input.Key.RightAlt ||
+                   key == System.Windows.Input.Key.LeftShift || key == System.Windows.Input.Key.RightShift ||
+                   key == System.Windows.Input.Key.LWin || key == System.Windows.Input.Key.RWin;
         }
 
         private void UpdateModifierState()
         {
             // Check current modifier state using Keyboard class
-            bool ctrlPressed = Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl);
-            bool altPressed = Keyboard.IsKeyDown(Key.LeftAlt) || Keyboard.IsKeyDown(Key.RightAlt);
-            bool shiftPressed = Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift);
-            bool winPressed = Keyboard.IsKeyDown(Key.LWin) || Keyboard.IsKeyDown(Key.RWin);
+            bool ctrlPressed = Keyboard.IsKeyDown(System.Windows.Input.Key.LeftCtrl) || Keyboard.IsKeyDown(System.Windows.Input.Key.RightCtrl);
+            bool altPressed = Keyboard.IsKeyDown(System.Windows.Input.Key.LeftAlt) || Keyboard.IsKeyDown(System.Windows.Input.Key.RightAlt);
+            bool shiftPressed = Keyboard.IsKeyDown(System.Windows.Input.Key.LeftShift) || Keyboard.IsKeyDown(System.Windows.Input.Key.RightShift);
+            bool winPressed = Keyboard.IsKeyDown(System.Windows.Input.Key.LWin) || Keyboard.IsKeyDown(System.Windows.Input.Key.RWin);
 
             ModifierKeys currentModifiers = ModifierKeys.None;
             if (ctrlPressed) currentModifiers |= ModifierKeys.Control;
@@ -150,9 +154,9 @@ namespace AppManager.Core.Triggers
             if (shiftPressed) currentModifiers |= ModifierKeys.Shift;
             if (winPressed) currentModifiers |= ModifierKeys.Windows;
 
-            _modifiersPressed = currentModifiers == _targetModifiers;
+            ModifiersPressedStored = currentModifiers == TargetModifiersStored;
 
-            if (_modifiersPressed && _keyPressed)
+            if (ModifiersPressedStored && KeyPressedStored)
             {
                 CheckForShortcutActivation();
             }
@@ -160,16 +164,16 @@ namespace AppManager.Core.Triggers
 
         private void CheckForShortcutActivation()
         {
-            if (_keyPressed && _modifiersPressed)
+            if (KeyPressedStored && ModifiersPressedStored)
             {
                 Debug.WriteLine($"Shortcut trigger '{Name}' activated");
 
                 // Trigger the configured action
-                OnTriggerActivated("notepad", AppActionEnum.Launch);
+                OnTriggerActivated("target_app", AppActionTypeEnum.Launch, null, new { Key = TargetKeyStored, Modifiers = TargetModifiersStored });
 
                 // Reset state to prevent multiple activations
-                _keyPressed = false;
-                _modifiersPressed = false;
+                KeyPressedStored = false;
+                ModifiersPressedStored = false;
             }
         }
 
@@ -177,6 +181,19 @@ namespace AppManager.Core.Triggers
         {
             Cleanup();
             base.Dispose();
+        }
+
+        public override TriggerModel ToModel()
+        {
+            return new TriggerModel
+            {
+                TriggerType = TriggerType,
+                IsActive = IsActive,
+                Key = Key,
+                Modifiers = Modifiers,
+                ShortcutCombination = ShortcutCombination,
+                CustomProperties = CustomProperties
+            };
         }
     }
 }

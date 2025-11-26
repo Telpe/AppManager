@@ -4,87 +4,89 @@ using System.Diagnostics.Eventing.Reader;
 using System.Threading;
 using System.Threading.Tasks;
 using AppManager.Core.Actions;
+using System.Collections.Generic;
 
 namespace AppManager.Core.Triggers
 {
     internal class SystemEventTrigger : BaseTrigger
     {
         public override TriggerTypeEnum TriggerType => TriggerTypeEnum.SystemEvent;
-        public override string Description => "Monitors Windows system events (login, logout, lock, unlock, etc.)";
 
-        private TriggerModel _parameters;
-        private EventLogWatcher _eventWatcher;
-        private CancellationTokenSource _cancellationTokenSource;
+        private EventLogWatcher EventWatcherStored;
+        private CancellationTokenSource CancellationTokenSourceStored;
 
-        public SystemEventTrigger(string name = null) : base(name)
+        public string? EventName { get; set; }
+        public string? EventSource { get; set; }
+        public Dictionary<string, object> CustomProperties { get; set; }
+
+        public SystemEventTrigger(TriggerModel model) : base(model)
         {
+            Description = "Monitors Windows system events (login, logout, lock, unlock, etc.)";
+            
+            EventName = model.EventName;
+            EventSource = model.EventSource;
+            CustomProperties = model.CustomProperties ?? [];
         }
 
-        public override bool CanStart(TriggerModel parameters = null)
+        public override bool CanStart()
         {
-            return !string.IsNullOrEmpty(parameters?.EventName);
+            return !string.IsNullOrEmpty(EventName);
         }
 
-        public override async Task<bool> StartAsync(TriggerModel parameters = null)
+        public override Task<bool> StartAsync()
         {
-            if (IsActive || parameters == null)
-                return false;
+            return Task.Run<bool>(() =>
+            {
+                if (!IsActive) { return false; }
 
+                try
+                {
+                    CancellationTokenSourceStored = new CancellationTokenSource();
+
+                    // Monitor Windows security events (logon/logoff events)
+                    string logName = "Security";
+                    string queryString = "*[System[EventID=4624 or EventID=4634 or EventID=4647]]"; // Logon/Logoff events
+                    
+                    // For workstation lock/unlock events
+                    if (EventName.ToLower().Contains("lock") || EventName.ToLower().Contains("unlock"))
+                    {
+                        logName = "System";
+                        queryString = "*[System[EventID=4800 or EventID=4801]]"; // Lock/Unlock events
+                    }
+
+                    var query = new EventLogQuery(logName, PathType.LogName, queryString);
+                    EventWatcherStored = new EventLogWatcher(query);
+                    EventWatcherStored.EventRecordWritten += OnSystemEvent;
+                    
+                    EventWatcherStored.Enabled = true;
+                    
+                    Debug.WriteLine($"System event trigger '{Name}' started monitoring for '{EventName}'");
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error starting system event trigger '{Name}': {ex.Message}");
+                    return false;
+                }
+            });
+        }
+
+        public override void Stop()
+        {
             try
             {
-                _parameters = parameters;
-                _cancellationTokenSource = new CancellationTokenSource();
-
-                // Monitor Windows security events (logon/logoff events)
-                string logName = "Security";
-                string queryString = "*[System[EventID=4624 or EventID=4634 or EventID=4647]]"; // Logon/Logoff events
-                
-                // For workstation lock/unlock events
-                if (parameters.EventName.ToLower().Contains("lock") || parameters.EventName.ToLower().Contains("unlock"))
+                CancellationTokenSourceStored?.Cancel();
+                if (null != EventWatcherStored)
                 {
-                    logName = "System";
-                    queryString = "*[System[EventID=4800 or EventID=4801]]"; // Lock/Unlock events
-                }
-
-                var query = new EventLogQuery(logName, PathType.LogName, queryString);
-                _eventWatcher = new EventLogWatcher(query);
-                _eventWatcher.EventRecordWritten += OnSystemEvent;
-                
-                _eventWatcher.Enabled = true;
-                IsActive = true;
-                
-                Debug.WriteLine($"System event trigger '{Name}' started monitoring for '{parameters.EventName}'");
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error starting system event trigger '{Name}': {ex.Message}");
-                return false;
-            }
-        }
-
-        public override async Task<bool> StopAsync()
-        {
-            if (!IsActive)
-                return true;
-
-            try
-            {
-                _cancellationTokenSource?.Cancel();
-                if (null != _eventWatcher)
-                {
-                    _eventWatcher.Enabled = false;
-                    _eventWatcher.Dispose();
+                    EventWatcherStored.Enabled = false;
+                    EventWatcherStored.Dispose();
                 }
                 
-                IsActive = false;
                 Debug.WriteLine($"System event trigger '{Name}' stopped");
-                return true;
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error stopping system event trigger '{Name}': {ex.Message}");
-                return false;
             }
         }
 
@@ -102,7 +104,7 @@ namespace AppManager.Core.Triggers
                         Debug.WriteLine($"System event trigger '{Name}' detected event: {eventDescription}");
                         
                         // Trigger the configured action
-                        OnTriggerActivated("system", AppActionEnum.Launch, null, new { EventId = eventId, Description = eventDescription });
+                        OnTriggerActivated("system", AppActionTypeEnum.Launch, null, new { EventId = eventId, Description = eventDescription });
                     }
                 }
             }
@@ -127,17 +129,29 @@ namespace AppManager.Core.Triggers
 
         private bool IsTargetEvent(string eventDescription)
         {
-            if (string.IsNullOrEmpty(eventDescription) || string.IsNullOrEmpty(_parameters.EventName))
+            if (string.IsNullOrEmpty(eventDescription) || string.IsNullOrEmpty(EventName))
                 return false;
 
-            return eventDescription.Contains(_parameters.EventName, StringComparison.OrdinalIgnoreCase);
+            return eventDescription.Contains(EventName, StringComparison.OrdinalIgnoreCase);
         }
 
         public override void Dispose()
         {
-            _ = StopAsync();
-            _cancellationTokenSource?.Dispose();
+            Stop();
+            CancellationTokenSourceStored?.Dispose();
             base.Dispose();
+        }
+
+        public override TriggerModel ToModel()
+        {
+            return new TriggerModel
+            {
+                TriggerType = TriggerType,
+                IsActive = IsActive,
+                EventName = EventName,
+                EventSource = EventSource,
+                CustomProperties = CustomProperties
+            };
         }
     }
 }

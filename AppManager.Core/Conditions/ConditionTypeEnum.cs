@@ -4,17 +4,11 @@ namespace AppManager.Core.Conditions
     {
         None,
         ProcessRunning,
-        ProcessNotRunning,
         WindowExists,
-        WindowNotExists,
         WindowFocused,
-        WindowNotFocused,
         WindowMinimized,
-        WindowNotMinimized,
         FileExists,
-        FileNotExists,
         NetworkPortOpen,
-        NetworkPortClosed,
         TimeRange,
         DayOfWeek,
         SystemUptime

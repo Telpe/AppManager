@@ -1,66 +1,111 @@
 using AppManager.Core.Models;
+using System;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace AppManager.Core.Actions
 {
     public class RestartAction : BaseAction
     {
+        public override AppActionTypeEnum ActionType => AppActionTypeEnum.Restart;
         public override string Description => "Restarts an application by closing and launching it";
+        public string? AppName { get; set; }
+        public bool? IncludeChildProcesses { get; set; }
+        public bool? IncludeSimilarNames { get; set; }
+        public int? TimeoutMs { get; set; }
+        public bool? ForceOperation { get; set; }
+        public string? ExecutablePath { get; set; }
+        public string? Arguments { get; set; }
+        private CloseAction? _Close { get; set; }
+        private LaunchAction? _Launch { get; set; }
 
-        public RestartAction(ActionModel model) : base(model) { }
+        public RestartAction(ActionModel model) : base(model) 
+        {
+            AppName = model.AppName;
+            IncludeChildProcesses = model.IncludeChildProcesses;
+            IncludeSimilarNames = model.IncludeSimilarNames;
+            TimeoutMs = model.TimeoutMs;
+            ForceOperation = model.ForceOperation;
+            ExecutablePath = model.ExecutablePath;
+            Arguments = model.Arguments;
+            
+        }
 
         protected override bool CanExecuteAction()
         {
-            var closeAction = new CloseAction(_Model);
-            var launchAction = new LaunchAction(_Model);
-            
-            return closeAction.CanExecute() && launchAction.CanExecute();
+            var closeM = ToModel();
+            var launchM = ToModel();
+
+            closeM.ActionType = AppActionTypeEnum.Close;
+            launchM.ActionType = AppActionTypeEnum.Launch;
+
+            _Close = new CloseAction(closeM);
+            _Launch = new LaunchAction(launchM);
+
+            return _Launch.CanExecute();
         }
 
         protected override Task<bool> ExecuteAsync()
         {
-            return Task<bool>.Run(async () =>
+            return Task<bool>.Run(() =>
             {
-                if (_Model == null || string.IsNullOrEmpty(_Model.AppName))
+                try
+                {
+                    if (_Close?.CanExecute()??false)
+                    {
+                        // First close the application
+                        var closed = _Close.ExecuteActionAsync();
+                        closed.Wait();
+
+                        if (!(closed?.Result ?? false))
+                        {
+                            Debug.WriteLine($"Failed to close {AppName} for restart");
+                        }
+
+                        // Wait a moment before launching
+                        Task.Delay(1000).Wait();
+                    }
+                    else
+                    {
+                        Debug.WriteLine($"Close action can not be executed for {AppName}, proceeding to launch.");
+                    }
+
+                    var launched = _Launch?.ExecuteActionAsync();
+                    launched?.Wait();
+
+                    if (!(launched?.Result ?? false))
+                    {
+                        Debug.WriteLine($"Failed to launch {AppName} after close");
+                        return false;
+                    }
+
+                    Debug.WriteLine($"Successfully restarted: {AppName}");
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Failed to restart {AppName}: {ex.Message}");
+                    return false;
+                }
+            });
+        }
+
+        public override ActionModel ToModel()
+        {
+            return new ActionModel
             {
-                System.Diagnostics.Debug.WriteLine("Invalid ActionModel or AppName is null/empty");
-                return false;
-            }
-
-            // Check conditions before executing
-            if (!CheckConditions())
-            {
-                System.Diagnostics.Debug.WriteLine($"Conditions not met for restarting {_Model.AppName}");
-                return false;
-            }
-
-            var closeAction = new CloseAction(_Model);
-            var launchAction = new LaunchAction(_Model);
-
-            // First close the application
-            bool closed = await closeAction.ExecuteActionAsync();
-            
-            if (!closed)
-            {
-                System.Diagnostics.Debug.WriteLine($"Failed to close {_Model.AppName} for restart");
-                return false;
-            }
-
-            // Wait a moment before launching
-            await Task.Delay(1000);
-
-            // Then launch it again
-            bool launched = await launchAction.ExecuteActionAsync();
-            
-            if (!launched)
-            {
-                System.Diagnostics.Debug.WriteLine($"Failed to launch {_Model.AppName} after close");
-                return false;
-            }
-
-            System.Diagnostics.Debug.WriteLine($"Successfully restarted: {_Model.AppName}");
-            return true;
-                });
+                AppName = AppName,
+                ActionType = ActionType,
+                IncludeChildProcesses = IncludeChildProcesses,
+                IncludeSimilarNames = IncludeSimilarNames,
+                TimeoutMs = TimeoutMs,
+                ForceOperation = ForceOperation,
+                ExecutablePath = ExecutablePath,
+                Arguments = Arguments,
+                Conditions = Conditions.Select(c => c.ToModel()).ToArray()
+            };
         }
     }
 }

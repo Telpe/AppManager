@@ -1,0 +1,6 @@
+# Remove the line below if you want to inherit .editorconfig settings from higher directories
+root = false
+# Private fields beginning with underscore should be renamed to have 'Stored' suffix with capital first letter
+dotnet_naming_rule.private_fields_underscore_should_be_stored_suffix.severity = error
+dotnet_naming_rule.private_fields_underscore_should_be_stored_suffix.symbols = private_fields_underscore
+dotnet_naming_rule.private_fields_underscore_should_be_stored_suffix.style = stored_suffix_style

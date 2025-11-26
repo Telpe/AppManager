@@ -4,74 +4,81 @@ using System.Management;
 using System.Threading;
 using System.Threading.Tasks;
 using AppManager.Core.Actions;
+using System.Collections.Generic;
 
 namespace AppManager.Core.Triggers
 {
     internal class AppCloseTrigger : BaseTrigger
     {
         public override TriggerTypeEnum TriggerType => TriggerTypeEnum.AppClose;
-        public override string Description => "Monitors for application close/exit events";
 
-        private TriggerModel _parameters;
-        private ManagementEventWatcher _processWatcher;
-        private CancellationTokenSource _cancellationTokenSource;
+        private ManagementEventWatcher ProcessWatcherStored;
+        private CancellationTokenSource CancellationTokenSourceStored;
 
-        public AppCloseTrigger(string name = null) : base(name)
+        public string? ProcessName { get; set; }
+        public string? ExecutablePath { get; set; }
+        public bool? MonitorChildProcesses { get; set; }
+        public Dictionary<string, object> CustomProperties { get; set; }
+
+        public AppCloseTrigger(TriggerModel model) : base(model)
         {
+            Description = "Monitors for application close/exit events";
+            
+            ProcessName = model.ProcessName;
+            ExecutablePath = model.ExecutablePath;
+            MonitorChildProcesses = model.MonitorChildProcesses;
+            CustomProperties = model.CustomProperties ?? [];
         }
 
-        public override bool CanStart(TriggerModel parameters = null)
+        public override bool CanStart()
         {
-            return !string.IsNullOrEmpty(parameters?.ProcessName) || !string.IsNullOrEmpty(parameters?.ExecutablePath);
+            return !string.IsNullOrEmpty(ProcessName) || !string.IsNullOrEmpty(ExecutablePath);
         }
 
-        public override async Task<bool> StartAsync(TriggerModel parameters = null)
+        public override Task<bool> StartAsync()
         {
-            if (IsActive || parameters == null)
-                return false;
+            return Task.Run<bool>(() =>
+            {
+                if (!IsActive) { return false; }
 
+                try
+                {
+                    CancellationTokenSourceStored = new CancellationTokenSource();
+
+                    // Use WMI to monitor process termination events
+                    var query = new WqlEventQuery("SELECT * FROM Win32_ProcessStopTrace");
+                    ProcessWatcherStored = new ManagementEventWatcher(query);
+                    ProcessWatcherStored.EventArrived += OnProcessStopped;
+                    
+                    ProcessWatcherStored.Start();
+                    
+                    Debug.WriteLine($"App close trigger '{Name}' started monitoring for '{ProcessName}'");
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error starting app close trigger '{Name}': {ex.Message}");
+                    return false;
+                }
+            });
+        }
+
+        public override void Stop()
+        {
             try
             {
-                _parameters = parameters;
-                _cancellationTokenSource = new CancellationTokenSource();
-
-                // Use WMI to monitor process termination events
-                var query = new WqlEventQuery("SELECT * FROM Win32_ProcessStopTrace");
-                _processWatcher = new ManagementEventWatcher(query);
-                _processWatcher.EventArrived += OnProcessStopped;
+                CancellationTokenSourceStored?.Cancel();
+                if (ProcessWatcherStored != null)
+                {
+                    ProcessWatcherStored.Stop();
+                    ProcessWatcherStored.Dispose();
+                }
                 
-                _processWatcher.Start();
-                IsActive = true;
-                
-                Debug.WriteLine($"App close trigger '{Name}' started monitoring for '{parameters.ProcessName}'");
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error starting app close trigger '{Name}': {ex.Message}");
-                return false;
-            }
-        }
-
-        public override async Task<bool> StopAsync()
-        {
-            if (!IsActive)
-                return true;
-
-            try
-            {
-                _cancellationTokenSource?.Cancel();
-                _processWatcher?.Stop();
-                _processWatcher?.Dispose();
-                
-                IsActive = false;
                 Debug.WriteLine($"App close trigger '{Name}' stopped");
-                return true;
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Error stopping app close trigger '{Name}': {ex.Message}");
-                return false;
             }
         }
 
@@ -87,7 +94,7 @@ namespace AppManager.Core.Triggers
                     Debug.WriteLine($"App close trigger '{Name}' detected close of '{processName}' (PID: {processId})");
                     
                     // Trigger the configured action
-                    OnTriggerActivated(_parameters.ProcessName, AppActionEnum.Launch);
+                    OnTriggerActivated(ProcessName ?? "target_app", AppActionTypeEnum.Launch, null, new { ProcessName = processName, ProcessId = processId });
                 }
             }
             catch (Exception ex)
@@ -102,16 +109,16 @@ namespace AppManager.Core.Triggers
                 return false;
 
             // Check by process name
-            if (!string.IsNullOrEmpty(_parameters.ProcessName))
+            if (!string.IsNullOrEmpty(ProcessName))
             {
-                return processName.Equals(_parameters.ProcessName, StringComparison.OrdinalIgnoreCase) ||
-                       processName.StartsWith(_parameters.ProcessName, StringComparison.OrdinalIgnoreCase);
+                return processName.Equals(ProcessName, StringComparison.OrdinalIgnoreCase) ||
+                       processName.StartsWith(ProcessName, StringComparison.OrdinalIgnoreCase);
             }
 
             // Check by executable path if provided
-            if (!string.IsNullOrEmpty(_parameters.ExecutablePath))
+            if (!string.IsNullOrEmpty(ExecutablePath))
             {
-                return processName.Contains(System.IO.Path.GetFileNameWithoutExtension(_parameters.ExecutablePath));
+                return processName.Contains(System.IO.Path.GetFileNameWithoutExtension(ExecutablePath));
             }
 
             return false;
@@ -119,9 +126,22 @@ namespace AppManager.Core.Triggers
 
         public override void Dispose()
         {
-            _ = StopAsync();
-            _cancellationTokenSource?.Dispose();
+            Stop();
+            CancellationTokenSourceStored?.Dispose();
             base.Dispose();
+        }
+
+        public override TriggerModel ToModel()
+        {
+            return new TriggerModel
+            {
+                TriggerType = TriggerType,
+                IsActive = IsActive,
+                ProcessName = ProcessName,
+                ExecutablePath = ExecutablePath,
+                MonitorChildProcesses = MonitorChildProcesses,
+                CustomProperties = CustomProperties
+            };
         }
     }
 }

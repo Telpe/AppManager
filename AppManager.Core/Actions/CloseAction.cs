@@ -3,15 +3,30 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Management;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace AppManager.Core.Actions
 {
     public class CloseAction : BaseAction
     {
+        public string? AppName { get; set; }
+        public override AppActionTypeEnum ActionType => AppActionTypeEnum.Close;
         public override string Description => "Closes an application gracefully";
 
-        public CloseAction(ActionModel model) : base(model) { }
+        public int? TimeoutMs { get; private set; }
+        public bool? ForceOperation { get; private set; }
+        public bool? IncludeSimilarNames { get; private set; }
+        public bool? IncludeChildProcesses { get; private set; }
+
+        public CloseAction(ActionModel model) : base(model)
+        {
+            AppName = model.AppName;
+            IncludeChildProcesses = model.IncludeChildProcesses;
+            IncludeSimilarNames = model.IncludeSimilarNames;
+            TimeoutMs = model.TimeoutMs;
+            ForceOperation = model.ForceOperation;
+        }
 
         protected override Task<bool> ExecuteAsync()
         {
@@ -19,11 +34,11 @@ namespace AppManager.Core.Actions
             {
                 try
                 {
-                    var processes = GetProcesses(_Model);
+                    var processes = GetProcesses();
                 
                     if (!processes.Any())
                     {
-                        Debug.WriteLine($"No processes found for: {_Model.AppName}");
+                        Debug.WriteLine($"No processes found for: {AppName}");
                         return false;
                     }
 
@@ -35,10 +50,10 @@ namespace AppManager.Core.Actions
                         {
                             process.CloseMainWindow();
 
-                            if (!process.WaitForExit(_Model.TimeoutMs))
+                            if (!process.WaitForExit(TimeoutMs??1000))
                             {
                                 Debug.WriteLine($"Process failed to close gracefully: {process.ProcessName} (ID: {process.Id})");
-                                if (_Model.ForceOperation)
+                                if (ForceOperation??false)
                                 {
                                     process.Kill();
                                     Debug.WriteLine($"Force closing: {process.ProcessName} (ID: {process.Id})");
@@ -63,32 +78,32 @@ namespace AppManager.Core.Actions
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"Failed to close {_Model.AppName}: {ex.Message}");
+                    Debug.WriteLine($"Failed to close {AppName}: {ex.Message}");
                     return false;
                 }
             });
         }
 
-        private Process[] GetProcesses(ActionModel model)
+        private Process[] GetProcesses()
         {
             try
             {
                 Process[] processes;
                 
-                if (model.IncludeSimilarNames)
+                if (IncludeSimilarNames??false)
                 {
                     // Get all processes and filter by name pattern
                     processes = Process.GetProcesses()
-                        .Where(p => p.ProcessName.IndexOf(model.AppName, StringComparison.OrdinalIgnoreCase) >= 0)
+                        .Where(p => p.ProcessName.IndexOf(AppName, StringComparison.OrdinalIgnoreCase) >= 0)
                         .ToArray();
                 }
                 else
                 {
                     // Get exact match processes
-                    processes = Process.GetProcessesByName(model.AppName);
+                    processes = Process.GetProcessesByName(AppName);
                 }
 
-                if (model.IncludeChildProcesses)
+                if (IncludeChildProcesses ?? false)
                 {
                     // Add child processes
                     var allProcesses = processes.ToList();
@@ -104,7 +119,7 @@ namespace AppManager.Core.Actions
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error getting processes for {model.AppName}: {ex.Message}");
+                Debug.WriteLine($"Error getting processes for {AppName}: {ex.Message}");
                 return new Process[0];
             }
         }
@@ -135,6 +150,20 @@ namespace AppManager.Core.Actions
                 Debug.WriteLine($"Failed to get parent process ID: {ex.Message}");
             }
             return -1;
+        }
+
+        public override ActionModel ToModel()
+        {
+            return new ActionModel()
+            {
+                AppName = AppName,
+                ActionType = ActionType,
+                IncludeChildProcesses = IncludeChildProcesses,
+                IncludeSimilarNames = IncludeSimilarNames,
+                TimeoutMs = TimeoutMs,
+                ForceOperation = ForceOperation,
+                Conditions = Conditions.Select(c => c.ToModel()).ToArray()
+            };
         }
     }
 }

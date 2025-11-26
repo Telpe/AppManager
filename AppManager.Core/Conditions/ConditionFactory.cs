@@ -8,10 +8,8 @@ namespace AppManager.Core.Conditions
     {
         private static readonly Dictionary<ConditionTypeEnum, Func<ConditionModel, ICondition>> _conditionFactories = new Dictionary<ConditionTypeEnum, Func<ConditionModel, ICondition>>
         {
-            { ConditionTypeEnum.ProcessRunning, (model) => new ProcessRunningCondition(){ Model=model } },
-            { ConditionTypeEnum.ProcessNotRunning, (model) => new ProcessNotRunningCondition(){ Model=model } },
-            { ConditionTypeEnum.FileExists, (model) => new FileExistsCondition(){ Model=model } },
-            { ConditionTypeEnum.FileNotExists, (model) => new FileNotExistsCondition(){ Model=model } }
+            { ConditionTypeEnum.ProcessRunning, (model) => new ProcessRunningCondition(model) },
+            { ConditionTypeEnum.FileExists, (model) => new FileExistsCondition(model) },
         };
 
         public static ICondition CreateCondition(ConditionModel model)
@@ -24,6 +22,16 @@ namespace AppManager.Core.Conditions
             }
 
             throw new NotSupportedException($"Condition type {model.ConditionType} is not supported");
+        }
+
+        public static bool IsConditionTypeSupported(ConditionTypeEnum conditionType)
+        {
+            return _conditionFactories.ContainsKey(conditionType);
+        }
+
+        public static void SetConditionFactory(ConditionTypeEnum conditionType, Func<ConditionModel, ICondition> factoryFunc)
+        {
+            _conditionFactories[conditionType] = factoryFunc;
         }
 
         public static IEnumerable<ConditionTypeEnum> GetSupportedConditionTypes()

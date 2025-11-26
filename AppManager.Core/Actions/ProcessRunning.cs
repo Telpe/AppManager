@@ -6,15 +6,15 @@ namespace AppManager.Core.Actions
 {
     public class ProcessRunning
     {
-        private readonly List<string> _ResponseMessages = new List<string>();
-        private readonly string _ErrorMessage = "";
-        private bool _Running = false;
-        private int _ClosingAttempts = 0;
+        private readonly List<string> ResponseMessagesStored = new List<string>();
+        private readonly string ErrorMessageStored = "";
+        private bool RunningStored = false;
+        private int ClosingAttemptsStored = 0;
 
         public string AppName { get; set; }
-        public List<string> ResponseMessages { get { return _ResponseMessages; } }
-        public bool Running { get { return _Running; } }
-        public int ClosingAttempts { get { return _ClosingAttempts; } }
+        public List<string> ResponseMessages { get { return ResponseMessagesStored; } }
+        public bool Running { get { return RunningStored; } }
+        public int ClosingAttempts { get { return ClosingAttemptsStored; } }
         public ProcessRunningOptions Options { get; set; }
 
         public ProcessRunning(string inputName)
@@ -56,8 +56,8 @@ namespace AppManager.Core.Actions
         {
             try
             {
-                _Running = true;
-                _ClosingAttempts++;
+                RunningStored = true;
+                ClosingAttemptsStored++;
                 var process = new Process
                 {
                     StartInfo = new ProcessStartInfo
@@ -74,16 +74,16 @@ namespace AppManager.Core.Actions
 
                 while (!process.StandardOutput.EndOfStream)
                 {
-                    _ResponseMessages.Add(process.StandardOutput.ReadLine());
+                    ResponseMessagesStored.Add(process.StandardOutput.ReadLine());
                 }
 
                 process.WaitForExit();
-                _Running = false;
+                RunningStored = false;
             }
             catch (Exception ev)
             {
-                _ResponseMessages.Add( ev.Message );
-                _Running = false;
+                ResponseMessagesStored.Add( ev.Message );
+                RunningStored = false;
             }
         }
     }

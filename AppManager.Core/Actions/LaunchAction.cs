@@ -1,63 +1,72 @@
-using System;
-using System.Diagnostics;
-using System.Threading.Tasks;
 using AppManager.Core.Models;
 using AppManager.Core.Utils;
+using System;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace AppManager.Core.Actions
 {
     public class LaunchAction : BaseAction
     {
+        public string? AppName { get; set; }
+        public override AppActionTypeEnum ActionType => AppActionTypeEnum.Launch;
         public override string Description => "Launches an application";
 
-        public LaunchAction(ActionModel model) : base(model) { }
+        public string? ExecutablePath { get; set; }
+        public string? Arguments { get; set; }
+
+        public LaunchAction(ActionModel model) : base(model)
+        {
+            AppName = model.AppName;
+            ExecutablePath = model.ExecutablePath;
+            Arguments = model.Arguments;
+        }
 
         protected override bool CanExecuteAction()
         {
-            if (String.IsNullOrEmpty(_Model?.AppName)) { return false; }
+            if (string.IsNullOrEmpty(AppName)) { return false; }
 
             SetExecutablePath();
 
-            return !String.IsNullOrEmpty(_Model.ExecutablePath);
+            return !string.IsNullOrEmpty(ExecutablePath);
         }
 
         private void SetExecutablePath()
         {
-            if (File.Exists(_Model.ExecutablePath)){ return; }
+            if (File.Exists(ExecutablePath)) { return; }
 
             string[] executablePaths = Array.Empty<string>();
 
-            if (String.IsNullOrEmpty(_Model.ExecutablePath))
+            if (string.IsNullOrEmpty(ExecutablePath))
             {
-                executablePaths = FileManager.FindExecutables(_Model.AppName);
-
+                executablePaths = FileManager.FindExecutables(AppName);
             }
             else
             {
-                executablePaths = FileManager.FindExecutables(_Model.AppName, [_Model.ExecutablePath]);
+                executablePaths = FileManager.FindExecutables(AppName, [ExecutablePath]);
             }
 
             if (executablePaths.Length == 1)
             {
-                _Model.ExecutablePath = executablePaths[0];
+                ExecutablePath = executablePaths[0];
                 return;
             }
 
-            
             if (executablePaths.Length > 1)
             {
-                string[] newExecutablePaths = executablePaths.Where(p => _Model.AppName == Path.GetFileNameWithoutExtension(p)).ToArray();
+                string[] newExecutablePaths = executablePaths.Where(p => AppName == Path.GetFileNameWithoutExtension(p)).ToArray();
 
-                if (0 < newExecutablePaths.Length) 
-                { 
-                    _Model.ExecutablePath = newExecutablePaths[0]; 
+                if (0 < newExecutablePaths.Length)
+                {
+                    ExecutablePath = newExecutablePaths[0];
                     return;
                 }
 
-                _Model.ExecutablePath = String.Empty;
-                Debug.WriteLine($"Could not find executable for: {_Model.AppName}");
+                ExecutablePath = string.Empty;
+                Debug.WriteLine($"Could not find executable for: {AppName}");
             }
-
         }
 
         protected override Task<bool> ExecuteAsync()
@@ -68,8 +77,8 @@ namespace AppManager.Core.Actions
                 {
                     var startInfo = new ProcessStartInfo
                     {
-                        FileName = _Model.ExecutablePath,
-                        Arguments = _Model.Arguments ?? string.Empty,
+                        FileName = ExecutablePath,
+                        Arguments = Arguments ?? string.Empty,
                         UseShellExecute = true
                     };
 
@@ -77,19 +86,31 @@ namespace AppManager.Core.Actions
 
                     if (process != null)
                     {
-                        Debug.WriteLine($"Successfully launched: {_Model.AppName}");
+                        Debug.WriteLine($"Successfully launched: {AppName}");
                         return true;
                     }
 
-                    Debug.WriteLine($"Failed to launch {_Model.AppName}");
+                    Debug.WriteLine($"Failed to launch {AppName}");
                     return false;
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"Failed to launch {_Model.AppName}: {ex.Message}");
+                    Debug.WriteLine($"Failed to launch {AppName}: {ex.Message}");
                     return false;
                 }
             });
+        }
+
+        public override ActionModel ToModel()
+        {
+            return new ActionModel
+            {
+                AppName = AppName,
+                ActionType = ActionType,
+                ExecutablePath = ExecutablePath,
+                Arguments = Arguments,
+                Conditions = Conditions.Select(c => c.ToModel()).ToArray()
+            };
         }
     }
 }

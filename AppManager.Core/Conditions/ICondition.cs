@@ -7,8 +7,9 @@ namespace AppManager.Core.Conditions
     {
         string Id { get; }
         ConditionTypeEnum ConditionType { get; }
-        string Description { get; }
-        ConditionModel Model { get; set; }
+        bool IsNot { get; set; }
+        string Description { get; set; }
         bool Execute();
+        ConditionModel ToModel();
     }
 }

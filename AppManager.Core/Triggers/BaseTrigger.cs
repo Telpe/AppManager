@@ -5,23 +5,31 @@ using AppManager.Core.Models;
 
 namespace AppManager.Core.Triggers
 {
-    internal abstract class BaseTrigger : ITrigger
+    public abstract class BaseTrigger : ITrigger
     {
         public abstract TriggerTypeEnum TriggerType { get; }
         public string Name { get; set; }
-        public abstract string Description { get; }
-        public bool IsActive { get; protected set; }
+        public string Description { get; set; } = "";
+        public bool IsActive { get; set; }
 
         public event EventHandler<TriggerActivatedEventArgs> TriggerActivated;
 
-        protected BaseTrigger(string name = null)
+        protected BaseTrigger(TriggerModel model)
         {
-            Name = name ?? GetType().Name;
+            if (model.TriggerType != TriggerType)
+            {
+                throw new ArgumentException($"model type '{model.TriggerType}' does not match trigger type '{TriggerType}'.");
+            }
+
+            Name = TriggerType.ToString();
+            IsActive = model.IsActive;
+            TriggerActivated = new EventHandler<TriggerActivatedEventArgs>((s, e) => { });
         }
 
-        public abstract Task<bool> StartAsync(TriggerModel parameters = null);
-        public abstract Task<bool> StopAsync();
-        public abstract bool CanStart(TriggerModel parameters = null);
+        public abstract TriggerModel ToModel();
+        public abstract Task<bool> StartAsync();
+        public abstract void Stop();
+        public abstract bool CanStart();
 
         protected virtual void OnTriggerActivated(TriggerActivatedEventArgs args)
         {
@@ -30,7 +38,7 @@ namespace AppManager.Core.Triggers
             TriggerActivated?.Invoke(this, args);
         }
 
-        protected virtual void OnTriggerActivated(string targetAppName, AppActionEnum action, ActionModel actionParams = null, object triggerData = null)
+        protected virtual void OnTriggerActivated(string targetAppName, AppActionTypeEnum action, ActionModel actionParams = null, object triggerData = null)
         {
             var args = new TriggerActivatedEventArgs
             {
@@ -47,10 +55,8 @@ namespace AppManager.Core.Triggers
 
         public virtual void Dispose()
         {
-            if (IsActive)
-            {
-                _ = StopAsync();
-            }
+            Stop();
         }
+
     }
 }

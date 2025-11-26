@@ -6,8 +6,7 @@ namespace AppManager.Core.Actions
 {
     public interface IAppAction
     {
-        public string AppName { get; set; }
-        public AppActionEnum ActionName { get; }
+        public AppActionTypeEnum ActionType { get; }
         string Description { get; }
         Task<bool> ExecuteActionAsync();
         bool CanExecute();

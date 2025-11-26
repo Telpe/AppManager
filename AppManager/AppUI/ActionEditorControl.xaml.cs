@@ -85,7 +85,7 @@ namespace AppManager.AppUI
                 // Populate Action Type ComboBox
                 if (ActionTypeComboBox != null)
                 {
-                    ActionTypeComboBox.ItemsSource = Enum.GetValues(typeof(AppActionEnum)).Cast<AppActionEnum>();
+                    ActionTypeComboBox.ItemsSource = _actionManager.GetAvailableActions();
                     ActionTypeComboBox.SelectedIndex = 0;
                 }
 
@@ -114,7 +114,7 @@ namespace AppManager.AppUI
             try
             {
                 if (ActionTypeComboBox != null)
-                    ActionTypeComboBox.SelectedItem = _currentAction.ActionName;
+                    ActionTypeComboBox.SelectedItem = _currentAction.ActionType;
                 
                 if (AppNameTextBox != null)
                     AppNameTextBox.Text = _currentAction.AppName ?? string.Empty;
@@ -162,7 +162,7 @@ namespace AppManager.AppUI
         {
             var action = new ActionModel
             {
-                ActionName = (AppActionEnum)(ActionTypeComboBox?.SelectedItem ?? AppActionEnum.Launch),
+                ActionType = (AppActionTypeEnum)(ActionTypeComboBox?.SelectedItem ?? AppActionTypeEnum.Launch),
                 AppName = AppNameTextBox?.Text?.Trim() ?? string.Empty,
                 WindowTitle = WindowTitleTextBox?.Text?.Trim() ?? string.Empty,
                 ExecutablePath = ExecutablePathTextBox?.Text?.Trim() ?? string.Empty,
@@ -184,7 +184,7 @@ namespace AppManager.AppUI
                 if (PreviewTextBlock == null) return;
 
                 var action = CreateActionModel();
-                var preview = $"Action Type: {action.ActionName}\n" +
+                var preview = $"Action Type: {action.ActionType}\n" +
                              $"App Name: {action.AppName ?? "Not specified"}\n" +
                              $"Window Title: {action.WindowTitle ?? "Not specified"}\n";
 
@@ -226,9 +226,7 @@ namespace AppManager.AppUI
             return condition.ConditionType switch
             {
                 ConditionTypeEnum.ProcessRunning => $"Process '{condition.ProcessName}' is running",
-                ConditionTypeEnum.ProcessNotRunning => $"Process '{condition.ProcessName}' is not running",
                 ConditionTypeEnum.FileExists => $"File '{condition.FilePath}' exists",
-                ConditionTypeEnum.FileNotExists => $"File '{condition.FilePath}' does not exist",
                 _ => "Unknown condition"
             };
         }
@@ -237,9 +235,9 @@ namespace AppManager.AppUI
         {
             try
             {
-                if (ActionTypeComboBox?.SelectedItem is AppActionEnum actionType && LaunchOptionsGroup != null)
+                if (ActionTypeComboBox?.SelectedItem is AppActionTypeEnum actionType && LaunchOptionsGroup != null)
                 {
-                    LaunchOptionsGroup.Visibility = actionType == AppActionEnum.Launch ? Visibility.Visible : Visibility.Collapsed;
+                    LaunchOptionsGroup.Visibility = actionType == AppActionTypeEnum.Launch ? Visibility.Visible : Visibility.Collapsed;
                 }
                 UpdatePreview();
             }
@@ -345,7 +343,7 @@ namespace AppManager.AppUI
                 if (string.IsNullOrWhiteSpace(AppNameTextBox?.Text))
                     errors.Add("App Name is required");
                 
-                if (ActionTypeComboBox?.SelectedItem is AppActionEnum actionType && actionType == AppActionEnum.Launch)
+                if (ActionTypeComboBox?.SelectedItem is AppActionTypeEnum actionType && actionType == AppActionTypeEnum.Launch)
                 {
                     if (string.IsNullOrWhiteSpace(ExecutablePathTextBox?.Text))
                         errors.Add("Executable Path is required for Launch action");
@@ -409,9 +407,7 @@ namespace AppManager.AppUI
             return model.ConditionType switch
             {
                 ConditionTypeEnum.ProcessRunning => $"Process Running: {model.ProcessName}",
-                ConditionTypeEnum.ProcessNotRunning => $"Process Not Running: {model.ProcessName}",
                 ConditionTypeEnum.FileExists => $"File Exists: {model.FilePath}",
-                ConditionTypeEnum.FileNotExists => $"File Not Exists: {model.FilePath}",
                 _ => $"Unknown Condition: {model.ConditionType}"
             };
         }
@@ -485,8 +481,8 @@ namespace AppManager.AppUI
         {
             return ConditionModel.ConditionType switch
             {
-                ConditionTypeEnum.ProcessRunning or ConditionTypeEnum.ProcessNotRunning => "Process Name:",
-                ConditionTypeEnum.FileExists or ConditionTypeEnum.FileNotExists => "File Path:",
+                ConditionTypeEnum.ProcessRunning or ConditionTypeEnum.ProcessRunning => "Process Name:",
+                ConditionTypeEnum.FileExists or ConditionTypeEnum.FileExists => "File Path:",
                 _ => "Value:"
             };
         }
@@ -503,11 +499,9 @@ namespace AppManager.AppUI
             switch (ConditionModel.ConditionType)
             {
                 case ConditionTypeEnum.ProcessRunning:
-                case ConditionTypeEnum.ProcessNotRunning:
                     ConditionModel.ProcessName = value;
                     break;
                 case ConditionTypeEnum.FileExists:
-                case ConditionTypeEnum.FileNotExists:
                     ConditionModel.FilePath = value;
                     break;
             }

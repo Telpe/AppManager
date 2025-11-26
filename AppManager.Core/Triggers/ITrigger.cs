@@ -1,6 +1,7 @@
+using AppManager.Core.Actions;
+using AppManager.Core.Models;
 using System;
 using System.Threading.Tasks;
-using AppManager.Core.Actions;
 
 namespace AppManager.Core.Triggers
 {
@@ -8,13 +9,14 @@ namespace AppManager.Core.Triggers
     {
         TriggerTypeEnum TriggerType { get; }
         string Name { get; set; }
-        string Description { get; }
-        bool IsActive { get; }
+        string Description { get; set; }
+        bool IsActive { get; set; }
         
         event EventHandler<TriggerActivatedEventArgs> TriggerActivated;
         
-        Task<bool> StartAsync(TriggerModel parameters = null);
-        Task<bool> StopAsync();
-        bool CanStart(TriggerModel parameters = null);
+        Task<bool> StartAsync();
+        void Stop();
+        bool CanStart();
+        TriggerModel ToModel();
     }
 }

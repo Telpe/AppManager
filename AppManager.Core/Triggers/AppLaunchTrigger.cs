@@ -13,8 +13,8 @@ namespace AppManager.Core.Triggers
     {
         public override TriggerTypeEnum TriggerType => TriggerTypeEnum.AppLaunch;
 
-        private ManagementEventWatcher ProcessWatcherStored;
-        private CancellationTokenSource CancellationTokenSourceStored;
+        private ManagementEventWatcher ProcessWatcherStored = new ManagementEventWatcher();
+        private CancellationTokenSource CancellationTokenSourceStored = new CancellationTokenSource();
 
         public string? ProcessName { get; set; }
         public string? ExecutablePath { get; set; }
@@ -68,12 +68,10 @@ namespace AppManager.Core.Triggers
         {
             try
             {
-                CancellationTokenSourceStored?.Cancel();
-                if (ProcessWatcherStored != null)
-                {
-                    ProcessWatcherStored.Stop();
-                    ProcessWatcherStored.Dispose();
-                }
+                CancellationTokenSourceStored.Cancel();
+                
+                ProcessWatcherStored.Stop();
+                ProcessWatcherStored.Dispose();
                 
                 Debug.WriteLine($"App launch trigger '{Name}' stopped");
             }
@@ -104,25 +102,25 @@ namespace AppManager.Core.Triggers
             }
         }
 
-        private bool IsTargetProcess(string processName)
+        private bool IsTargetProcess(string? processName)
         {
-            if (string.IsNullOrEmpty(processName))
-                return false;
+            if (string.IsNullOrEmpty(processName)){ return false; }
+
+            bool isTargetProcess = false;
 
             // Check by process name
             if (!string.IsNullOrEmpty(ProcessName))
             {
-                return processName.Equals(ProcessName, StringComparison.OrdinalIgnoreCase) ||
-                       processName.StartsWith(ProcessName, StringComparison.OrdinalIgnoreCase);
+                isTargetProcess = processName.Equals(ProcessName, StringComparison.OrdinalIgnoreCase) || processName.StartsWith(ProcessName, StringComparison.OrdinalIgnoreCase);
             }
 
             // Check by executable path if provided
-            if (!string.IsNullOrEmpty(ExecutablePath))
+            if (!isTargetProcess && !string.IsNullOrEmpty(ExecutablePath))
             {
-                return processName.Contains(System.IO.Path.GetFileNameWithoutExtension(ExecutablePath));
+                isTargetProcess = processName.Contains(Path.GetFileNameWithoutExtension(ExecutablePath));
             }
 
-            return false;
+            return isTargetProcess;
         }
 
         public override void Dispose()

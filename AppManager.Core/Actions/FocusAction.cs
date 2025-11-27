@@ -1,4 +1,5 @@
 using AppManager.Core.Models;
+using AppManager.Core.Utils;
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -50,7 +51,11 @@ namespace AppManager.Core.Actions
             {
                 try
                 {
-                    var process = GetTargetProcess();
+                    var process = ProcessManager.FindProcess(
+                        AppName, 
+                        IncludeSimilarNames ?? false, 
+                        WindowTitle, 
+                        requireMainWindow: true);
                 
                     if (process == null)
                     {
@@ -96,44 +101,6 @@ namespace AppManager.Core.Actions
                     return false;
                 }
             });
-        }
-
-        private Process GetTargetProcess()
-        {
-            try
-            {
-                Process[] processes;
-                
-                if (IncludeSimilarNames ?? false)
-                {
-                    processes = Process.GetProcesses()
-                        .Where(p => p.ProcessName.IndexOf(AppName, StringComparison.OrdinalIgnoreCase) >= 0)
-                        .Where(p => p.MainWindowHandle != IntPtr.Zero)
-                        .ToArray();
-                }
-                else
-                {
-                    processes = Process.GetProcessesByName(AppName)
-                        .Where(p => p.MainWindowHandle != IntPtr.Zero)
-                        .ToArray();
-                }
-
-                // If window title is specified, filter by it
-                if (!string.IsNullOrEmpty(WindowTitle))
-                {
-                    processes = processes
-                        .Where(p => p.MainWindowTitle.IndexOf(WindowTitle, StringComparison.OrdinalIgnoreCase) >= 0)
-                        .ToArray();
-                }
-
-                // Return the first process with a visible window
-                return processes.FirstOrDefault();
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error finding process for focusing {AppName}: {ex.Message}");
-                return null;
-            }
         }
 
         public override ActionModel ToModel()

@@ -41,7 +41,7 @@ namespace AppManager.Core.Actions
 
                 return action?.CanExecute() ?? false;
             }
-            catch (Exception e) { return false; }
+            catch { return false; }
             
         }
 

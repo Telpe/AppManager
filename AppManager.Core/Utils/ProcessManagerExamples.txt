@@ -1,0 +1,8 @@
+﻿// For Actions that need single process
+var process = ProcessManager.FindProcess("notepad", includeSimilarNames: true, windowTitle: "Document");
+
+// For Actions that need multiple processes  
+var processes = ProcessManager.FindProcesses("chrome", requireMainWindow: false, includeChildProcesses: true);
+
+// For Conditions that just check existence
+bool isRunning = ProcessManager.IsProcessRunning("notepad");

@@ -1,6 +1,5 @@
 using AppManager.Core.Models;
-using System.Diagnostics;
-using System.Linq;
+using AppManager.Core.Utils;
 
 namespace AppManager.Core.Conditions
 {
@@ -25,8 +24,7 @@ namespace AppManager.Core.Conditions
                     return false;
                 }
 
-                var processes = Process.GetProcessesByName(ProcessName);
-                bool isRunning = processes.Any();
+                bool isRunning = ProcessManager.IsProcessRunning(ProcessName);
 
                 //LogConditionResult(isRunning, $"Process '{ProcessName}' running: {isRunning}");
                 return isRunning;

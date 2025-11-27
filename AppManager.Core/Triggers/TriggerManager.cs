@@ -85,9 +85,9 @@ namespace AppManager.Core.Triggers
             return _triggers.Keys;
         }
 
-        public ITrigger GetTrigger(string name)
+        public ITrigger? GetTrigger(string name)
         {
-            _triggers.TryGetValue(name, out ITrigger trigger);
+            _triggers.TryGetValue(name, out ITrigger? trigger);
             return trigger;
         }
 

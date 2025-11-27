@@ -38,7 +38,7 @@ namespace AppManager.Core.Triggers
             TriggerActivated?.Invoke(this, args);
         }
 
-        protected virtual void OnTriggerActivated(string targetAppName, AppActionTypeEnum action, ActionModel actionParams = null, object triggerData = null)
+        protected virtual void OnTriggerActivated(string targetAppName, AppActionTypeEnum action, ActionModel? actionParams = null, object? triggerData = null)
         {
             var args = new TriggerActivatedEventArgs
             {

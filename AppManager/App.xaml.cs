@@ -46,7 +46,7 @@ namespace AppManager
                 : ProfileManager.DefaultProfileFilename;
             
             // Load the specific profile
-            if (ProfileManager.ProfileExists(profileToLoad))
+            if (ProfileManager.ProfileExist(profileToLoad))
             {
                 ProfileManager.LoadAndSetProfile(profileToLoad);
                 Debug.WriteLine($"Loaded last used profile: {profileToLoad}");
@@ -71,7 +71,7 @@ namespace AppManager
 
         private void CheckRunningHandler(object sender, ElapsedEventArgs eve)
         {
-            Application.Current.Dispatcher.Invoke(CheckRunning);
+            Application.Current.Dispatcher.InvokeAsync(CheckRunning).Wait();
         }
 
         public void CheckRunning()

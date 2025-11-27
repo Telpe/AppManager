@@ -8,7 +8,7 @@ namespace AppManager.Core.Utils
     {
         public override Version Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            string versionString = reader.GetString();
+            string? versionString = reader.GetString();
             
             if (string.IsNullOrEmpty(versionString))
             {

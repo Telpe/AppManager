@@ -103,10 +103,10 @@ namespace AppManager.Core.Triggers
             }
         }
 
-        private bool IsTargetProcess(string processName)
+        private bool IsTargetProcess(string? processName)
         {
-            if (string.IsNullOrEmpty(processName))
-                return false;
+            if (string.IsNullOrEmpty(processName)){ return false; }
+            
 
             // Check by process name
             if (!string.IsNullOrEmpty(ProcessName))
@@ -118,7 +118,7 @@ namespace AppManager.Core.Triggers
             // Check by executable path if provided
             if (!string.IsNullOrEmpty(ExecutablePath))
             {
-                return processName.Contains(System.IO.Path.GetFileNameWithoutExtension(ExecutablePath));
+                return processName.Contains(Path.GetFileNameWithoutExtension(ExecutablePath));
             }
 
             return false;

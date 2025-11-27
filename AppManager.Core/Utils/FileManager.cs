@@ -35,7 +35,7 @@ namespace AppManager.Core.Utils
                 if (File.Exists(filePath))
                 {
                     var json = File.ReadAllText(filePath);
-                    return JsonSerializer.Deserialize<T>(json, JsonOptions);
+                    return JsonSerializer.Deserialize<T>(json, JsonOptions) ?? new T();
                 }
             }
             catch (Exception ex)
@@ -49,7 +49,7 @@ namespace AppManager.Core.Utils
         {
             try
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+                Directory.CreateDirectory( Path.GetDirectoryName(filePath) ?? throw new ArgumentNullException("filePath can not be null."));
                 var json = JsonSerializer.Serialize(data, JsonOptions);
                 File.WriteAllText(filePath, json);
                 return true;
@@ -142,7 +142,7 @@ namespace AppManager.Core.Utils
                     var extension = Path.GetExtension(executablePath);
                     
                     // Try to extract icon source
-                    ImageSource iconSource = ExtractIconSource(executablePath, fileName, iconExtensions);
+                    ImageSource? iconSource = ExtractIconSource(executablePath, fileName, iconExtensions);
 
                     if (null == iconSource)
                     {
@@ -166,12 +166,12 @@ namespace AppManager.Core.Utils
             return shortcuts.OrderBy(s => s.Name).ToList();
         }
 
-        private static ImageSource ExtractIconSource(string executablePath, string baseName, string[] iconExtensions)
+        private static ImageSource? ExtractIconSource(string executablePath, string baseName, string[] iconExtensions)
         {
             try
             {
                 // First, try to find a standalone icon file with the same name
-                string iconPath = FindIconFileForExecutable(baseName, iconExtensions);
+                string? iconPath = FindIconFileForExecutable(baseName, iconExtensions);
                 if (!string.IsNullOrEmpty(iconPath)) { return CreateImageSourceFromFile(iconPath); }
 
                 // Second, try to extract icon from executable (for .exe files)
@@ -188,7 +188,7 @@ namespace AppManager.Core.Utils
             return null;
         }
 
-        private static string FindIconFileForExecutable(string baseName, string[] iconExtensions)
+        private static string? FindIconFileForExecutable(string baseName, string[] iconExtensions)
         {
             foreach (string ext in iconExtensions)
             {
@@ -203,7 +203,7 @@ namespace AppManager.Core.Utils
         /// </summary>
         public static ImageSource CreateImageSourceFromBytes(byte[] imageData)
         {
-            if (imageData == null || imageData.Length == 0) { return null; }
+            if (imageData == null || imageData.Length == 0) { throw new ArgumentException("Image data cannot be null or empty", nameof(imageData)); }
 
             try
             {
@@ -219,7 +219,7 @@ namespace AppManager.Core.Utils
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error creating ImageSource from bytes: {ex.Message}");
-                return null;
+                throw new InvalidOperationException("Failed to create ImageSource from bytes", ex);
             }
         }
 
@@ -230,15 +230,22 @@ namespace AppManager.Core.Utils
         {
             try
             {
-                if (!File.Exists(filePath)) { return null; }
+                if (!File.Exists(filePath)) 
+                { 
+                    throw new FileNotFoundException($"Image file not found: {filePath}", filePath); 
+                }
 
                 byte[] imageData = File.ReadAllBytes(filePath);
                 return CreateImageSourceFromBytes(imageData);
             }
+            catch (FileNotFoundException)
+            {
+                throw;
+            }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error creating ImageSource from file {filePath}: {ex.Message}");
-                return null;
+                throw new InvalidOperationException($"Failed to create ImageSource from file: {filePath}", ex);
             }
         }
 
@@ -266,12 +273,18 @@ namespace AppManager.Core.Utils
                         DestroyIcon(hIcon); // Clean up Win32 handle
                     }
                 }
+                
+                throw new InvalidOperationException($"Failed to extract icon from executable: {executablePath}");
+            }
+            catch (InvalidOperationException)
+            {
+                throw;
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error extracting icon from executable {executablePath}: {ex.Message}");
+                throw new InvalidOperationException($"Failed to extract icon from executable: {executablePath}", ex);
             }
-            return null;
         }
 
         public static ImageSource ExtractIconFromShortcut(string shortcutPath)
@@ -280,13 +293,22 @@ namespace AppManager.Core.Utils
             {
                 // For .lnk files, we need to resolve the target and extract its icon
                 string targetPath = ResolveShortcutTarget(shortcutPath);
-                if (!string.IsNullOrEmpty(targetPath) && File.Exists(targetPath)) { return ExtractIconFromExecutable(targetPath); }
+                if (!string.IsNullOrEmpty(targetPath) && File.Exists(targetPath)) 
+                { 
+                    return ExtractIconFromExecutable(targetPath); 
+                }
+                
+                throw new InvalidOperationException($"Failed to resolve shortcut target or target does not exist: {shortcutPath}");
+            }
+            catch (InvalidOperationException)
+            {
+                throw;
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error extracting icon from shortcut {shortcutPath}: {ex.Message}");
+                throw new InvalidOperationException($"Failed to extract icon from shortcut: {shortcutPath}", ex);
             }
-            return null;
         }
 
         public static string ResolveShortcutTarget(string shortcutPath)
@@ -294,18 +316,19 @@ namespace AppManager.Core.Utils
             try
             {
                 // Simple shortcut resolution using Shell COM object
-                Type shellType = Type.GetTypeFromProgID("WScript.Shell");
-                dynamic shell = Activator.CreateInstance(shellType);
+                Type shellType = Type.GetTypeFromProgID("WScript.Shell") ?? throw new InvalidOperationException("WScript.Shell COM object not available");
+                dynamic shell = Activator.CreateInstance(shellType) ?? throw new Exception("Instance dynamic shell is null.");
                 var shortcut = shell.CreateShortcut(shortcutPath);
                 string targetPath = shortcut.TargetPath;
                 Marshal.ReleaseComObject(shortcut);
                 Marshal.ReleaseComObject(shell);
-                return targetPath;
+                
+                return !String.IsNullOrEmpty(targetPath) ? targetPath : throw new InvalidOperationException($"Shortcut does not contain a valid target path: {shortcutPath}");
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error resolving shortcut target for {shortcutPath}: {ex.Message}");
-                return null;
+                throw new InvalidOperationException($"Failed to resolve shortcut target: {shortcutPath}", ex);
             }
         }
 
@@ -401,12 +424,18 @@ namespace AppManager.Core.Utils
                         DestroyIcon(hIcon); // Clean up Win32 handle
                     }
                 }
+
+                throw new InvalidOperationException($"Failed to extract shell icon with index {iconIndex}");
+            }
+            catch (InvalidOperationException)
+            {
+                throw;
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"Error extracting shell icon {iconIndex}: {ex.Message}");
+                throw new InvalidOperationException($"Failed to extract shell icon with index {iconIndex}", ex);
             }
-            return null;
         }
 
         /// <summary>

@@ -133,7 +133,8 @@ namespace AppManager.Core.Shortcuts
             var wparamTyped = wParam.ToInt32();
             if (Enum.IsDefined(typeof(KeyboardState), wparamTyped))
             {
-                object o = Marshal.PtrToStructure(lParam, typeof(LowLevelKeyboardInputEvent));
+                object? o = Marshal.PtrToStructure(lParam, typeof(LowLevelKeyboardInputEvent));
+                if (null == o) { throw new Exception("Failed to get PtrToStructure."); }
                 LowLevelKeyboardInputEvent p = (LowLevelKeyboardInputEvent)o;
 
                 var eventArguments = new GlobalKeyboardHookEventArgs(p, (KeyboardState)wparamTyped);

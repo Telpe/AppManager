@@ -10,7 +10,7 @@ namespace AppManager.Core.Actions
 {
     public class LaunchAction : BaseAction
     {
-        public string? AppName { get; set; }
+        public string AppName { get; set; }
         public override AppActionTypeEnum ActionType => AppActionTypeEnum.Launch;
         public override string Description => "Launches an application";
 
@@ -19,7 +19,7 @@ namespace AppManager.Core.Actions
 
         public LaunchAction(ActionModel model) : base(model)
         {
-            AppName = model.AppName;
+            AppName = model.AppName ?? String.Empty;
             ExecutablePath = model.ExecutablePath;
             Arguments = model.Arguments;
         }
@@ -37,16 +37,8 @@ namespace AppManager.Core.Actions
         {
             if (File.Exists(ExecutablePath)) { return; }
 
-            string[] executablePaths = Array.Empty<string>();
+            string[] executablePaths = !String.IsNullOrEmpty(ExecutablePath) ? FileManager.FindExecutables(AppName, [ExecutablePath]) : FileManager.FindExecutables(AppName);
 
-            if (string.IsNullOrEmpty(ExecutablePath))
-            {
-                executablePaths = FileManager.FindExecutables(AppName);
-            }
-            else
-            {
-                executablePaths = FileManager.FindExecutables(AppName, [ExecutablePath]);
-            }
 
             if (executablePaths.Length == 1)
             {

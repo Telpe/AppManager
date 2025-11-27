@@ -135,7 +135,7 @@ namespace AppManager.Utils
             return profile;
         }
 
-        public static bool ProfileExists(string profileName = null)
+        public static bool ProfileExist(string profileName = null)
         {
             string profileFile = FileManager.GetProfilePath(profileName ?? DefaultProfileFilename);
             return FileManager.FileExists(profileFile);

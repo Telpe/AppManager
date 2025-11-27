@@ -1,4 +1,5 @@
 using AppManager.Core.Models;
+using AppManager.Core.Utils;
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -32,7 +33,11 @@ namespace AppManager.Core.Actions
 
         protected override bool CanExecuteAction()
         {
-            TargetProcessesStored = GetTargetProcesses();
+            TargetProcessesStored = ProcessManager.FindProcesses(
+                AppName, 
+                IncludeSimilarNames ?? false, 
+                WindowTitle, 
+                requireMainWindow: true);
 
             return !string.IsNullOrEmpty(AppName) && !TargetProcessesStored.Any(p => p.HasExited);
         }
@@ -43,7 +48,11 @@ namespace AppManager.Core.Actions
             {
                 try
                 {
-                    var processes = GetTargetProcesses();
+                    var processes = ProcessManager.FindProcesses(
+                        AppName, 
+                        IncludeSimilarNames ?? false, 
+                        WindowTitle, 
+                        requireMainWindow: true);
                     
                     if (!processes.Any())
                     {
@@ -92,43 +101,6 @@ namespace AppManager.Core.Actions
                     return false;
                 }
             });
-        }
-
-        private Process[] GetTargetProcesses()
-        {
-            try
-            {
-                Process[] processes;
-                
-                if (IncludeSimilarNames??false)
-                {
-                    processes = Process.GetProcesses()
-                        .Where(p => p.ProcessName.IndexOf(AppName, StringComparison.OrdinalIgnoreCase) >= 0)
-                        .Where(p => p.MainWindowHandle != IntPtr.Zero)
-                        .ToArray();
-                }
-                else
-                {
-                    processes = Process.GetProcessesByName(AppName)
-                        .Where(p => p.MainWindowHandle != IntPtr.Zero)
-                        .ToArray();
-                }
-
-                // If window title is specified, filter by it
-                if (!string.IsNullOrEmpty(WindowTitle))
-                {
-                    processes = processes
-                        .Where(p => p.MainWindowTitle.IndexOf(WindowTitle, StringComparison.OrdinalIgnoreCase) >= 0)
-                        .ToArray();
-                }
-
-                return processes;
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error finding processes to minimize {AppName}: {ex.Message}");
-                return Array.Empty<Process>();
-            }
         }
 
         public override ActionModel ToModel()

@@ -1,4 +1,5 @@
 using AppManager.Core.Models;
+using AppManager.Core.Utils;
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -47,9 +48,13 @@ namespace AppManager.Core.Actions
 
         protected override bool CanExecuteAction()
         {
-            _TargetProcess = GetTargetProcess();
+            _TargetProcess = ProcessManager.FindProcess(
+                AppName, 
+                includeSimilarNames: false, 
+                WindowTitle, 
+                requireMainWindow: true);
 
-            return !string.IsNullOrEmpty(AppName) && !(_TargetProcess?.HasExited??true);
+            return !string.IsNullOrEmpty(AppName) && !(_TargetProcess?.HasExited ?? true);
         }
 
         protected override Task<bool> ExecuteAsync()
@@ -95,31 +100,6 @@ namespace AppManager.Core.Actions
                     return false;
                 }
             });
-        }
-
-        private Process? GetTargetProcess()
-        {
-            try
-            {
-                Process[]? processes = Process.GetProcessesByName(AppName);
-
-                // If window title is specified, filter by it
-                if (!string.IsNullOrEmpty(WindowTitle))
-                {
-                    processes = processes.Where(p => p.MainWindowTitle.IndexOf(WindowTitle, StringComparison.OrdinalIgnoreCase) >= 0).ToArray();
-                }
-                else
-                {
-                    processes = processes.Where(p => p.MainWindowHandle != IntPtr.Zero).ToArray();
-                }
-
-                return processes.FirstOrDefault();
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error finding process to bring to front {AppName}: {ex.Message}");
-                return null;
-            }
         }
 
         public override ActionModel ToModel()

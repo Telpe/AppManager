@@ -1,0 +1,83 @@
+﻿<Window x:Class="AppManager.Settings.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:AppManager.Settings"
+        mc:Ignorable="d"
+        Title="App Manager" Height="600" Width="600">
+    <Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition MinHeight="32" Height="Auto"/>
+			<RowDefinition Height="*"/>
+		</Grid.RowDefinitions>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="*"/>
+			<ColumnDefinition Width="*"/>
+		</Grid.ColumnDefinitions>
+		
+		<!-- Top Row with Title and Browser Button -->
+		<Grid Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="*"/>
+				<ColumnDefinition Width="Auto"/>
+				<ColumnDefinition Width="*"/>
+			</Grid.ColumnDefinitions>
+			
+			<Label Grid.Column="0" Content="App Manager" FontWeight="Bold" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10,0,0,0"/>
+			
+			<!-- Browser and Data Folder Buttons in Center -->
+			<StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+				
+				<Button x:Name="DataFolderButton" 
+				        Content="📁 Data" 
+				        Width="100" 
+				        Height="28" 
+				        Margin="5" 
+				        Click="DataFolderButton_Click"
+				        Background="#FFC107"
+				        Foreground="White"
+				        FontWeight="Bold"
+				        BorderThickness="0"
+				        ToolTip="Open data folder with profiles and settings"/>
+				
+				<Button x:Name="TestOverlayButton" 
+				        Content="🔲 Overlay" 
+				        Width="100" 
+				        Height="28" 
+				        Margin="5" 
+				        Click="TestOverlayButton_Click"
+				        Background="#9C27B0"
+				        Foreground="White"
+				        FontWeight="Bold"
+				        BorderThickness="0"
+				        ToolTip="Test overlay functionality"/>
+			</StackPanel>
+			
+			<!-- Console Panel on Right -->
+			<StackPanel x:Name="ConsolePanel" Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0" />
+		</Grid>
+		
+		<StackPanel Orientation="Vertical" Grid.Row="1" Grid.Column="0" Background="#D0D0D0" Height="auto">
+			
+			<!-- Nav 1 menu -->
+			<StackPanel Orientation="Horizontal" Background="#F0F0F0">
+				<Button x:Name="AppsButton" Content="Apps" Width="100" Height="30" Margin="5" Click="Nav1MenuButton_Click"/>
+				<Button x:Name="AppGroupsButton" Content="Groups" Width="100" Height="30" Margin="5" Click="Nav1MenuButton_Click"/>
+				<Button x:Name="ShortcutsButton" Content="Shortcuts" Width="100" Height="30" Margin="5" Click="Nav1MenuButton_Click"/>
+			</StackPanel>
+			<!-- Nav 1 List -->
+			<ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+				<StackPanel x:Name="Nav1List" Orientation="Vertical" Background="#F0F0F0" Width="auto" HorizontalAlignment="Left">
+					<Label Content="Navigation1" FontWeight="Bold" Margin="5" Width="100"/>
+					<Label Content="Navigation2" FontWeight="Bold" Margin="5"/>
+					<Label Content="Navigation3" FontWeight="Bold" Margin="5"/>
+					<Label Content="Navigation4" FontWeight="Bold" Margin="5"/>
+				</StackPanel>
+			</ScrollViewer>
+		</StackPanel>
+
+			<!-- Page Content -->
+		<Frame x:Name="MainFrame" Grid.Row="1" Grid.Column="1" NavigationUIVisibility="Hidden" Margin="10"/>
+	</Grid>
+</Window>

@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
+    <StartupObject>AppManager.Settings.App</StartupObject>
+	
+	<!-- Additional metadata -->
+    <Product>AppManager.Settings</Product>
+    <Company>Telpe</Company>
+    <Copyright>Telpe</Copyright>
+    <Description>Application Manager for Windows</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AppManager.Core\AppManager.Core.csproj" />
+  </ItemGroup>
+  
+</Project>

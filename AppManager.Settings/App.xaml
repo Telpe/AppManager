@@ -1,9 +1,9 @@
-﻿<Application x:Class="AppManager.App"
+﻿<Application x:Class="AppManager.Settings.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="clr-namespace:AppManager"
+             xmlns:local="clr-namespace:AppManager.Settings"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
     </Application.Resources>
 </Application>

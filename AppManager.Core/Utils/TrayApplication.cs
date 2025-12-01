@@ -70,7 +70,7 @@ namespace AppManager.Core.Utils
 
         private void OnSettings(object sender, EventArgs e)
         {
-            _actionManager.ExecuteActionAsync(AppActionTypeEnum.Launch, "AppManager");
+            _actionManager.ExecuteActionAsync(AppActionTypeEnum.Launch, "AppManager.Settings");
         }
 
         private void OnAbout(object sender, EventArgs e)
@@ -81,6 +81,7 @@ namespace AppManager.Core.Utils
         private void OnExit(object sender, EventArgs e)
         {
             _actionManager.ExecuteActionAsync(AppActionTypeEnum.Close, "AppManager").Wait();
+            _actionManager.ExecuteActionAsync(AppActionTypeEnum.Close, "AppManager.Settings").Wait();
             Application.Exit();
         }
 

@@ -25,7 +25,7 @@ namespace AppManager.Core.Utils
         public static readonly string AppDataPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "AppManager");
 
-        public static readonly string BrowserShortcutsPath = Path.Combine(AppDataPath, "BrowserShortcuts");
+        public static readonly string BrowserShortcutsPath = Path.Combine(AppDataPath, "Shortcuts");
 
         // JSON Operations
         public static T LoadJsonFile<T>(string filePath) where T : new()
@@ -97,11 +97,18 @@ namespace AppManager.Core.Utils
                 {
                     foreach (string ext in extensions)
                     {
+                        /*
                         string pattern = $"*{appName}*{ext}";
                         var files = Directory.GetFiles(basePath, pattern, SearchOption.AllDirectories);
                         if (files?.Length > 0) 
                         { 
                             results.AddRange(files); 
+                        }
+                        */
+                        var testPath = Path.Combine(basePath, $"{appName}{ext}");
+                        if (File.Exists(testPath))
+                        {
+                            results.Add(testPath);
                         }
                     }
                 }
@@ -114,9 +121,9 @@ namespace AppManager.Core.Utils
         }
 
         // Browser Shortcuts Operations
-        public static List<BrowserShortcutModel> GetBrowserShortcuts()
+        public static List<OSShortcutModel> GetBrowserShortcuts()
         {
-            var shortcuts = new List<BrowserShortcutModel>();
+            var shortcuts = new List<OSShortcutModel>();
 
             try
             {
@@ -149,7 +156,7 @@ namespace AppManager.Core.Utils
                         iconSource = GetShellIcon();
                     }
 
-                    shortcuts.Add(new BrowserShortcutModel
+                    shortcuts.Add(new OSShortcutModel
                     {
                         Name = fileName,
                         ExecutablePath = executablePath,
@@ -369,18 +376,26 @@ namespace AppManager.Core.Utils
 
         private static string[] GetDefaultSearchPaths()
         {
-            var pathEnv = Environment.GetEnvironmentVariable("PATH")?.Split(Path.PathSeparator) ?? Array.Empty<string>();
+#if DEBUG
+            string[] otherPaths = AppDomain.CurrentDomain.BaseDirectory.Split(Path.DirectorySeparatorChar);
+            int iop = Array.IndexOf(otherPaths, "AppManager");
+            var basePath = Path.Combine( otherPaths.Where((a,i)=> i <= iop).ToArray() );
+            var devCorePath = Path.Combine(basePath, "AppManager.Core", "bin", "Debug", "net8.0-windows");
+            var devSettingsPath = Path.Combine(basePath, "AppManager.Settings", "bin", "Debug", "net8.0-windows");
+            var devAppManagerPath = Path.Combine(basePath, "AppManager", "bin", "Debug", "net8.0-windows");
+#endif
+            //var pathEnv = Environment.GetEnvironmentVariable("PATH")?.Split(Path.PathSeparator) ?? Array.Empty<string>();
             var commonPaths = new[]
             {
 #if DEBUG
-                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), $"source{Path.DirectorySeparatorChar}repos{Path.DirectorySeparatorChar}telpe{Path.DirectorySeparatorChar}AppManager{Path.DirectorySeparatorChar}AppManager{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}Debug{Path.DirectorySeparatorChar}net8.0-windows10.0.22000.0"),
+                devCorePath, devSettingsPath,devAppManagerPath,
 #endif
                 AppDomain.CurrentDomain.BaseDirectory,
                 Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
                 Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86)
             };
             
-            return pathEnv.Concat(commonPaths).ToArray();
+            return commonPaths;
         }
 
         // App-specific paths

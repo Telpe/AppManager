@@ -7,17 +7,17 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 
-namespace AppManager.Settings.Pages
+namespace AppManager.Settings.AppGroupEdit
 {
     /// <summary>
     /// Interaction logic for AppGroupsPage.xaml
     /// </summary>
-    public partial class AppGroupsPage : Page, IPageWithParameter
+    public partial class MainPage : Page, IPageWithParameter
     {
         private string _PageName = "";
         private GroupManagedModel _currentGroup;
 
-        public AppGroupsPage()
+        public MainPage()
         {
             InitializeComponent();
         }

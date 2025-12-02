@@ -7,9 +7,8 @@ using System.Timers;
 using System.Windows;
 using System.Windows.Input;
 using AppManager.Core.Shortcuts;
-{
-    
-}
+using AppManager.Core.Actions;
+using AppManager.Core.Models;
 
 namespace AppManager.Settings
 {
@@ -20,7 +19,7 @@ namespace AppManager.Settings
     {
         private static GlobalKeyboardHook GlobalKeyboardHookStored;
 
-        private static Dictionary<string,string> UnsavedPages = new();
+        private static Dictionary<string, string> UnsavedPages = new();
 
         private Timer CheckIfAppsRunningValue = new();
         public Timer CheckIfAppsRunning { get { return CheckIfAppsRunningValue; } }
@@ -36,15 +35,22 @@ namespace AppManager.Settings
 
         public App()
         {
+            if (ShouldITerminate())
+            {
+                Application.Current.Shutdown();
+                return;
+            }
+
             InitializeComponent();
 
+            CheckCoreRunning();
 
 
             // Load the last used profile (or default if none specified)
-            string profileToLoad = !string.IsNullOrEmpty(SettingsManager.CurrentSettings.LastUsedProfileName) 
-                ? SettingsManager.CurrentSettings.LastUsedProfileName 
+            string profileToLoad = !string.IsNullOrEmpty(SettingsManager.CurrentSettings.LastUsedProfileName)
+                ? SettingsManager.CurrentSettings.LastUsedProfileName
                 : ProfileManager.DefaultProfileFilename;
-            
+
             // Load the specific profile
             if (ProfileManager.ProfileExist(profileToLoad))
             {
@@ -62,6 +68,55 @@ namespace AppManager.Settings
             CheckIfAppsRunningValue.AutoReset = true;
             CheckIfAppsRunningValue.Elapsed += new ElapsedEventHandler(CheckRunningHandler);
             //CheckIfAppsRunningValue.Start();
+        }
+
+        protected bool ShouldITerminate()
+        {
+            if (CheckSelfRunning(out Process? notSelf) && null != notSelf)
+            {
+                var bringToFrontAction = ActionManager.CreateAction(new ActionModel
+                {
+                    ActionType = AppActionTypeEnum.BringToFront,
+                    AppName = notSelf.ProcessName
+                }, notSelf);
+
+                if (bringToFrontAction.CanExecute()) { bringToFrontAction.ExecuteActionAsync(); }
+
+                Debug.WriteLine($"{notSelf.ProcessName} is already running, bringing existing instance to front");
+
+                return true;
+            }
+
+            return false;
+        }
+
+        protected bool CheckSelfRunning( out Process? notSelf)
+        {
+            var currentProcess = Process.GetCurrentProcess();
+            var processes = ProcessManager.FindProcesses(currentProcess.ProcessName, false, null, true, false, currentProcess.Id);
+
+            if(processes.Length > 0)
+            {
+                notSelf = processes[0];
+                return true;
+            }
+
+            notSelf = null;
+            return false;
+        }
+
+        protected void CheckCoreRunning()
+        {
+            if (!ProcessManager.IsProcessRunning("AppManager.Core"))
+            {
+                // Execute asynchronously without waiting
+                ActionManager.ExecuteActionAsync(new ActionModel
+                {
+                    ActionType = AppActionTypeEnum.Launch,
+                    AppName = "AppManager.Core"
+                }).Wait();
+                Debug.WriteLine("AppManager.Core not running, launching it");
+            }
         }
 
         protected override void OnExit(ExitEventArgs e)

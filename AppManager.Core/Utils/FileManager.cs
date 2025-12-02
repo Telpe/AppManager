@@ -14,7 +14,7 @@ using System.Windows.Media.Imaging;
 
 namespace AppManager.Core.Utils
 {
-    public static class FileManager
+    public static partial class FileManager
     {
         private static readonly JsonSerializerOptions JsonOptions = new()
         {
@@ -25,7 +25,7 @@ namespace AppManager.Core.Utils
         public static readonly string AppDataPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "AppManager");
 
-        public static readonly string BrowserShortcutsPath = Path.Combine(AppDataPath, "Shortcuts");
+        public static readonly string OSShortcutsPath = Path.Combine(AppDataPath, "Shortcuts");
 
         // JSON Operations
         public static T LoadJsonFile<T>(string filePath) where T : new()
@@ -121,14 +121,14 @@ namespace AppManager.Core.Utils
         }
 
         // Browser Shortcuts Operations
-        public static List<OSShortcutModel> GetBrowserShortcuts()
+        public static List<OSShortcutModel> GetOSShortcuts()
         {
             var shortcuts = new List<OSShortcutModel>();
 
             try
             {
                 // Ensure the BrowserShortcuts directory exists
-                Directory.CreateDirectory(BrowserShortcutsPath);
+                Directory.CreateDirectory(OSShortcutsPath);
 
                 string[] executableExtensions = { ".exe", ".bat", ".cmd", ".lnk" };
                 string[] iconExtensions = { ".ico", ".png", ".jpg", ".jpeg", ".bmp", ".gif" };
@@ -138,7 +138,7 @@ namespace AppManager.Core.Utils
                 // Find all executable files
                 foreach (string ext in executableExtensions)
                 {
-                    var files = Directory.GetFiles(BrowserShortcutsPath, $"*{ext}", SearchOption.TopDirectoryOnly);
+                    var files = Directory.GetFiles(OSShortcutsPath, $"*{ext}", SearchOption.TopDirectoryOnly);
                     executableFiles.AddRange(files);
                 }
 
@@ -199,7 +199,7 @@ namespace AppManager.Core.Utils
         {
             foreach (string ext in iconExtensions)
             {
-                string iconPath = Path.Combine(BrowserShortcutsPath, $"{baseName}{ext}");
+                string iconPath = Path.Combine(OSShortcutsPath, $"{baseName}{ext}");
                 if (File.Exists(iconPath)) { return iconPath; }
             }
             return null;
@@ -367,12 +367,12 @@ namespace AppManager.Core.Utils
             }
         }
 
-        // Win32 API declarations for icon extraction
-        [DllImport("shell32.dll", CharSet = CharSet.Auto)]
-        private static extern IntPtr ExtractIcon(IntPtr hInst, string lpszExeFileName, int nIconIndex);
+        [LibraryImport("shell32.dll", StringMarshalling = StringMarshalling.Utf16, SetLastError = true)]
+        public static partial IntPtr ExtractIcon(IntPtr hInst, string lpszExeFileName, int nIconIndex);
 
-        [DllImport("user32.dll", SetLastError = true)]
-        private static extern bool DestroyIcon(IntPtr hIcon);
+        [return: MarshalAs(UnmanagedType.Bool)]
+        [LibraryImport("user32.dll", StringMarshalling = StringMarshalling.Utf16, SetLastError = true)]
+        public static partial bool DestroyIcon(IntPtr hIcon);
 
         private static string[] GetDefaultSearchPaths()
         {
@@ -398,14 +398,13 @@ namespace AppManager.Core.Utils
             return commonPaths;
         }
 
-        // App-specific paths
         public static string GetProfilePath(string profileName = "default") =>
             Path.Combine(AppDataPath, $"{profileName}.json");
 
         public static string GetSettingsPath() =>
             Path.Combine(AppDataPath, "settings.json");
 
-        public static string GetBrowserShortcutsPath() => BrowserShortcutsPath;
+        public static string GetBrowserShortcutsPath() => OSShortcutsPath;
 
         /// <summary>
         /// Extracts a shell icon from shell32.dll

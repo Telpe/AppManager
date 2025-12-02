@@ -10,13 +10,12 @@ using AppManager.Core.Models;
 using AppManager.Settings.UI;
 using Microsoft.Win32;
 
-namespace AppManager.Settings.AppUI
+namespace AppManager.Settings.AppEdit
 {
     public partial class ActionEditorControl : OverlayContent
     {
         private ActionModel _currentAction;
         private ObservableCollection<ConditionDisplayItem> _conditions;
-        private ActionManager _actionManager;
 
         public event EventHandler<ActionModel> ActionSaved;
         public event EventHandler ActionCancelled;
@@ -48,7 +47,6 @@ namespace AppManager.Settings.AppUI
 
         private void Initialize()
         {
-            _actionManager = new ActionManager();
             _conditions = new ObservableCollection<ConditionDisplayItem>();
             
             // Only set ItemsSource if ConditionsListBox exists
@@ -73,8 +71,7 @@ namespace AppManager.Settings.AppUI
             };
             grid.Children.Add(textBlock);
             this.Content = grid;
-            
-            _actionManager = new ActionManager();
+
             _conditions = new ObservableCollection<ConditionDisplayItem>();
         }
 
@@ -85,7 +82,7 @@ namespace AppManager.Settings.AppUI
                 // Populate Action Type ComboBox
                 if (ActionTypeComboBox != null)
                 {
-                    ActionTypeComboBox.ItemsSource = _actionManager.GetAvailableActions();
+                    ActionTypeComboBox.ItemsSource = ActionManager.GetAvailableActions();
                     ActionTypeComboBox.SelectedIndex = 0;
                 }
 
@@ -322,7 +319,7 @@ namespace AppManager.Settings.AppUI
             try
             {
                 var action = CreateActionModel();
-                var canExecute = _actionManager.CanExecuteAction(action);
+                var canExecute = ActionManager.CanExecuteAction(action);
                 
                 var result = canExecute ? "✓ Action can be executed" : "✗ Action cannot be executed";
                 MessageBox.Show(result, "Test Result", MessageBoxButton.OK, 

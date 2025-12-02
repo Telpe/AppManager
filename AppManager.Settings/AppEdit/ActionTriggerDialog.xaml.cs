@@ -1,9 +1,8 @@
 using System;
 using System.Windows;
 using AppManager.Core.Models;
-using AppManager.Core.Triggers;
 
-namespace AppManager.Settings.AppUI
+namespace AppManager.Settings.AppEdit
 {
     public partial class ActionTriggerDialog : Window
     {

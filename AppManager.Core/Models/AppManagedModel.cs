@@ -1,5 +1,4 @@
-﻿using AppManager.Core.Triggers;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 

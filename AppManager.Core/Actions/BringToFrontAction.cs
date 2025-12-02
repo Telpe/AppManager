@@ -39,6 +39,7 @@ namespace AppManager.Core.Actions
         private const int SW_RESTORE = 9;
         private const int SW_SHOW = 5;
         private Process? _TargetProcess;
+        private bool _SpecificProcess = false;
 
         public BringToFrontAction(ActionModel model) : base(model)
         { 
@@ -46,15 +47,28 @@ namespace AppManager.Core.Actions
             WindowTitle = model.WindowTitle;
         }
 
+        public BringToFrontAction(ActionModel model, Process target) : base(model)
+        {
+            AppName = model.AppName;
+            WindowTitle = model.WindowTitle;
+            _TargetProcess = target;
+            _SpecificProcess = true;
+        }
+
         protected override bool CanExecuteAction()
         {
-            _TargetProcess = ProcessManager.FindProcess(
-                AppName, 
-                includeSimilarNames: false, 
-                WindowTitle, 
-                requireMainWindow: true);
+            if (!_SpecificProcess)
+            {
+                _TargetProcess = ProcessManager.FindProcess(
+                                AppName,
+                                includeSimilarNames: false,
+                                WindowTitle,
+                                requireMainWindow: true);
 
-            return !string.IsNullOrEmpty(AppName) && !(_TargetProcess?.HasExited ?? true);
+                return !string.IsNullOrEmpty(AppName) && !(_TargetProcess?.HasExited ?? true);
+            }
+
+            return !(_TargetProcess?.HasExited ?? true);
         }
 
         protected override Task<bool> ExecuteAsync()
@@ -63,11 +77,11 @@ namespace AppManager.Core.Actions
             {
                 try
                 {
-                    IntPtr mainWindowHandle = _TargetProcess.MainWindowHandle;
+                    IntPtr mainWindowHandle = _TargetProcess?.MainWindowHandle ?? IntPtr.Zero;
                 
                     if (mainWindowHandle == IntPtr.Zero)
                     {
-                        Debug.WriteLine($"No main window found for process: {_TargetProcess.ProcessName}");
+                        Debug.WriteLine($"No main window found for process: {_TargetProcess?.ProcessName}");
                         return false;
                     }
 

@@ -46,7 +46,7 @@ namespace AppManager.Core.Triggers
                 TriggerType = TriggerType,
                 TargetAppName = targetAppName,
                 ActionToExecute = action,
-                ActionParameters = actionParams,
+                Model = actionParams,
                 TriggerData = triggerData
             };
             

@@ -15,8 +15,6 @@ namespace AppManager.Core.Utils
     {
         private NotifyIcon _trayIcon;
         private ContextMenuStrip _contextMenu;
-        private TriggerManager triggerManager = new TriggerManager();
-        private ActionManager _actionManager = new ActionManager();
 
         public TrayApplication()
         {
@@ -63,25 +61,25 @@ namespace AppManager.Core.Utils
             _trayIcon.DoubleClick += OnOpen;
         }
 
-        private void OnOpen(object sender, EventArgs e)
+        private void OnOpen(object? sender, EventArgs? e)
         {
-            _actionManager.ExecuteActionAsync(AppActionTypeEnum.Launch, "AppManager");
+            ActionManager.ExecuteActionAsync(AppActionTypeEnum.Launch, "AppManager");
         }
 
-        private void OnSettings(object sender, EventArgs e)
+        private void OnSettings(object? sender, EventArgs? e)
         {
-            _actionManager.ExecuteActionAsync(AppActionTypeEnum.Launch, "AppManager.Settings");
+            ActionManager.ExecuteActionAsync(AppActionTypeEnum.Launch, "AppManager.Settings");
         }
 
-        private void OnAbout(object sender, EventArgs e)
+        private void OnAbout(object? sender, EventArgs? e)
         {
             MessageBox.Show("AppManager v1.0\nApplication Manager", "About AppManager", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
-        private void OnExit(object sender, EventArgs e)
+        private void OnExit(object? sender, EventArgs? e)
         {
-            _actionManager.ExecuteActionAsync(AppActionTypeEnum.Close, "AppManager").Wait();
-            _actionManager.ExecuteActionAsync(AppActionTypeEnum.Close, "AppManager.Settings").Wait();
+            ActionManager.ExecuteActionAsync(AppActionTypeEnum.Close, "AppManager").Wait();
+            ActionManager.ExecuteActionAsync(AppActionTypeEnum.Close, "AppManager.Settings").Wait();
             Application.Exit();
         }
 

@@ -1,23 +1,20 @@
 using AppManager.Core.Models;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace AppManager.Core.Actions
 {
-    public class ActionManager
+    public static class ActionManager
     {
-        public ActionManager()
-        {
-        }
-
-        public IEnumerable<AppActionTypeEnum> GetAvailableActions()
+        public static IEnumerable<AppActionTypeEnum> GetAvailableActions()
         {
             return Enum.GetValues(typeof(AppActionTypeEnum)).Cast<AppActionTypeEnum>();
         }
 
-        private IAppAction CreateAction(ActionModel model)
+        public static IAppAction CreateAction(ActionModel model, Process? specificTarget = null)
         {
             return model.ActionType switch
             {
@@ -25,13 +22,13 @@ namespace AppManager.Core.Actions
                 AppActionTypeEnum.Close => new CloseAction(model),
                 AppActionTypeEnum.Restart => new RestartAction(model),
                 AppActionTypeEnum.Focus => new FocusAction(model),
-                AppActionTypeEnum.BringToFront => new BringToFrontAction(model),
+                AppActionTypeEnum.BringToFront => null == specificTarget ? new BringToFrontAction(model) : new BringToFrontAction(model, specificTarget),
                 AppActionTypeEnum.Minimize => new MinimizeAction(model),
                 _ => throw new Exception($"Action not found: {model.ActionType}")
             };
         }
 
-        public bool CanExecuteAction(ActionModel model)
+        public static bool CanExecuteAction(ActionModel model)
         {
 
             if (null == model) { return false; }
@@ -45,7 +42,7 @@ namespace AppManager.Core.Actions
             
         }
 
-        public bool CanExecuteAction(AppActionTypeEnum actionName, string appName)
+        public static bool CanExecuteAction(AppActionTypeEnum actionName, string appName)
         {
             ActionModel model = new()
             {
@@ -56,7 +53,7 @@ namespace AppManager.Core.Actions
             return CanExecuteAction(model);
         }
 
-        public Task<bool> ExecuteActionAsync(ActionModel model)
+        public static Task<bool> ExecuteActionAsync(ActionModel model)
         {
             if (model == null)
             {
@@ -77,7 +74,7 @@ namespace AppManager.Core.Actions
             
         }
 
-        public Task<bool> ExecuteActionAsync(AppActionTypeEnum actionName, string appName)
+        public static Task<bool> ExecuteActionAsync(AppActionTypeEnum actionName, string appName)
         {
             ActionModel model = new()
             {
@@ -88,7 +85,7 @@ namespace AppManager.Core.Actions
             return ExecuteActionAsync(model);
         }
 
-        public Task<bool>[] ExecuteMultipleActionsAsync(IEnumerable<ActionModel> actions)
+        public static Task<bool>[] ExecuteMultipleActionsAsync(IEnumerable<ActionModel> actions)
         {
             int n = actions.Count();
             if (n == 0) { return Array.Empty<Task<bool>>(); }

@@ -9,14 +9,14 @@ using AppManager.Core.Models;
 using AppManager.Core.Triggers;
 using AppManager.Core.Actions;
 using AppManager.Settings.Utils;
-using AppManager.Settings.Pages;
+using AppManager.Settings.AppGroupEdit;
 
-namespace AppManager.Settings.AppUI
+namespace AppManager.Settings.AppEdit
 {
     /// <summary>
     /// Interaction logic for Apps.xaml
     /// </summary>
-    public partial class AppPage : Page, IPageWithParameter
+    public partial class MainPage : Page, IPageWithParameter
     {
         private string PageNameStored = "";
         private int MaxBackupModelsStored = 5;
@@ -32,7 +32,7 @@ namespace AppManager.Settings.AppUI
         private ObservableCollection<TriggerViewModel> TriggerViewModelsStored = new();
         private ObservableCollection<ActionViewModel> ActionViewModelsStored = new();
 
-        public AppPage()
+        public MainPage()
         {
             InitializeComponent();
 

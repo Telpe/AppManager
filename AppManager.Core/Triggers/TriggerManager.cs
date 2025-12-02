@@ -3,23 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using AppManager.Core.Actions;
+using AppManager.Core.Models;
 
 namespace AppManager.Core.Triggers
 {
-    public class TriggerManager : IDisposable
+    public static class TriggerManager
     {
-        private readonly Dictionary<string, ITrigger> _triggers;
-        private readonly ActionManager _actionManager;
+        private static readonly Dictionary<string, ITrigger> _triggers = new Dictionary<string, ITrigger>();
 
-        public event EventHandler<TriggerActivatedEventArgs> TriggerActivated;
+        //public event EventHandler<TriggerActivatedEventArgs> TriggerActivated = new EventHandler<TriggerActivatedEventArgs>((s, e) => { });
 
-        public TriggerManager(ActionManager actionManager = null)
-        {
-            _triggers = new Dictionary<string, ITrigger>();
-            _actionManager = actionManager ?? new ActionManager();
-        }
-
-        public ITrigger CreateTrigger(TriggerModel model)
+        public static ITrigger CreateTrigger(TriggerModel model)
         {
             ITrigger trigger = model.TriggerType switch
             {
@@ -38,7 +32,7 @@ namespace AppManager.Core.Triggers
             return trigger;
         }
 
-        public bool RegisterTrigger(ITrigger trigger)
+        public static bool RegisterTrigger(ITrigger trigger)
         {
             if (trigger == null || _triggers.ContainsKey(trigger.Name))
                 return false;
@@ -57,7 +51,7 @@ namespace AppManager.Core.Triggers
             return true;
         }
 
-        public bool UnregisterTrigger(string triggerName)
+        public static bool UnregisterTrigger(string triggerName)
         {
             if (!_triggers.TryGetValue(triggerName, out ITrigger trigger))
                 return false;
@@ -75,34 +69,35 @@ namespace AppManager.Core.Triggers
             return stopped;
         }
 
-        public IEnumerable<ITrigger> GetActiveTriggers()
+        public static IEnumerable<ITrigger> GetActiveTriggers()
         {
             return _triggers.Values.Where(t => t.IsActive);
         }
 
-        public IEnumerable<string> GetTriggerNames()
+        public static IEnumerable<string> GetTriggerNames()
         {
             return _triggers.Keys;
         }
 
-        public ITrigger? GetTrigger(string name)
+        public static ITrigger? GetTrigger(string name)
         {
             _triggers.TryGetValue(name, out ITrigger? trigger);
             return trigger;
         }
 
-        private void OnTriggerActivated(object? sender, TriggerActivatedEventArgs? e)
+        private static void OnTriggerActivated(object? sender, TriggerActivatedEventArgs? e)
         {
+            if (null == sender || null == e) { return; }
+
             try
             {
                 System.Diagnostics.Debug.WriteLine($"Trigger '{e.TriggerName}' activated - executing action '{e.ActionToExecute}' on '{e.TargetAppName}'");
 
-                // Execute the associated action
-                _ = _actionManager.ExecuteActionAsync(e.ActionParameters);
                 
+                _ = null == e.Model ? null : ActionManager.ExecuteActionAsync(e.Model);
 
                 // Forward the event
-                TriggerActivated?.Invoke(this, e);
+                //TriggerActivated?.Invoke(this, e);
             }
             catch (Exception ex)
             {
@@ -110,7 +105,7 @@ namespace AppManager.Core.Triggers
             }
         }
 
-        public void StopAllTriggersAsync()
+        public static void StopAllTriggersAsync()
         {
             foreach (var trigger in _triggers.Values)
             {
@@ -120,7 +115,7 @@ namespace AppManager.Core.Triggers
             System.Diagnostics.Debug.WriteLine("All triggers stopped");
         }
 
-        public void Dispose()
+        public static void Dispose()
         {
             foreach (var trigger in _triggers.Values)
             {

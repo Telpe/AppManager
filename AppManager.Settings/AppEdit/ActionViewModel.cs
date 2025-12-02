@@ -1,4 +1,4 @@
-﻿using AppManager.Core.Triggers;
+﻿using AppManager.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -6,14 +6,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AppManager.Settings.AppUI
+namespace AppManager.Settings.AppEdit
 {
-    // ViewModel for Trigger items in the ListBox
-    internal class TriggerViewModel : INotifyPropertyChanged
+    // ViewModel for Action items in the ListBox
+    internal class ActionViewModel : INotifyPropertyChanged
     {
-        private readonly AppPage _page;
+        private readonly MainPage _page;
         public int Id { get; }
-        public TriggerModel Model { get; }
+        public ActionModel Model { get; }
 
         private bool _isActive = true;
         public bool IsActive
@@ -25,16 +25,16 @@ namespace AppManager.Settings.AppUI
                 {
                     _isActive = value;
                     OnPropertyChanged(nameof(IsActive));
-                    // TODO: Update model when Active property is added to TriggerModel
+                    // TODO: Update model when Active property is added to ActionModel
                 }
             }
         }
 
-        public string DisplayName => $"Trigger: {Model.TriggerType}";
-        public int ConditionCount => 0; // TODO: Implement when conditions are added to TriggerModel
+        public string DisplayName => $"Action: {Model.ActionType}";
+        public int ConditionCount => Model.Conditions?.Length ?? 0;
         public bool HasConditions => ConditionCount > 0;
 
-        public TriggerViewModel(int id, TriggerModel model, AppPage page)
+        public ActionViewModel(int id, ActionModel model, MainPage page)
         {
             Id = id;
             Model = model;

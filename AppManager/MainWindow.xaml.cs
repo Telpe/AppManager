@@ -33,7 +33,7 @@ namespace AppManager
                 StatusTextBlock.Text = "Loading shortcuts...";
 
                 // FileManager now returns BrowserShortcutModel objects
-                var shortcutModels = FileManager.GetBrowserShortcuts();
+                var shortcutModels = FileManager.GetOSShortcuts();
 
                 // Convert models to view models
                 _shortcuts = shortcutModels

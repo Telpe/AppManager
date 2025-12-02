@@ -3,16 +3,16 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using AppManager.Core.Models;
 using AppManager.Core.Triggers;
 using AppManager.Core.Utils;
 using AppManager.Settings.UI;
 
-namespace AppManager.Settings.AppUI
+namespace AppManager.Settings.AppEdit
 {
     public partial class TriggerEditorControl : OverlayContent
     {
         private TriggerModel CurrentTriggerStored;
-        private TriggerManager TriggerManagerStored;
         private bool IsCapturingShortcutStored = false;
 
         public event EventHandler<TriggerModel> TriggerSaved;
@@ -31,7 +31,6 @@ namespace AppManager.Settings.AppUI
         public TriggerEditorControl()
         {
             InitializeComponent();
-            TriggerManagerStored = new TriggerManager();
             
             InitializeComboBoxes();
             UpdatePreview();
@@ -296,7 +295,7 @@ namespace AppManager.Settings.AppUI
             try
             {
                 var trigger = CreateTriggerModel();
-                var triggerInstance = TriggerManagerStored.CreateTrigger(trigger);
+                var triggerInstance = TriggerManager.CreateTrigger(trigger);
                 var canStart = triggerInstance.CanStart();
                 
                 var result = canStart ? "✓ Trigger configuration is valid" : "✗ Trigger configuration is invalid";

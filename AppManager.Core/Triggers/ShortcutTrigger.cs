@@ -5,6 +5,7 @@ using System.Windows.Input;
 using AppManager.Core.Actions;
 using AppManager.Core.Shortcuts;
 using System.Collections.Generic;
+using AppManager.Core.Models;
 
 namespace AppManager.Core.Triggers
 {

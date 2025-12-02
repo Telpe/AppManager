@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using System.Windows.Controls;
 using AppManager.Core.Actions;
+using AppManager.Core.Models;
 
 namespace AppManager.Core.Triggers
 {

@@ -24,7 +24,8 @@ namespace AppManager.Core.Utils
             bool includeSimilarNames = false, 
             string? windowTitle = null, 
             bool requireMainWindow = true,
-            bool includeChildProcesses = false)
+            bool includeChildProcesses = false,
+            int excludeId = -1)
         {
             if (string.IsNullOrEmpty(appName))
             {
@@ -72,6 +73,14 @@ namespace AppManager.Core.Utils
                         allProcesses.AddRange(children);
                     }
                     processes = allProcesses.Distinct().ToArray();
+                }
+
+                // Exclude specific process ID if provided
+                if (-1 < excludeId)
+                {
+                    processes = processes
+                        .Where(p => p.Id != excludeId)
+                        .ToArray();
                 }
 
                 return processes;

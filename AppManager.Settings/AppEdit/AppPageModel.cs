@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AppManager.Settings.AppUI
+namespace AppManager.Settings.AppEdit
 {
     internal class AppPageModel
     {

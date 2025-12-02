@@ -2,6 +2,7 @@ using AppManager.Core.Models;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -11,6 +12,7 @@ using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace AppManager.Core.Utils
 {
@@ -21,6 +23,8 @@ namespace AppManager.Core.Utils
             WriteIndented = true,
             DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
         };
+
+        public static readonly string IconfileDefault = "AppManagerIcon_temp.png";
 
         public static readonly string AppDataPath = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "AppManager");
@@ -85,30 +89,54 @@ namespace AppManager.Core.Utils
         // File System Operations
         public static bool FileExists(string path) => !string.IsNullOrEmpty(path) && File.Exists(path);
         
-        public static string[] FindExecutables(string appName, string[]? searchPaths = null)
+        public static string[] FindExecutables(string appName, string[]? searchPaths = null, bool slobbySearch = false, bool? includeAllDirectories = null)
         {
-            string[] extensions = { ".exe", ".bat", ".cmd", ".msi" };
+            string[] extensions = { ".bat", ".cmd", ".exe", ".msi" };
             searchPaths ??= GetDefaultSearchPaths();
             var results = new List<string>();
+            bool nameExtended = extensions.Any(a=> appName.EndsWith(a, true, null));
 
             foreach (string basePath in searchPaths)
             {
                 try
                 {
+                    if (nameExtended)
+                    {
+                        if (slobbySearch)
+                        {
+                            results.AddRange(Directory.GetFiles(
+                                basePath,
+                                $"*{appName}", 
+                                false != includeAllDirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly
+                                ));
+                        }
+                        else
+                        {
+                            results.AddRange(Directory.GetFiles(
+                                basePath,
+                                $"{appName}",
+                                true != includeAllDirectories ? SearchOption.TopDirectoryOnly : SearchOption.AllDirectories
+                                ));
+                        }
+                    }
+
                     foreach (string ext in extensions)
                     {
-                        /*
-                        string pattern = $"*{appName}*{ext}";
-                        var files = Directory.GetFiles(basePath, pattern, SearchOption.AllDirectories);
-                        if (files?.Length > 0) 
-                        { 
-                            results.AddRange(files); 
-                        }
-                        */
-                        var testPath = Path.Combine(basePath, $"{appName}{ext}");
-                        if (File.Exists(testPath))
+                        if (slobbySearch)
                         {
-                            results.Add(testPath);
+                            results.AddRange(Directory.GetFiles(
+                                basePath,
+                                $"*{appName}*{ext}",
+                                false != includeAllDirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly
+                                ));
+                        }
+                        else
+                        {
+                            results.AddRange(Directory.GetFiles(
+                                basePath,
+                                $"{appName}{ext}",
+                                true != includeAllDirectories ? SearchOption.TopDirectoryOnly : SearchOption.AllDirectories
+                                ));
                         }
                     }
                 }
@@ -117,7 +145,8 @@ namespace AppManager.Core.Utils
                     System.Diagnostics.Debug.WriteLine($"Error searching in {basePath}: {ex.Message}");
                 }
             }
-            return results.ToArray();
+
+            return results.Distinct().ToArray();
         }
 
         // Browser Shortcuts Operations
@@ -173,6 +202,37 @@ namespace AppManager.Core.Utils
             return shortcuts.OrderBy(s => s.Name).ToList();
         }
 
+        public static Icon ConvertBitmapSourceToIcon(System.Windows.Media.Imaging.BitmapSource bitmapSource)
+        {
+            try
+            {
+                if (bitmapSource == null)
+                    return SystemIcons.Application;
+
+                using (var bitmap = new Bitmap(bitmapSource.PixelWidth, bitmapSource.PixelHeight))
+                {
+                    var data = bitmap.LockBits(
+                        new System.Drawing.Rectangle(0, 0, bitmap.Width, bitmap.Height),
+                        System.Drawing.Imaging.ImageLockMode.WriteOnly,
+                        System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+
+                    bitmapSource.CopyPixels(
+                        new System.Windows.Int32Rect(0, 0, bitmapSource.PixelWidth, bitmapSource.PixelHeight),
+                        data.Scan0,
+                        data.Stride * bitmap.Height,
+                        data.Stride);
+
+                    bitmap.UnlockBits(data);
+                    return Icon.FromHandle(bitmap.GetHicon());
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error converting BitmapSource to Icon: {ex.Message}");
+                return SystemIcons.Application;
+            }
+        }
+
         private static ImageSource? ExtractIconSource(string executablePath, string baseName, string[] iconExtensions)
         {
             try
@@ -182,7 +242,7 @@ namespace AppManager.Core.Utils
                 if (!string.IsNullOrEmpty(iconPath)) { return CreateImageSourceFromFile(iconPath); }
 
                 // Second, try to extract icon from executable (for .exe files)
-                if (Path.GetExtension(executablePath).Equals(".exe", StringComparison.OrdinalIgnoreCase)) { return ExtractIconFromExecutable(executablePath); }
+                if (Path.GetExtension(executablePath).Equals(".exe", StringComparison.OrdinalIgnoreCase)) { return ExtractBitmapSourceFromExecutable(executablePath); }
 
                 // Third, try to extract icon from .lnk files
                 if (Path.GetExtension(executablePath).Equals(".lnk", StringComparison.OrdinalIgnoreCase)) { return ExtractIconFromShortcut(executablePath); }
@@ -256,7 +316,7 @@ namespace AppManager.Core.Utils
             }
         }
 
-        public static BitmapSource ExtractIconFromExecutable(string executablePath)
+        public static BitmapSource ExtractBitmapSourceFromExecutable(string executablePath)
         {
             try
             {
@@ -302,7 +362,7 @@ namespace AppManager.Core.Utils
                 string targetPath = ResolveShortcutTarget(shortcutPath);
                 if (!string.IsNullOrEmpty(targetPath) && File.Exists(targetPath)) 
                 { 
-                    return ExtractIconFromExecutable(targetPath); 
+                    return ExtractBitmapSourceFromExecutable(targetPath); 
                 }
                 
                 throw new InvalidOperationException($"Failed to resolve shortcut target or target does not exist: {shortcutPath}");
@@ -480,6 +540,93 @@ namespace AppManager.Core.Utils
             {
                 System.Diagnostics.Debug.WriteLine($"Error loading version: {ex.Message}");
                 return new Version { Exspansion = 0, Patch = 0, Hotfix = 0, Work = 1 };
+            }
+        }
+
+        /// <summary>
+        /// Converts an ImageSource to a BitmapSource
+        /// </summary>
+        /// <param name="imageSource">The ImageSource to convert</param>
+        /// <returns>A BitmapSource representation of the ImageSource</returns>
+        public static BitmapSource ImageSourceToBitmapSource(ImageSource imageSource)
+        {
+            if (imageSource == null)
+            {
+                throw new ArgumentNullException(nameof(imageSource), "ImageSource cannot be null");
+            }
+
+            try
+            {
+                // If it's already a BitmapSource, return it directly
+                if (imageSource is BitmapSource bitmapSource)
+                {
+                    return bitmapSource;
+                }
+
+                // For DrawingImage types, render to RenderTargetBitmap
+                if (imageSource is DrawingImage drawingImage)
+                {
+                    var drawing = drawingImage.Drawing;
+                    var bounds = drawing.Bounds;
+
+                    var targetBitmap = new RenderTargetBitmap(
+                        (int)bounds.Width,
+                        (int)bounds.Height,
+                        96,
+                        96,
+                        PixelFormats.Pbgra32);
+
+                    var drawingVisual = new DrawingVisual();
+                    using (var context = drawingVisual.RenderOpen())
+                    {
+                        context.DrawImage(drawingImage, bounds);
+                    }
+
+                    targetBitmap.Render(drawingVisual);
+                    targetBitmap.Freeze();
+                    return targetBitmap;
+                }
+
+                throw new InvalidOperationException($"Unsupported ImageSource type: {imageSource.GetType().Name}");
+            }
+            catch (InvalidOperationException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error converting ImageSource to BitmapSource: {ex.Message}");
+                throw new InvalidOperationException("Failed to convert ImageSource to BitmapSource", ex);
+            }
+        }
+
+        public static Icon GetDefaultIcon()
+        {
+            try
+            {
+                // First, try to load custom icon from PNG file
+                var iconPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, IconfileDefault);
+                if (File.Exists(iconPath))
+                {
+                    return FileManager.ConvertBitmapSourceToIcon(FileManager.ImageSourceToBitmapSource(FileManager.CreateImageSourceFromFile(iconPath)));
+                }
+
+                // Second, try to extract icon from AppManager.exe
+                var appManagerPath = FileManager.FindExecutables("AppManager.exe").FirstOrDefault();
+                if (!string.IsNullOrEmpty(appManagerPath))
+                {
+                    var bitmapSource = FileManager.ExtractBitmapSourceFromExecutable(appManagerPath);
+                    return FileManager.ConvertBitmapSourceToIcon(bitmapSource);
+                }
+
+                // Fallback to system icon
+                Debug.WriteLine("Failed to load icon, using system fallback");
+                return SystemIcons.Application;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error loading tray icon: {ex.Message}");
+                return SystemIcons.Application;
             }
         }
     }

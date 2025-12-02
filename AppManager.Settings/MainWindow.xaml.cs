@@ -11,6 +11,7 @@ using AppManager.Settings.AppEdit;
 using AppManager.Core.Models;
 using AppManager.Settings.Utils;
 using System.ComponentModel;
+using System.IO;
 
 namespace AppManager.Settings
 {
@@ -40,11 +41,46 @@ namespace AppManager.Settings
             // Handle window size changes
             this.SizeChanged += (sender, e) => OverlayManagerStored.UpdateSize();
 
+            // Set window icon using FileManager
+            SetWindowIcon();
+
             // Apply settings to window
             ApplyWindowSettings();
 
             // Load navigation based on profile's last selected page
             LoadNav1List(ProfileManager.CurrentProfile.SelectedNav1Menu);
+        }
+
+        private void SetWindowIcon()
+        {
+            try
+            {
+                string iconPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, FileManager.IconfileDefault);
+                
+                if (File.Exists(iconPath))
+                {
+                    this.Icon = FileManager.CreateImageSourceFromFile(iconPath);
+                }
+                else
+                {
+                    iconPath = FileManager.FindExecutables("AppManager.Settings.exe").FirstOrDefault() ?? "";
+
+                    if (File.Exists(iconPath))
+                    {
+                        this.Icon = FileManager.ExtractBitmapSourceFromExecutable(iconPath);
+                        Debug.WriteLine("Using AppManager.exe icon for Settings window");
+                    }
+                    else
+                    {
+                        this.Icon = FileManager.GetShellIcon();
+                        Debug.WriteLine("Using shell icon as fallback for Settings");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error setting window icon: {ex.Message}");
+            }
         }
 
         /// <summary>

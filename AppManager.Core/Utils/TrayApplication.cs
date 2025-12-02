@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Drawing;
 using System.Windows.Forms;
+using System.Windows.Interop;
+using System.Windows.Media.Imaging;
 using AppManager.Core.Actions;
 using AppManager.Core.Models;
 using AppManager.Core.Triggers;
@@ -32,26 +35,13 @@ namespace AppManager.Core.Utils
             _contextMenu.Items.Add("-"); // Separator
             _contextMenu.Items.Add("Exit", null, OnExit);
 
-            // Load custom icon from PNG file
-            Icon customIcon;
-            try
-            {
-                var iconPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "AppManagerIcon_temp.png");
-                using (var bitmap = new Bitmap(iconPath))
-                {
-                    customIcon = Icon.FromHandle(bitmap.GetHicon());
-                }
-            }
-            catch
-            {
-                // Fallback to system icon if custom icon fails to load
-                customIcon = SystemIcons.Application;
-            }
+            // Load tray icon using FileManager
+            Icon trayIcon = LoadTrayIcon();
 
             // Create tray icon
             _trayIcon = new NotifyIcon()
             {
-                Icon = customIcon,
+                Icon = trayIcon,
                 ContextMenuStrip = _contextMenu,
                 Text = "AppManager",
                 Visible = true
@@ -59,6 +49,11 @@ namespace AppManager.Core.Utils
 
             // Handle double-click to show main window
             _trayIcon.DoubleClick += OnOpen;
+        }
+
+        private Icon LoadTrayIcon()
+        {
+            return FileManager.GetDefaultIcon();
         }
 
         private void OnOpen(object? sender, EventArgs? e)

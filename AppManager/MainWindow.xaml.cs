@@ -1,15 +1,9 @@
 ﻿using AppManager.Core.Utils;
 using System.Diagnostics;
-using System.Text;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace AppManager
 {
@@ -23,7 +17,40 @@ namespace AppManager
         public MainWindow()
         {
             InitializeComponent();
+            SetWindowIcon();
             LoadShortcuts();
+        }
+
+        private void SetWindowIcon()
+        {
+            try
+            {
+                string iconPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, FileManager.IconfileDefault);
+
+                if (File.Exists(iconPath))
+                {
+                    this.Icon = FileManager.CreateImageSourceFromFile(iconPath);
+                }
+                else
+                {
+                    iconPath = FileManager.FindExecutables("AppManager.exe").FirstOrDefault() ?? "";
+
+                    if (File.Exists(iconPath))
+                    {
+                        this.Icon = FileManager.ExtractBitmapSourceFromExecutable(iconPath);
+                        Debug.WriteLine("Using AppManager.exe icon for Settings window");
+                    }
+                    else
+                    {
+                        this.Icon = FileManager.GetShellIcon();
+                        Debug.WriteLine("Using shell icon as fallback for Settings");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error setting window icon: {ex.Message}");
+            }
         }
 
         private void LoadShortcuts()

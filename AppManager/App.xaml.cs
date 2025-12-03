@@ -24,7 +24,7 @@ namespace AppManager
 
             InitializeComponent();
 
-            CheckCoreRunning();
+            SetCoreRunning();
 
         }
 
@@ -63,7 +63,7 @@ namespace AppManager
             return false;
         }
 
-        protected void CheckCoreRunning()
+        protected void SetCoreRunning()
         {
             if (!ProcessManager.IsProcessRunning("AppManager.Core"))
             {

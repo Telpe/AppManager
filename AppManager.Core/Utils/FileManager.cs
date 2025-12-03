@@ -159,7 +159,7 @@ namespace AppManager.Core.Utils
                 // Ensure the BrowserShortcuts directory exists
                 Directory.CreateDirectory(OSShortcutsPath);
 
-                string[] executableExtensions = { ".exe", ".bat", ".cmd", ".lnk" };
+                string[] executableExtensions = { ".bat", ".lnk", ".cmd", ".exe" };
                 string[] iconExtensions = { ".ico", ".png", ".jpg", ".jpeg", ".bmp", ".gif" };
 
                 var executableFiles = new List<string>();
@@ -196,7 +196,7 @@ namespace AppManager.Core.Utils
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error getting browser shortcuts: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Error getting OS shortcuts: {ex.Message}");
             }
 
             return shortcuts.OrderBy(s => s.Name).ToList();
@@ -320,28 +320,21 @@ namespace AppManager.Core.Utils
         {
             try
             {
-                // Use Win32 API to extract icon and convert to WPF format
-                IntPtr hIcon = ExtractIcon(IntPtr.Zero, executablePath, 0);
-                if (hIcon != IntPtr.Zero && hIcon != new IntPtr(1)) // 1 means no icon
+                Icon? icon = Icon.ExtractIcon(executablePath, 0, false);
+
+                if (icon != null)
                 {
-                    try
-                    {
-                        // Convert Win32 icon to WPF BitmapSource
-                        var bitmapSource = Imaging.CreateBitmapSourceFromHIcon(
-                            hIcon, 
-                            Int32Rect.Empty, 
-                            BitmapSizeOptions.FromEmptyOptions());
-                        
-                        bitmapSource.Freeze(); // Make it thread-safe
-                        return bitmapSource;
-                    }
-                    finally
-                    {
-                        DestroyIcon(hIcon); // Clean up Win32 handle
-                    }
+                    var bitmapSource = Imaging.CreateBitmapSourceFromHIcon(
+                        icon.Handle,
+                        Int32Rect.Empty,
+                        BitmapSizeOptions.FromEmptyOptions());
+                    bitmapSource.Freeze(); // Make it thread-safe
+                    return bitmapSource;
                 }
-                
-                throw new InvalidOperationException($"Failed to extract icon from executable: {executablePath}");
+                else
+                {
+                    return CreateArmyBlueFallbackIcon();
+                }
             }
             catch (InvalidOperationException)
             {
@@ -427,12 +420,11 @@ namespace AppManager.Core.Utils
             }
         }
 
-        [LibraryImport("shell32.dll", StringMarshalling = StringMarshalling.Utf16, SetLastError = true)]
-        public static partial IntPtr ExtractIcon(IntPtr hInst, string lpszExeFileName, int nIconIndex);
-
-        [return: MarshalAs(UnmanagedType.Bool)]
-        [LibraryImport("user32.dll", StringMarshalling = StringMarshalling.Utf16, SetLastError = true)]
-        public static partial bool DestroyIcon(IntPtr hIcon);
+        //private const uint SHGFI_ICON = 0x100;
+        /// <summary>
+        /// private const uint SHGFI_LARGEICON = 0x0;
+        /// </summary>
+        //private const uint SHGFI_SMALLICON = 0x1;
 
         private static string[] GetDefaultSearchPaths()
         {
@@ -477,29 +469,21 @@ namespace AppManager.Core.Utils
             {
                 string shell32Path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "shell32.dll");
 
-                // For negative values, use the absolute value as ExtractIcon expects positive indices
-                int actualIndex = Math.Abs(iconIndex);
+                Icon? icon = Icon.ExtractIcon(shell32Path, iconIndex, false);
 
-                IntPtr hIcon = ExtractIcon(IntPtr.Zero, shell32Path, actualIndex);
-                if (hIcon != IntPtr.Zero && hIcon != new IntPtr(1)) // 1 means no icon found
+                if (icon != null)
                 {
-                    try
-                    {
-                        var bitmapSource = Imaging.CreateBitmapSourceFromHIcon(
-                            hIcon,
-                            Int32Rect.Empty,
-                            BitmapSizeOptions.FromEmptyOptions());
-
-                        bitmapSource.Freeze(); // Make it thread-safe
-                        return bitmapSource;
-                    }
-                    finally
-                    {
-                        DestroyIcon(hIcon); // Clean up Win32 handle
-                    }
+                    var bitmapSource = Imaging.CreateBitmapSourceFromHIcon(
+                        icon.Handle,
+                        Int32Rect.Empty,
+                        BitmapSizeOptions.FromEmptyOptions());
+                    bitmapSource.Freeze(); // Make it thread-safe
+                    return bitmapSource;
                 }
-
-                throw new InvalidOperationException($"Failed to extract shell icon with index {iconIndex}");
+                else
+                {
+                    return CreateArmyBlueFallbackIcon();
+                }
             }
             catch (InvalidOperationException)
             {
@@ -628,6 +612,35 @@ namespace AppManager.Core.Utils
                 Debug.WriteLine($"Error loading tray icon: {ex.Message}");
                 return SystemIcons.Application;
             }
+        }
+
+        /// <summary>
+        /// Creates a fallback icon in semi-transparent army-blue color
+        /// </summary>
+        /// <returns>A 16x16 BitmapSource in semi-transparent army-blue</returns>
+        private static BitmapSource CreateArmyBlueFallbackIcon()
+        {
+            const int size = 16;
+            const int dpiX = 96;
+            const int dpiY = 96;
+
+            // Create a RenderTargetBitmap for the icon
+            var bitmap = new RenderTargetBitmap(size, size, dpiX, dpiY, PixelFormats.Pbgra32);
+
+            // Create a DrawingVisual to draw on
+            var drawingVisual = new DrawingVisual();
+            using (var drawingContext = drawingVisual.RenderOpen())
+            {
+                // Army blue color with semi-transparency: RGB(75, 100, 130) with 70% opacity
+                var armyBlueBrush = new SolidColorBrush(System.Windows.Media.Color.FromArgb(178, 75, 100, 130));
+                drawingContext.DrawRectangle(armyBlueBrush, null, new Rect(0, 0, size, size));
+            }
+
+            // Render the visual onto the bitmap
+            bitmap.Render(drawingVisual);
+            bitmap.Freeze(); // Make it thread-safe
+
+            return bitmap;
         }
     }
 }

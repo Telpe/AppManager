@@ -18,6 +18,7 @@ namespace AppManager.Core.Utils
 {
     public static partial class FileManager
     {
+        public static readonly string[] ExecuteableExtensions = { ".bat", ".cmd", ".exe", ".msi" };
         private static readonly JsonSerializerOptions JsonOptions = new()
         {
             WriteIndented = true,
@@ -91,10 +92,9 @@ namespace AppManager.Core.Utils
         
         public static string[] FindExecutables(string appName, string[]? searchPaths = null, bool slobbySearch = false, bool? includeAllDirectories = null)
         {
-            string[] extensions = { ".bat", ".cmd", ".exe", ".msi" };
             searchPaths ??= GetDefaultSearchPaths();
             var results = new List<string>();
-            bool nameExtended = extensions.Any(a=> appName.EndsWith(a, true, null));
+            bool nameExtended = ExecuteableExtensions.Any(a=> appName.EndsWith(a, true, null));
 
             foreach (string basePath in searchPaths)
             {
@@ -120,7 +120,7 @@ namespace AppManager.Core.Utils
                         }
                     }
 
-                    foreach (string ext in extensions)
+                    foreach (string ext in ExecuteableExtensions)
                     {
                         if (slobbySearch)
                         {

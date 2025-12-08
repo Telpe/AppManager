@@ -7,6 +7,7 @@ using System.Windows.Controls;
 using AppManager.Core.Actions;
 using AppManager.Core.Conditions;
 using AppManager.Core.Models;
+using AppManager.Core.Utils;
 using AppManager.Settings.UI;
 using Microsoft.Win32;
 
@@ -14,27 +15,30 @@ namespace AppManager.Settings.ActionEdit
 {
     public partial class ActionEditorControl : OverlayContent
     {
-        private ActionModel _currentAction;
-        private ObservableCollection<ConditionDisplayItem> _conditions;
+        private ActionModel CurrentActionModelValue;
+        private ObservableCollection<ConditionDisplayItem> _conditions = new ObservableCollection<ConditionDisplayItem>();
 
         public event EventHandler<ActionModel> ActionSaved;
         public event EventHandler ActionCancelled;
 
-        public ActionModel CurrentAction
+        public ActionModel CurrentActionModel
         {
-            get => _currentAction;
+            get => CurrentActionModelValue;
             set
             {
-                _currentAction = value;
+                CurrentActionModelValue = value;
                 LoadActionData();
             }
         }
 
-        public ActionEditorControl()
+        public ActionEditorControl(ActionModel actionModel)
         {
+            InitializeComponent();
+
+            CurrentActionModelValue = actionModel;
+
             try
             {
-                InitializeComponent();
                 Initialize();
             }
             catch (Exception ex)
@@ -42,19 +46,14 @@ namespace AppManager.Settings.ActionEdit
                 System.Diagnostics.Debug.WriteLine($"ActionEditorControl initialization error: {ex.Message}");
                 InitializeManually();
             }
+
+            
         }
 
         private void Initialize()
         {
-            _conditions = new ObservableCollection<ConditionDisplayItem>();
-
-            if (ConditionsListBox != null)
-            {
-                ConditionsListBox.ItemsSource = _conditions;
-            }
-
             InitializeComboBoxes();
-            UpdatePreview();
+            LoadActionData();
         }
 
         private void InitializeManually()
@@ -69,7 +68,6 @@ namespace AppManager.Settings.ActionEdit
             grid.Children.Add(textBlock);
             Content = grid;
 
-            _conditions = new ObservableCollection<ConditionDisplayItem>();
         }
 
         private void InitializeComboBoxes()
@@ -79,7 +77,11 @@ namespace AppManager.Settings.ActionEdit
                 if (ActionTypeComboBox != null)
                 {
                     ActionTypeComboBox.ItemsSource = ActionManager.GetAvailableActions();
-                    ActionTypeComboBox.SelectedIndex = 0;
+                }
+
+                if (ConditionsListBox != null)
+                {
+                    ConditionsListBox.ItemsSource = _conditions;
                 }
 
                 if (ConditionTypeComboBox != null)
@@ -103,62 +105,37 @@ namespace AppManager.Settings.ActionEdit
 
         private void LoadActionData()
         {
-            if (_currentAction == null)
-            {
-                return;
-            }
-
             try
             {
                 if (ActionTypeComboBox != null)
                 {
-                    ActionTypeComboBox.SelectedItem = _currentAction.ActionType;
-                }
-
-                if (AppNameTextBox != null)
-                {
-                    AppNameTextBox.Text = _currentAction.AppName ?? string.Empty;
-                }
-
-                if (WindowTitleTextBox != null)
-                {
-                    WindowTitleTextBox.Text = _currentAction.WindowTitle ?? string.Empty;
-                }
-
-                if (ExecutablePathTextBox != null)
-                {
-                    ExecutablePathTextBox.Text = _currentAction.ExecutablePath ?? string.Empty;
-                }
-
-                if (ArgumentsTextBox != null)
-                {
-                    ArgumentsTextBox.Text = _currentAction.Arguments ?? string.Empty;
+                    ActionTypeComboBox.SelectedItem = CurrentActionModelValue.ActionType;
                 }
 
                 if (ForceOperationCheckBox != null)
                 {
-                    ForceOperationCheckBox.IsChecked = _currentAction.ForceOperation;
+                    ForceOperationCheckBox.IsChecked = CurrentActionModelValue.ForceOperation;
                 }
 
                 if (IncludeChildProcessesCheckBox != null)
                 {
-                    IncludeChildProcessesCheckBox.IsChecked = _currentAction.IncludeChildProcesses;
+                    IncludeChildProcessesCheckBox.IsChecked = CurrentActionModelValue.IncludeChildProcesses;
                 }
 
                 if (IncludeSimilarNamesCheckBox != null)
                 {
-                    IncludeSimilarNamesCheckBox.IsChecked = _currentAction.IncludeSimilarNames;
+                    IncludeSimilarNamesCheckBox.IsChecked = CurrentActionModelValue.IncludeSimilarNames;
                 }
 
                 if (TimeoutTextBox != null)
                 {
-                    TimeoutTextBox.Text = _currentAction.TimeoutMs.ToString();
+                    TimeoutTextBox.Text = CurrentActionModelValue.TimeoutMs.ToString();
                 }
 
                 _conditions.Clear();
-                if (_currentAction.Conditions != null)
+                if (CurrentActionModelValue.Conditions != null)
                 {
-                    foreach (var condition in _currentAction.Conditions)
+                    foreach (var condition in CurrentActionModelValue.Conditions)
                     {
                         _conditions.Add(new ConditionDisplayItem(condition));
                     }
@@ -172,25 +149,6 @@ namespace AppManager.Settings.ActionEdit
             }
         }
 
-        private ActionModel CreateActionModel()
-        {
-            var action = new ActionModel
-            {
-                ActionType = (AppActionTypeEnum)(ActionTypeComboBox?.SelectedItem ?? AppActionTypeEnum.Launch),
-                AppName = AppNameTextBox?.Text?.Trim() ?? string.Empty,
-                WindowTitle = WindowTitleTextBox?.Text?.Trim() ?? string.Empty,
-                ExecutablePath = ExecutablePathTextBox?.Text?.Trim() ?? string.Empty,
-                Arguments = ArgumentsTextBox?.Text?.Trim() ?? string.Empty,
-                ForceOperation = ForceOperationCheckBox?.IsChecked ?? false,
-                IncludeChildProcesses = IncludeChildProcessesCheckBox?.IsChecked ?? false,
-                IncludeSimilarNames = IncludeSimilarNamesCheckBox?.IsChecked ?? false,
-                TimeoutMs = int.TryParse(TimeoutTextBox?.Text, out int timeout) ? timeout : 5000,
-                Conditions = _conditions.Select(c => c.Model).ToArray()
-            };
-
-            return action;
-        }
-
         private void UpdatePreview()
         {
             try
@@ -200,30 +158,29 @@ namespace AppManager.Settings.ActionEdit
                     return;
                 }
 
-                var action = CreateActionModel();
-                var preview = $"Action Type: {action.ActionType}\n" +
-                             $"App Name: {action.AppName ?? "Not specified"}\n" +
-                             $"Window Title: {action.WindowTitle ?? "Not specified"}\n";
+                var preview = $"Action Type: {CurrentActionModelValue.ActionType}\n" +
+                             $"App Name: {CurrentActionModelValue.AppName ?? "Not specified"}\n" +
+                             $"Window Title: {CurrentActionModelValue.WindowTitle ?? "Not specified"}\n";
 
-                if (!string.IsNullOrEmpty(action.ExecutablePath))
+                if (!string.IsNullOrEmpty(CurrentActionModelValue.ExecutablePath))
                 {
-                    preview += $"Executable: {action.ExecutablePath}\n";
+                    preview += $"Executable: {CurrentActionModelValue.ExecutablePath}\n";
                 }
 
-                if (!string.IsNullOrEmpty(action.Arguments))
+                if (!string.IsNullOrEmpty(CurrentActionModelValue.Arguments))
                 {
-                    preview += $"Arguments: {action.Arguments}\n";
+                    preview += $"Arguments: {CurrentActionModelValue.Arguments}\n";
                 }
 
-                preview += $"Force Operation: {action.ForceOperation}\n" +
-                          $"Include Child Processes: {action.IncludeChildProcesses}\n" +
-                          $"Include Similar Names: {action.IncludeSimilarNames}\n" +
-                          $"Timeout: {action.TimeoutMs}ms\n\n";
+                preview += $"Force Operation: {CurrentActionModelValue.ForceOperation}\n" +
+                          $"Include Child Processes: {CurrentActionModelValue.IncludeChildProcesses}\n" +
+                          $"Include Similar Names: {CurrentActionModelValue.IncludeSimilarNames}\n" +
+                          $"Timeout: {CurrentActionModelValue.TimeoutMs}ms\n\n";
 
-                if (action.Conditions?.Length > 0)
+                if (CurrentActionModelValue.Conditions?.Length > 0)
                 {
                     preview += "Conditions:\n";
-                    foreach (var condition in action.Conditions)
+                    foreach (var condition in CurrentActionModelValue.Conditions)
                     {
                         preview += $"  - {condition.ConditionType}: {GetConditionDescription(condition)}\n";
                     }
@@ -258,9 +215,10 @@ namespace AppManager.Settings.ActionEdit
         {
             try
             {
-                if (ActionTypeComboBox?.SelectedItem is AppActionTypeEnum actionType && LaunchOptionsGroup != null)
+                if (ActionTypeComboBox?.SelectedItem is AppActionTypeEnum actionType)
                 {
-                    LaunchOptionsGroup.Visibility = actionType == AppActionTypeEnum.Launch ? Visibility.Visible : Visibility.Collapsed;
+                    CurrentActionModelValue.ActionType = actionType;
+                    GenerateDynamicGrid(actionType);
                 }
 
                 UpdatePreview();
@@ -271,28 +229,194 @@ namespace AppManager.Settings.ActionEdit
             }
         }
 
-        private void BrowseExecutableButton_Click(object sender, RoutedEventArgs e)
+        private void GenerateDynamicGrid(AppActionTypeEnum actionType)
+        {
+            if (null == LaunchOptionsGroup){ return; }
+
+            var grid = new Grid
+            {
+                Margin = new Thickness(5)
+            };
+
+            var rowCount = 0;
+            //var controlDictionary = new Dictionary<string, UIElement>();
+
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(0, GridUnitType.Auto) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(0, GridUnitType.Auto) });
+
+            switch (actionType)
+            {
+                case AppActionTypeEnum.Launch:
+                    AddGridRowsFromInterface(grid, ref rowCount, typeof(ILaunchAction));
+                    LaunchOptionsGroup.Header = "Launch Options";
+                    LaunchOptionsGroup.Visibility = Visibility.Visible;
+                    break;
+
+                case AppActionTypeEnum.Close:
+                    AddGridRowsFromInterface(grid, ref rowCount, typeof(ICloseAction));
+                    LaunchOptionsGroup.Header = "Close Options";
+                    LaunchOptionsGroup.Visibility = Visibility.Visible;
+                    break;
+
+                case AppActionTypeEnum.Restart:
+                    AddGridRowsFromInterface(grid, ref rowCount, typeof(IRestartAction));
+                    LaunchOptionsGroup.Header = "Restart Options";
+                    LaunchOptionsGroup.Visibility = Visibility.Visible;
+                    break;
+
+                case AppActionTypeEnum.Focus:
+                    AddGridRowsFromInterface(grid, ref rowCount, typeof(IFocusAction));
+                    LaunchOptionsGroup.Header = "Focus Options";
+                    LaunchOptionsGroup.Visibility = Visibility.Visible;
+                    break;
+
+                case AppActionTypeEnum.BringToFront:
+                    AddGridRowsFromInterface(grid, ref rowCount, typeof(IBringToFrontAction));
+                    LaunchOptionsGroup.Header = "Bring To Front Options";
+                    LaunchOptionsGroup.Visibility = Visibility.Visible;
+                    break;
+
+                case AppActionTypeEnum.Minimize:
+                    AddGridRowsFromInterface(grid, ref rowCount, typeof(IMinimizeAction));
+                    LaunchOptionsGroup.Header = "Minimize Options";
+                    LaunchOptionsGroup.Visibility = Visibility.Visible;
+                    break;
+
+                default:
+                    LaunchOptionsGroup.Visibility = Visibility.Collapsed;
+                    break;
+            }
+
+            LaunchOptionsGroup.Content = grid;
+        }
+
+        private void AddGridRowsFromInterface(Grid grid, ref int rowIndex, Type modelType)
+        {
+            foreach (var prop in modelType.GetProperties())
+            {
+                var propLabel = prop.Name switch
+                {
+                    "ExecutablePath" => "Executable Path:",
+                    "Arguments" => "Arguments:",
+                    "ForceOperation" => "Force Operation",
+                    "IncludeChildProcesses" => "Include Child Processes",
+                    "IncludeSimilarNames" => "Include Similar Names",
+                    "TimeoutMs" => "Timeout (ms):",
+                    "WindowTitle" => "Window Title:",
+                    _ => prop.Name
+                };
+
+                if (prop.PropertyType == typeof(string))
+                {
+                    AddTextBoxRow(grid, ref rowIndex, prop.Name, propLabel, "ExecutablePath" == prop.Name ? TextHelperButtonEnum.BrowseExecutable : TextHelperButtonEnum.None);
+                }
+                else if (prop.PropertyType == typeof(bool))
+                {
+                    AddCheckBoxRow(grid, ref rowIndex, prop.Name, propLabel);
+                }
+            }
+        }
+
+        private void AddTextBoxRow(Grid grid, ref int rowIndex, string controlName, string labelText, TextHelperButtonEnum withButton = TextHelperButtonEnum.None)
+        {
+            grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(0, GridUnitType.Auto) });
+
+            var label = new Label
+            {
+                Content = labelText,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            Grid.SetRow(label, rowIndex);
+            Grid.SetColumn(label, 0);
+            grid.Children.Add(label);
+
+            var textBox = new TextBox
+            {
+                Name = controlName + "TextBox",
+                Margin = new Thickness(5, 0, 5, 0),
+                VerticalAlignment = VerticalAlignment.Center,
+                Height = 22
+            };
+            Grid.SetRow(textBox, rowIndex);
+            Grid.SetColumn(textBox, 1);
+            grid.Children.Add(textBox);
+
+            textBox.Text = CurrentActionModelValue.GetType().GetProperty(controlName)?.GetValue(CurrentActionModelValue)?.ToString() ?? string.Empty;
+
+            textBox.TextChanged += TextBox_TextChanged;
+
+            if (TextHelperButtonEnum.BrowseExecutable == withButton)
+            {
+                var browseButton = new Button
+                {
+                    Content = "Browse...",
+                    Width = 80,
+                    Height = 25,
+                    Tag = controlName
+                };
+                browseButton.Click += (sender, e) => BrowseExecutableButton_Click(sender, e, textBox);
+                Grid.SetRow(browseButton, rowIndex);
+                Grid.SetColumn(browseButton, 2);
+                grid.Children.Add(browseButton);
+            }
+
+            rowIndex++;
+        }
+
+        private void AddCheckBoxRow(Grid grid, ref int rowIndex, string controlName, string checkBoxText)
+        {
+            grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(0, GridUnitType.Auto) });
+
+            var checkBox = new CheckBox
+            {
+                Content = checkBoxText,
+                Name = controlName + "CheckBox",
+                Margin = new Thickness(5),
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            checkBox.Checked += CheckBox_Changed;
+            checkBox.Unchecked += CheckBox_Changed;
+
+            Grid.SetRow(checkBox, rowIndex);
+            Grid.SetColumn(checkBox, 0);
+            Grid.SetColumnSpan(checkBox, 2);
+            grid.Children.Add(checkBox);
+
+            RegisterCheckBox(checkBox, controlName);
+
+            rowIndex++;
+        }
+
+        private void RegisterCheckBox(CheckBox checkBox, string controlName)
+        {
+            switch (controlName)
+            {
+                case "ForceOperation":
+                    ForceOperationCheckBox = checkBox;
+                    break;
+                case "IncludeChildProcesses":
+                    IncludeChildProcessesCheckBox = checkBox;
+                    break;
+                case "IncludeSimilarNames":
+                    IncludeSimilarNamesCheckBox = checkBox;
+                    break;
+            }
+        }
+
+        private void BrowseExecutableButton_Click(object sender, RoutedEventArgs e, TextBox target)
         {
             try
             {
                 var openFileDialog = new OpenFileDialog
                 {
-                    Filter = "Executable files (*.exe)|*.exe|All files (*.*)|*.*",
+                    Filter = $"Executable files({String.Join(',', FileManager.ExecuteableExtensions.Select(a => "*" + a))})|{String.Join(';', FileManager.ExecuteableExtensions.Select(a=>"*"+a))}|All files (*.*)|*.*",
                     Title = "Select Executable"
                 };
 
                 if (openFileDialog.ShowDialog() == true)
                 {
-                    if (ExecutablePathTextBox != null)
-                    {
-                        ExecutablePathTextBox.Text = openFileDialog.FileName;
-                    }
-
-                    if (AppNameTextBox != null && string.IsNullOrEmpty(AppNameTextBox.Text))
-                    {
-                        var fileName = System.IO.Path.GetFileNameWithoutExtension(openFileDialog.FileName);
-                        AppNameTextBox.Text = fileName;
-                    }
+                    target.Text = System.IO.Path.GetFullPath(openFileDialog.FileName);
 
                     UpdatePreview();
                 }
@@ -345,8 +469,7 @@ namespace AppManager.Settings.ActionEdit
         {
             try
             {
-                var action = CreateActionModel();
-                var canExecute = ActionManager.CanExecuteAction(action);
+                var canExecute = ActionManager.CanExecuteAction(CurrentActionModelValue);
 
                 var result = canExecute ? "✓ Action can be executed" : "✗ Action cannot be executed";
                 MessageBox.Show(result, "Test Result", MessageBoxButton.OK,
@@ -364,18 +487,6 @@ namespace AppManager.Settings.ActionEdit
             {
                 var errors = new List<string>();
 
-                if (string.IsNullOrWhiteSpace(AppNameTextBox?.Text))
-                {
-                    errors.Add("App Name is required");
-                }
-
-                if (ActionTypeComboBox?.SelectedItem is AppActionTypeEnum actionType && actionType == AppActionTypeEnum.Launch)
-                {
-                    if (string.IsNullOrWhiteSpace(ExecutablePathTextBox?.Text))
-                    {
-                        errors.Add("Executable Path is required for Launch action");
-                    }
-                }
 
                 if (!int.TryParse(TimeoutTextBox?.Text, out int timeout) || timeout <= 0)
                 {
@@ -399,9 +510,7 @@ namespace AppManager.Settings.ActionEdit
         {
             try
             {
-                var action = CreateActionModel();
-                _currentAction = action;
-                ActionSaved?.Invoke(this, action);
+                ActionSaved?.Invoke(this, CurrentActionModelValue);
                 DisableOverlay();
             }
             catch (Exception ex)

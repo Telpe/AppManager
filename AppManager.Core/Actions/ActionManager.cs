@@ -30,13 +30,11 @@ namespace AppManager.Core.Actions
 
         public static bool CanExecuteAction(ActionModel model)
         {
-
-            if (null == model) { return false; }
             try
             {
                 var action = CreateAction(model);
 
-                return action?.CanExecute() ?? false;
+                return action.CanExecute();
             }
             catch { return false; }
             

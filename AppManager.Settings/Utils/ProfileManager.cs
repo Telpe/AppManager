@@ -17,7 +17,7 @@ namespace AppManager.Settings.Utils
             private set => _CurrentProfile = value; 
         }
 
-        public static ProfileModel? LoadProfile(string profileName = null)
+        public static ProfileModel? LoadProfile(string? profileName = null)
         {
             ProfileModel? profile = null;
             try

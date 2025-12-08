@@ -326,7 +326,7 @@ namespace AppManager.Settings
             if(sender is Button fromSender)
             {
                 Debug.WriteLine($"Nav1MenuButton_Click: {fromSender.Content.ToString()}\nGetting Nav1List");
-                LoadNav1List(fromSender.Content.ToString());
+                LoadNav1List(fromSender.Content.ToString()??"");
                 Debug.WriteLine($"Update profile with selected page");
                 // Update profile with selected page
                 ProfileManager.CurrentProfile.SelectedNav1Menu = fromSender.Content.ToString();
@@ -336,12 +336,12 @@ namespace AppManager.Settings
 
         private void Nav1ListButton_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button fromSender)
+            if (sender is Button fromSender && null != fromSender.Content)
             {
-                LoadPage(fromSender.Content.ToString());
+                LoadPage(fromSender.Content.ToString()??"");
 
                 // Update profile with last selected page
-                ProfileManager.CurrentProfile.SelectedNav1List = fromSender.Content.ToString();
+                ProfileManager.CurrentProfile.SelectedNav1List = fromSender.Content.ToString()??"";
             }
         }
 

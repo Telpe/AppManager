@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 
 namespace AppManager.Core.Actions
 {
-    public class LaunchAction : BaseAction
+    public class LaunchAction : BaseAction, ILaunchAction
     {
-        public string AppName { get; set; }
+        public string? AppName { get; set; }
         public override AppActionTypeEnum ActionType => AppActionTypeEnum.Launch;
         public override string Description => "Launches an application";
 
@@ -97,11 +97,11 @@ namespace AppManager.Core.Actions
         {
             return new ActionModel
             {
-                AppName = AppName,
                 ActionType = ActionType,
+                Conditions = Conditions.Select(c => c.ToModel()).ToArray(),
+                AppName = AppName,
                 ExecutablePath = ExecutablePath,
-                Arguments = Arguments,
-                Conditions = Conditions.Select(c => c.ToModel()).ToArray()
+                Arguments = Arguments
             };
         }
     }

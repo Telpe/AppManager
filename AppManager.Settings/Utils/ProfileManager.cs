@@ -1,5 +1,6 @@
 using AppManager.Core.Models;
 using AppManager.Core.Utils;
+using AppManager;
 using System;
 using System.Diagnostics;
 
@@ -9,22 +10,22 @@ namespace AppManager.Settings.Utils
     {
         public static readonly string DefaultProfileFilename = "default";
 
-        private static ProfileModel _CurrentProfile;
-        public static ProfileModel CurrentProfile 
+        private static ProfileModel? _CurrentProfile;
+        public static ProfileModel? CurrentProfile 
         { 
             get => _CurrentProfile ??= LoadProfile(); 
             private set => _CurrentProfile = value; 
         }
 
-        public static ProfileModel LoadProfile(string profileName = null)
+        public static ProfileModel? LoadProfile(string profileName = null)
         {
-            ProfileModel profile = null;
+            ProfileModel? profile = null;
             try
             {
                 string profileFile = FileManager.GetProfilePath(profileName ?? DefaultProfileFilename);
                 profile = FileManager.LoadJsonFile<ProfileModel>(profileFile);
                 
-                if (profile.Name != null) // Check if file existed and was loaded
+                if (profile?.Name != null) // Check if file existed and was loaded
                 {
                     Debug.WriteLine($"Profile '{profile.Name}' loaded successfully");
                 }
@@ -121,13 +122,13 @@ namespace AppManager.Settings.Utils
             }
         }
 
-        public static ProfileModel CreateNewProfile(string profileName = null)
+        public static ProfileModel CreateNewProfile(string? profileName = null)
         {
             ProfileModel profile = new ProfileModel
             {
                 Name = profileName ?? DefaultProfileFilename,
                 Username = Environment.UserName,
-                Version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version
+                Version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version ?? new Core.Version() { Exspansion = 0, Patch = 0, Hotfix = 0, Work = 1 }
             };
             
             Debug.WriteLine($"New profile {profile.Name} created for user: {profile.Username}");

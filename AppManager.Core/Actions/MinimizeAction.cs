@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace AppManager.Core.Actions
 {
-    public partial class MinimizeAction : BaseAction
+    public partial class MinimizeAction : BaseAction, IMinimizeAction
     {
         public override AppActionTypeEnum ActionType => AppActionTypeEnum.Minimize;
         public override string Description => "Minimizes an application window";

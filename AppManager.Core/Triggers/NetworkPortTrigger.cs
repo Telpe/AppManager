@@ -10,7 +10,7 @@ using AppManager.Core.Models;
 
 namespace AppManager.Core.Triggers
 {
-    internal class NetworkPortTrigger : BaseTrigger
+    internal class NetworkPortTrigger : BaseTrigger, INetworkPortTrigger
     {
         public override TriggerTypeEnum TriggerType => TriggerTypeEnum.NetworkPort;
 
@@ -20,7 +20,7 @@ namespace AppManager.Core.Triggers
         public int? Port { get; set; }
         public string? IPAddress { get; set; }
         public int? TimeoutMs { get; set; }
-        public Dictionary<string, object> CustomProperties { get; set; }
+        public Dictionary<string, object>? CustomProperties { get; set; }
 
         public NetworkPortTrigger(TriggerModel model) : base(model)
         {
@@ -34,11 +34,16 @@ namespace AppManager.Core.Triggers
 
         public override bool CanStart()
         {
-            return Port > 0 && Port <= 65535;
+            return null != Port && Port > 0 && Port <= 65535;
         }
 
         public override Task<bool> StartAsync()
         {
+            if (null == IPAddress || null == Port)
+            {
+                return Task.FromResult(false);
+            }
+
             return Task.Run<bool>(() =>
             {
                 if (!IsActive) { return false; }

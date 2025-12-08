@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace AppManager.Core.Actions
 {
-    public partial class FocusAction : BaseAction
+    public partial class FocusAction : BaseAction, IFocusAction
     {
         public override AppActionTypeEnum ActionType => AppActionTypeEnum.Focus;
         public override string Description => "Brings an application window to the foreground";

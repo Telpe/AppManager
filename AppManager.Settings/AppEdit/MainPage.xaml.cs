@@ -10,6 +10,7 @@ using AppManager.Core.Triggers;
 using AppManager.Core.Actions;
 using AppManager.Settings.Utils;
 using AppManager.Settings.AppGroupEdit;
+using AppManager.Settings.ActionEdit;
 
 namespace AppManager.Settings.AppEdit
 {

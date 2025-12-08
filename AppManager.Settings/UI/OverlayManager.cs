@@ -11,12 +11,12 @@ namespace AppManager.Settings.UI
     /// </summary>
     public class OverlayManager
     {
-        private Grid _overlayContainer;
-        private Border _overlayBackground;
-        private Border _activeArea;
-        private OverlayContent _currentContent;
+        private Grid? _overlayContainer;
+        private Border? _overlayBackground;
+        private Border? _activeArea;
+        private OverlayContent? _currentContent;
         private readonly Window _parentWindow;
-        private MouseButtonEventHandler _backgroundClickHandler;
+        private MouseButtonEventHandler? _backgroundClickHandler;
 
         public OverlayManager(Window parentWindow)
         {
@@ -155,7 +155,7 @@ namespace AppManager.Settings.UI
             mainGrid.Children.Add(_overlayContainer);
         }
 
-        private void OnDisableOverlayRequested(object sender, EventArgs e)
+        private void OnDisableOverlayRequested(object? sender, EventArgs? e)
         {
             HideOverlay();
         }

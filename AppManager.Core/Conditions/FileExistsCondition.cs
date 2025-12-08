@@ -5,7 +5,7 @@ using System.IO;
 
 namespace AppManager.Core.Conditions
 {
-    public class FileExistsCondition(ConditionModel model) : BaseCondition(model)
+    public class FileExistsCondition(ConditionModel model) : BaseCondition(model) , IFileExistsCondition
     {
         public override ConditionTypeEnum ConditionType => ConditionTypeEnum.FileExists;
         public override string Description { get; set; } = "Checks if a specific file exists";

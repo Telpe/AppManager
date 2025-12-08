@@ -85,7 +85,7 @@ namespace AppManager.Settings.AppEdit
             var trigger = new TriggerModel
             {
                 TriggerType = (TriggerTypeEnum)(TriggerTypeComboBox.SelectedItem ?? TriggerTypeEnum.Shortcut),
-                ShortcutCombination = ShortcutTextBox.Text?.Trim(),
+                ShortcutCombination = ShortcutTextBox.Text.Trim(),
                 Key = ParseKey(ShortcutTextBox.Text),
                 Modifiers = GetModifierKeys(),
                 ProcessName = ProcessNameTextBox.Text?.Trim(),

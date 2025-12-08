@@ -3,7 +3,7 @@ using AppManager.Core.Utils;
 
 namespace AppManager.Core.Conditions
 {
-    public class ProcessRunningCondition : BaseCondition
+    public class ProcessRunningCondition : BaseCondition, IProcessRunningCondition
     {
         public override ConditionTypeEnum ConditionType => ConditionTypeEnum.ProcessRunning;
         public override string Description { get; set; } = "Checks if a specific process is currently running";

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace AppManager.Core.Actions
 {
-    public partial class BringToFrontAction : BaseAction
+    public partial class BringToFrontAction : BaseAction, IBringToFrontAction
     {
         public string? AppName { get; set; }
         public override AppActionTypeEnum ActionType => AppActionTypeEnum.BringToFront;

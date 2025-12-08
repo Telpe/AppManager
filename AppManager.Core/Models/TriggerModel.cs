@@ -4,7 +4,7 @@ using System.Windows.Input;
 
 namespace AppManager.Core.Models
 {
-    public class TriggerModel
+    public class TriggerModel : IAppCloseTrigger, IAppLaunchTrigger, IShortcutTrigger, ISystemEventTrigger, INetworkPortTrigger, IButtonTrigger
     {
         public TriggerTypeEnum TriggerType { get; set; }
         public bool IsActive { get; set; } = false;

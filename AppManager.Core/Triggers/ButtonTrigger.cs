@@ -6,14 +6,14 @@ using AppManager.Core.Models;
 
 namespace AppManager.Core.Triggers
 {
-    internal class ButtonTrigger : BaseTrigger
+    internal class ButtonTrigger : BaseTrigger, IButtonTrigger
     {
         private bool _IsOn { get; set; } = false;
         public override TriggerTypeEnum TriggerType => TriggerTypeEnum.Button;
 
         private System.Windows.Controls.Button MonitoredButtonStored;
 
-        public Dictionary<string, object> CustomProperties { get; set; }
+        public Dictionary<string, object>? CustomProperties { get; set; }
 
         public ButtonTrigger(TriggerModel model) : base(model)
         {

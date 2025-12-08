@@ -7,16 +7,16 @@ using System.Threading.Tasks;
 
 namespace AppManager.Core.Actions
 {
-    public class CloseAction : BaseAction
+    public class CloseAction : BaseAction, ICloseAction
     {
         public string? AppName { get; set; }
         public override AppActionTypeEnum ActionType => AppActionTypeEnum.Close;
         public override string Description => "Closes an application gracefully";
 
-        public int? TimeoutMs { get; private set; }
-        public bool? ForceOperation { get; private set; }
-        public bool? IncludeSimilarNames { get; private set; }
-        public bool? IncludeChildProcesses { get; private set; }
+        public int? TimeoutMs { get; set; }
+        public bool? ForceOperation { get; set; }
+        public bool? IncludeSimilarNames { get; set; }
+        public bool? IncludeChildProcesses { get; set; }
 
         public CloseAction(ActionModel model) : base(model)
         {

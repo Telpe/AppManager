@@ -77,7 +77,7 @@
             return !(v1 == v2);
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj is Version v)
             {

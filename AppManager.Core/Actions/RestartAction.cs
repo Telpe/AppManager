@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace AppManager.Core.Actions
 {
-    public class RestartAction : BaseAction
+    public class RestartAction : BaseAction, IRestartAction
     {
         public override AppActionTypeEnum ActionType => AppActionTypeEnum.Restart;
         public override string Description => "Restarts an application by closing and launching it";

@@ -10,7 +10,7 @@ using AppManager.Core.Models;
 
 namespace AppManager.Core.Triggers
 {
-    internal class AppLaunchTrigger : BaseTrigger
+    internal class AppLaunchTrigger : BaseTrigger, IAppLaunchTrigger
     {
         public override TriggerTypeEnum TriggerType => TriggerTypeEnum.AppLaunch;
 
@@ -20,7 +20,7 @@ namespace AppManager.Core.Triggers
         public string? ProcessName { get; set; }
         public string? ExecutablePath { get; set; }
         public bool? MonitorChildProcesses { get; set; }
-        public Dictionary<string, object> CustomProperties { get; set; }
+        public Dictionary<string, object>? CustomProperties { get; set; }
 
         public AppLaunchTrigger(TriggerModel model) : base(model)
         {

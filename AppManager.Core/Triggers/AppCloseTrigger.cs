@@ -9,17 +9,17 @@ using AppManager.Core.Models;
 
 namespace AppManager.Core.Triggers
 {
-    internal class AppCloseTrigger : BaseTrigger
+    internal class AppCloseTrigger : BaseTrigger, IAppCloseTrigger
     {
         public override TriggerTypeEnum TriggerType => TriggerTypeEnum.AppClose;
 
-        private ManagementEventWatcher ProcessWatcherStored;
-        private CancellationTokenSource CancellationTokenSourceStored;
+        private ManagementEventWatcher? ProcessWatcherStored;
+        private CancellationTokenSource? CancellationTokenSourceStored;
 
         public string? ProcessName { get; set; }
         public string? ExecutablePath { get; set; }
         public bool? MonitorChildProcesses { get; set; }
-        public Dictionary<string, object> CustomProperties { get; set; }
+        public Dictionary<string, object>? CustomProperties { get; set; }
 
         public AppCloseTrigger(TriggerModel model) : base(model)
         {

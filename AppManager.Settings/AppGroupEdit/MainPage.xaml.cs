@@ -15,7 +15,7 @@ namespace AppManager.Settings.AppGroupEdit
     public partial class MainPage : Page, IPageWithParameter
     {
         private string _PageName = "";
-        private GroupManagedModel _currentGroup;
+        private GroupManagedModel? _currentGroup;
 
         public MainPage()
         {
@@ -224,7 +224,7 @@ namespace AppManager.Settings.AppGroupEdit
             {
                 if (listBox.SelectedItem != null)
                 {
-                    var selectedApp = listBox.SelectedItem.ToString();
+                    string selectedApp = listBox.SelectedItem.ToString()??"";
                     group.MemberApps = group.MemberApps.Append(selectedApp).ToArray();
                     memberAppsListBox.Items.Add(selectedApp);
                     selectionWindow.Close();
@@ -242,7 +242,7 @@ namespace AppManager.Settings.AppGroupEdit
         {
             if (memberAppsListBox.SelectedItem != null)
             {
-                var selectedApp = memberAppsListBox.SelectedItem.ToString();
+                string selectedApp = memberAppsListBox.SelectedItem.ToString()??"";
                 group.MemberApps = group.MemberApps.Where(app => app != selectedApp).ToArray();
                 memberAppsListBox.Items.Remove(memberAppsListBox.SelectedItem);
             }

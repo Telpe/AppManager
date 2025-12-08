@@ -9,7 +9,7 @@ using AppManager.Core.Models;
 
 namespace AppManager.Core.Triggers
 {
-    internal class ShortcutTrigger : BaseTrigger
+    internal class ShortcutTrigger : BaseTrigger, IShortcutTrigger
     {
         public override TriggerTypeEnum TriggerType => TriggerTypeEnum.Shortcut;
 
@@ -22,7 +22,7 @@ namespace AppManager.Core.Triggers
         public Key? Key { get; set; }
         public ModifierKeys? Modifiers { get; set; }
         public string? ShortcutCombination { get; set; }
-        public Dictionary<string, object> CustomProperties { get; set; }
+        public Dictionary<string, object>? CustomProperties { get; set; }
 
         public ShortcutTrigger(TriggerModel model) : base(model)
         {
@@ -93,8 +93,9 @@ namespace AppManager.Core.Triggers
             ModifiersPressedStored = false;
         }
 
-        private void OnKeyboardPressed(object sender, GlobalKeyboardHookEventArgs e)
+        private void OnKeyboardPressed(object? sender, GlobalKeyboardHookEventArgs? e)
         {
+            if (e == null) { return; }
             try
             {
                 var pressedKey = e.KeyboardData.Key;

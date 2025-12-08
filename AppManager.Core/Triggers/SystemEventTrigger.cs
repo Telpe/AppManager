@@ -9,7 +9,7 @@ using AppManager.Core.Models;
 
 namespace AppManager.Core.Triggers
 {
-    internal class SystemEventTrigger : BaseTrigger
+    internal class SystemEventTrigger : BaseTrigger, ISystemEventTrigger
     {
         public override TriggerTypeEnum TriggerType => TriggerTypeEnum.SystemEvent;
 
@@ -18,7 +18,7 @@ namespace AppManager.Core.Triggers
 
         public string? EventName { get; set; }
         public string? EventSource { get; set; }
-        public Dictionary<string, object> CustomProperties { get; set; }
+        public Dictionary<string, object>? CustomProperties { get; set; }
 
         public SystemEventTrigger(TriggerModel model) : base(model)
         {

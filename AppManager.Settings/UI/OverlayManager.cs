@@ -68,7 +68,7 @@ namespace AppManager.Settings.UI
         /// Shows the overlay with specified content and active area size
         /// </summary>
         /// <param name="content">Content that inherits from OverlayContent</param>
-        /// <param name="sizeFactor">Size factor as percentage of parent window (0-1)</param>
+        /// <param name="sizeFactor">Size factor of parent window (0-1)</param>
         /// <param name="clickHide">Whether clicking outside the active area should hide the overlay</param>
         public void ShowOverlay(OverlayContent content, Vector2? sizeFactor = null, bool clickHide = true)
         {

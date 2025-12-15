@@ -12,6 +12,7 @@ using AppManager.Core.Models;
 using AppManager.Settings.Utils;
 using System.ComponentModel;
 using System.IO;
+using System.Numerics;
 
 namespace AppManager.Settings
 {
@@ -25,7 +26,7 @@ namespace AppManager.Settings
         private readonly AppEdit.MainPage AppsPage = new();
         private readonly AppGroupEdit.MainPage AppGroupsPage = new();
         private readonly ShortcutsPage ShortcutsPage = new();
-        private OverlayManager OverlayManagerStored;
+        private OverlayManager OverlayManagerValue;
 
         public MainWindow()
         {
@@ -36,10 +37,10 @@ namespace AppManager.Settings
             this.Closing += Window_Closing;
 
             // Initialize overlay manager
-            OverlayManagerStored = new OverlayManager(this);
+            OverlayManagerValue = new OverlayManager(this);
 
             // Handle window size changes
-            this.SizeChanged += (sender, e) => OverlayManagerStored.UpdateSize();
+            this.SizeChanged += (sender, e) => OverlayManagerValue.UpdateSize();
 
             // Set window icon using FileManager
             SetWindowIcon();
@@ -89,9 +90,9 @@ namespace AppManager.Settings
         /// <param name="content">Content that inherits from OverlayContent</param>
         /// <param name="widthPercent">Width of active area as percentage (0-100)</param>
         /// <param name="heightPercent">Height of active area as percentage (0-100)</param>
-        public void ShowOverlay(OverlayContent content, double widthPercent = 50, double heightPercent = 50, bool clickHide = true)
+        public void ShowOverlay(OverlayContent content, double widthPercent = -100, double heightPercent = -100, bool clickHide = true)
         {
-            OverlayManagerStored.ShowOverlay(content, widthPercent, heightPercent, clickHide);
+            OverlayManagerValue.ShowOverlay(content, new Vector2() { X = (float)(0.01f * widthPercent), Y = (float)(0.01 * heightPercent)}, clickHide);
         }
 
         /// <summary>
@@ -99,13 +100,13 @@ namespace AppManager.Settings
         /// </summary>
         public void HideOverlay()
         {
-            OverlayManagerStored.HideOverlay();
+            OverlayManagerValue.HideOverlay();
         }
 
         /// <summary>
         /// Gets whether an overlay is currently visible
         /// </summary>
-        public bool IsOverlayVisible => OverlayManagerStored.IsOverlayVisible;
+        public bool IsOverlayVisible => OverlayManagerValue.IsOverlayVisible;
 
 
         private void DataFolderButton_Click(object sender, RoutedEventArgs e)

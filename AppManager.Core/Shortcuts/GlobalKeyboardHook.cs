@@ -20,19 +20,19 @@ namespace AppManager.Core.Shortcuts
         public GlobalKeyboardHook(Key[] registeredKeys = null)
         {
             RegisteredKeys = registeredKeys;
-            WindowsHookHandleStored = IntPtr.Zero;
-            User32LibraryHandleStored = IntPtr.Zero;
-            HookProcStored = LowLevelKeyboardProc; // we must keep alive HookProcStored, because GC is not aware about SetWindowsHookEx behaviour.
+            WindowsHookHandleValue = IntPtr.Zero;
+            User32LibraryHandleValue = IntPtr.Zero;
+            HookProcValue = LowLevelKeyboardProc; // we must keep alive HookProcStored, because GC is not aware about SetWindowsHookEx behaviour.
 
-            User32LibraryHandleStored = LoadLibrary("User32");
-            if (User32LibraryHandleStored == IntPtr.Zero)
+            User32LibraryHandleValue = LoadLibrary("User32");
+            if (User32LibraryHandleValue == IntPtr.Zero)
             {
                 int errorCode = Marshal.GetLastWin32Error();
                 throw new Win32Exception(errorCode, $"Failed to load library 'User32.dll'. Error {errorCode}: {new Win32Exception(Marshal.GetLastWin32Error()).Message}.");
             }
 
-            WindowsHookHandleStored = SetWindowsHookEx(KeyboardHookConstants.WH_KEYBOARD_LL, HookProcStored, User32LibraryHandleStored, 0);
-            if (WindowsHookHandleStored == IntPtr.Zero)
+            WindowsHookHandleValue = SetWindowsHookEx(KeyboardHookConstants.WH_KEYBOARD_LL, HookProcValue, User32LibraryHandleValue, 0);
+            if (WindowsHookHandleValue == IntPtr.Zero)
             {
                 int errorCode = Marshal.GetLastWin32Error();
                 throw new Win32Exception(errorCode, $"Failed to adjust keyboard hooks for '{Process.GetCurrentProcess().ProcessName}'. Error {errorCode}: {new Win32Exception(Marshal.GetLastWin32Error()).Message}.");
@@ -44,28 +44,28 @@ namespace AppManager.Core.Shortcuts
             if (disposing)
             {
                 // because we can unhook only in the same thread, not in garbage collector thread
-                if (WindowsHookHandleStored != IntPtr.Zero)
+                if (WindowsHookHandleValue != IntPtr.Zero)
                 {
-                    if (!UnhookWindowsHookEx(WindowsHookHandleStored))
+                    if (!UnhookWindowsHookEx(WindowsHookHandleValue))
                     {
                         int errorCode = Marshal.GetLastWin32Error();
                         throw new Win32Exception(errorCode, $"Failed to remove keyboard hooks for '{Process.GetCurrentProcess().ProcessName}'. Error {errorCode}: {new Win32Exception(Marshal.GetLastWin32Error()).Message}.");
                     }
-                    WindowsHookHandleStored = IntPtr.Zero;
+                    WindowsHookHandleValue = IntPtr.Zero;
 
                     // ReSharper disable once DelegateSubtraction
-                    HookProcStored -= LowLevelKeyboardProc;
+                    HookProcValue -= LowLevelKeyboardProc;
                 }
             }
 
-            if (User32LibraryHandleStored != IntPtr.Zero)
+            if (User32LibraryHandleValue != IntPtr.Zero)
             {
-                if (!FreeLibrary(User32LibraryHandleStored)) // reduces reference to library by 1.
+                if (!FreeLibrary(User32LibraryHandleValue)) // reduces reference to library by 1.
                 {
                     int errorCode = Marshal.GetLastWin32Error();
                     throw new Win32Exception(errorCode, $"Failed to unload library 'User32.dll'. Error {errorCode}: {new Win32Exception(Marshal.GetLastWin32Error()).Message}.");
                 }
-                User32LibraryHandleStored = IntPtr.Zero;
+                User32LibraryHandleValue = IntPtr.Zero;
             }
         }
 
@@ -80,9 +80,9 @@ namespace AppManager.Core.Shortcuts
             GC.SuppressFinalize(this);
         }
 
-        private IntPtr WindowsHookHandleStored;
-        private IntPtr User32LibraryHandleStored;
-        private HookProc HookProcStored;
+        private IntPtr WindowsHookHandleValue;
+        private IntPtr User32LibraryHandleValue;
+        private HookProc HookProcValue;
 
         [DllImport("kernel32.dll")]
         private static extern IntPtr LoadLibrary(string lpFileName);

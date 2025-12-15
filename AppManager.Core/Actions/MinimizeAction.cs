@@ -22,7 +22,7 @@ namespace AppManager.Core.Actions
         public static partial bool ShowWindow(IntPtr hWnd, int nCmdShow);
 
         private const int SW_MINIMIZE = 6;
-        private Process[] TargetProcessesStored = Array.Empty<Process>();
+        private Process[] TargetProcessesValue = Array.Empty<Process>();
 
         public MinimizeAction(ActionModel model) : base(model)
         {
@@ -33,13 +33,13 @@ namespace AppManager.Core.Actions
 
         protected override bool CanExecuteAction()
         {
-            TargetProcessesStored = ProcessManager.FindProcesses(
+            TargetProcessesValue = ProcessManager.FindProcesses(
                 AppName, 
                 IncludeSimilarNames ?? false, 
                 WindowTitle, 
                 requireMainWindow: true);
 
-            return !string.IsNullOrEmpty(AppName) && !TargetProcessesStored.Any(p => p.HasExited);
+            return !string.IsNullOrEmpty(AppName) && !TargetProcessesValue.Any(p => p.HasExited);
         }
 
         protected override Task<bool> ExecuteAsync()

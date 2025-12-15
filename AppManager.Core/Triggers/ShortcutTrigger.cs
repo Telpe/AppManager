@@ -13,11 +13,11 @@ namespace AppManager.Core.Triggers
     {
         public override TriggerTypeEnum TriggerType => TriggerTypeEnum.Shortcut;
 
-        private GlobalKeyboardHook GlobalKeyboardHookStored;
-        private Key TargetKeyStored;
-        private ModifierKeys TargetModifiersStored;
-        private bool KeyPressedStored;
-        private bool ModifiersPressedStored;
+        private GlobalKeyboardHook GlobalKeyboardHookValue;
+        private Key TargetKeyValue;
+        private ModifierKeys TargetModifiersValue;
+        private bool KeyPressedValue;
+        private bool ModifiersPressedValue;
 
         public Key? Key { get; set; }
         public ModifierKeys? Modifiers { get; set; }
@@ -33,8 +33,8 @@ namespace AppManager.Core.Triggers
             ShortcutCombination = model.ShortcutCombination;
             CustomProperties = model.CustomProperties ?? new Dictionary<string, object>();
 
-            TargetKeyStored = Key ?? System.Windows.Input.Key.None;
-            TargetModifiersStored = Modifiers ?? ModifierKeys.None;
+            TargetKeyValue = Key ?? System.Windows.Input.Key.None;
+            TargetModifiersValue = Modifiers ?? ModifierKeys.None;
         }
 
         public override bool CanStart()
@@ -52,8 +52,8 @@ namespace AppManager.Core.Triggers
                 {
                     // Create GlobalKeyboardHook instance
                     // Pass null to monitor all keys (we'll filter in the event handler)
-                    GlobalKeyboardHookStored = new GlobalKeyboardHook();
-                    GlobalKeyboardHookStored.KeyboardPressed += OnKeyboardPressed;
+                    GlobalKeyboardHookValue = new GlobalKeyboardHook();
+                    GlobalKeyboardHookValue.KeyboardPressed += OnKeyboardPressed;
 
                     Debug.WriteLine($"Shortcut trigger '{Name}' started for {Key} + {Modifiers}");
                     return true;
@@ -82,15 +82,15 @@ namespace AppManager.Core.Triggers
 
         private void Cleanup()
         {
-            if (GlobalKeyboardHookStored != null)
+            if (GlobalKeyboardHookValue != null)
             {
-                GlobalKeyboardHookStored.KeyboardPressed -= OnKeyboardPressed;
-                GlobalKeyboardHookStored.Dispose();
-                GlobalKeyboardHookStored = null;
+                GlobalKeyboardHookValue.KeyboardPressed -= OnKeyboardPressed;
+                GlobalKeyboardHookValue.Dispose();
+                GlobalKeyboardHookValue = null;
             }
 
-            KeyPressedStored = false;
-            ModifiersPressedStored = false;
+            KeyPressedValue = false;
+            ModifiersPressedValue = false;
         }
 
         private void OnKeyboardPressed(object? sender, GlobalKeyboardHookEventArgs? e)
@@ -103,16 +103,16 @@ namespace AppManager.Core.Triggers
                 var isKeyUp = e.KeyboardState == KeyboardState.KeyUp;
 
                 // Check if this is our target key
-                if (pressedKey == TargetKeyStored)
+                if (pressedKey == TargetKeyValue)
                 {
                     if (isKeyDown)
                     {
-                        KeyPressedStored = true;
+                        KeyPressedValue = true;
                         CheckForShortcutActivation();
                     }
                     else if (isKeyUp)
                     {
-                        KeyPressedStored = false;
+                        KeyPressedValue = false;
                     }
                 }
                 // Check for modifier keys
@@ -156,9 +156,9 @@ namespace AppManager.Core.Triggers
             if (shiftPressed) currentModifiers |= ModifierKeys.Shift;
             if (winPressed) currentModifiers |= ModifierKeys.Windows;
 
-            ModifiersPressedStored = currentModifiers == TargetModifiersStored;
+            ModifiersPressedValue = currentModifiers == TargetModifiersValue;
 
-            if (ModifiersPressedStored && KeyPressedStored)
+            if (ModifiersPressedValue && KeyPressedValue)
             {
                 CheckForShortcutActivation();
             }
@@ -166,16 +166,16 @@ namespace AppManager.Core.Triggers
 
         private void CheckForShortcutActivation()
         {
-            if (KeyPressedStored && ModifiersPressedStored)
+            if (KeyPressedValue && ModifiersPressedValue)
             {
                 Debug.WriteLine($"Shortcut trigger '{Name}' activated");
 
                 // Trigger the configured action
-                OnTriggerActivated("target_app", AppActionTypeEnum.Launch, null, new { Key = TargetKeyStored, Modifiers = TargetModifiersStored });
+                OnTriggerActivated("target_app", AppActionTypeEnum.Launch, null, new { Key = TargetKeyValue, Modifiers = TargetModifiersValue });
 
                 // Reset state to prevent multiple activations
-                KeyPressedStored = false;
-                ModifiersPressedStored = false;
+                KeyPressedValue = false;
+                ModifiersPressedValue = false;
             }
         }
 

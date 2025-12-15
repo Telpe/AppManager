@@ -11,7 +11,7 @@ namespace AppManager.Settings.UI
         /// <summary>
         /// Event raised when the overlay should be disabled
         /// </summary>
-        public event EventHandler DisableOverlayRequested;
+        public event EventHandler? DisableOverlayRequested;
 
         /// <summary>
         /// Call this method from derived classes to request overlay dismissal

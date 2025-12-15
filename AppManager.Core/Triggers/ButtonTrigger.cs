@@ -11,7 +11,7 @@ namespace AppManager.Core.Triggers
         private bool _IsOn { get; set; } = false;
         public override TriggerTypeEnum TriggerType => TriggerTypeEnum.Button;
 
-        private System.Windows.Controls.Button MonitoredButtonStored;
+        private System.Windows.Controls.Button MonitoredButtonValue;
 
         public Dictionary<string, object>? CustomProperties { get; set; }
 
@@ -37,8 +37,8 @@ namespace AppManager.Core.Triggers
                 {
                     if (CustomProperties.TryGetValue("Button", out var buttonObj) && buttonObj is System.Windows.Controls.Button button)
                     {
-                        MonitoredButtonStored = button;
-                        MonitoredButtonStored.Click += OnButtonClicked;
+                        MonitoredButtonValue = button;
+                        MonitoredButtonValue.Click += OnButtonClicked;
 
                         System.Diagnostics.Debug.WriteLine($"Button trigger '{Name}' started monitoring button '{button.Name}'");
                         return true;
@@ -56,9 +56,9 @@ namespace AppManager.Core.Triggers
 
         public override void Stop()
         {
-            if (MonitoredButtonStored != null)
+            if (MonitoredButtonValue != null)
             {
-                MonitoredButtonStored.Click -= OnButtonClicked;
+                MonitoredButtonValue.Click -= OnButtonClicked;
             }
         }
 
@@ -67,7 +67,7 @@ namespace AppManager.Core.Triggers
             System.Diagnostics.Debug.WriteLine($"Button trigger '{Name}' activated");
             
             // Trigger the configured action
-            OnTriggerActivated("target_app", AppActionTypeEnum.Launch, null, new { ButtonName = MonitoredButtonStored?.Name });
+            OnTriggerActivated("target_app", AppActionTypeEnum.Launch, null, new { ButtonName = MonitoredButtonValue?.Name });
         }
 
         public override TriggerModel ToModel()

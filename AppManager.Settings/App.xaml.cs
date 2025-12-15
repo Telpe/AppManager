@@ -17,7 +17,7 @@ namespace AppManager.Settings
     /// </summary>
     public partial class App : Application
     {
-        private static GlobalKeyboardHook GlobalKeyboardHookStored;
+        private static GlobalKeyboardHook? GlobalKeyboardHookValue;
 
         private static Dictionary<string, string> UnsavedPages = new();
 
@@ -45,10 +45,8 @@ namespace AppManager.Settings
 
             CheckCoreRunning();
 
-
-            // Load the last used profile (or default if none specified)
-            string profileToLoad = !string.IsNullOrEmpty(SettingsManager.CurrentSettings.LastUsedProfileName)
-                ? SettingsManager.CurrentSettings.LastUsedProfileName
+            string profileToLoad = !string.IsNullOrEmpty(SettingsManager.CurrentSettings.LastUsedProfileName) 
+                ? SettingsManager.CurrentSettings.LastUsedProfileName 
                 : ProfileManager.DefaultProfileFilename;
 
             // Load the specific profile
@@ -59,8 +57,7 @@ namespace AppManager.Settings
             }
             else
             {
-                // If the last used profile doesn't exist, fall back to default
-                _ = ProfileManager.CurrentProfile; // This triggers loading of default profile
+                _ = ProfileManager.CurrentProfile;
                 Debug.WriteLine($"Profile '{profileToLoad}' not found, loaded default profile instead");
             }
 
@@ -124,7 +121,7 @@ namespace AppManager.Settings
             base.OnExit(e);
         }
 
-        private void CheckRunningHandler(object sender, ElapsedEventArgs eve)
+        private void CheckRunningHandler(object? sender, ElapsedEventArgs? eve)
         {
             Application.Current.Dispatcher.InvokeAsync(CheckRunning).Wait();
         }

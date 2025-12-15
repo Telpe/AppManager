@@ -19,8 +19,8 @@ namespace AppManager.Settings.AppEdit
     /// </summary>
     public partial class MainPage : Page, IPageWithParameter
     {
-        private string PageNameStored = "";
-        private int MaxBackupModelsStored = 5;
+        private string PageNameValue = "";
+        private static int MaxBackupModelsValue = 5;
 
         private Dictionary<string, AppPageModel> LoadedPagesValue = new();
         private AppPageModel CurrentPageValue { get; set; } = new AppPageModel();
@@ -48,25 +48,26 @@ namespace AppManager.Settings.AppEdit
         {
             DisableButtons();
 
-            PageNameStored = pageName;
+            PageNameValue = pageName;
 
             try
             {
-                if (!LoadedPagesValue.ContainsKey(PageNameStored))
+                if (LoadedPagesValue.TryGetValue(PageNameValue, out AppPageModel? pageModel) && null != pageModel)
                 {
-                    var model = ProfileManager.CurrentProfile.Apps.Where(app => app.AppName == PageNameStored).FirstOrDefault();
-                    LoadedPagesValue[PageNameStored] = new AppPageModel()
+                    CurrentPageValue = pageModel;
+                }
+                else
+                {
+                    var model = ProfileManager.CurrentProfile.Apps.Where(app => app.AppName == PageNameValue).FirstOrDefault() ?? throw new Exception("App not in profile.");
+
+                    LoadedPagesValue[PageNameValue] = new AppPageModel()
                     {
                         CurrentModel = model.Clone(),
                         BackupModels = [model.Clone()]
                     };
                 }
 
-                CurrentPageValue = LoadedPagesValue[PageNameStored];
-
-                // Load data into UI
                 LoadFromModel();
-
                 
             }
             catch (Exception ex)
@@ -97,18 +98,17 @@ namespace AppManager.Settings.AppEdit
 
         private void SetBackupModel()
         {
-            AppManagedModel? temp = ProfileManager.CurrentProfile?.Apps.Where(app => app.AppName == PageNameStored).FirstOrDefault();
+            AppManagedModel? temp = ProfileManager.CurrentProfile.Apps.Where(app => app.AppName == PageNameValue).FirstOrDefault();
             if (temp != null)
             {
-                CurrentPageValue.BackupModels = [temp.Clone(), ..CurrentPageValue.BackupModels.Take(MaxBackupModelsStored - 1)];
+                CurrentPageValue.BackupModels = [temp.Clone(), ..CurrentPageValue.BackupModels.Take(MaxBackupModelsValue - 1)];
             }
         }
 
         private void LoadFromModel()
         {
-            
+            DisableButtons();
 
-            // Load UI controls from model (without triggering change events)
             AppNameBox.Text = CurrentModelValue.AppName;
             ActiveBox.IsChecked = CurrentModelValue.Active;
             
@@ -145,7 +145,6 @@ namespace AppManager.Settings.AppEdit
                 ActiveBox.Checked -= ActiveBox_Changed;
                 ActiveBox.Unchecked -= ActiveBox_Changed;
                 
-                // Set Cancel and Save buttons based on IsStored status
                 CancelButton.IsEnabled = false;
                 SaveButton.IsEnabled = false;
             }
@@ -169,24 +168,20 @@ namespace AppManager.Settings.AppEdit
 
         private void AppNameBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            Edited();
-
-            // Update the model directly when text changes
             CurrentModelValue.AppName = AppNameBox.Text;
+
+            Edited();
         }
 
         private void ActiveBox_Changed(object sender, RoutedEventArgs e)
         {
-            Edited();
-
-            // Update the model directly when checkbox changes
             CurrentModelValue.Active = ActiveBox.IsChecked ?? false;
+
+            Edited();
         }
 
         private void AddTriggerButton_Click(object sender, RoutedEventArgs e)
         {
-            Edited();
-
             var newTrigger = new TriggerModel
             {
                 TriggerType = TriggerTypeEnum.Shortcut // Default type
@@ -198,12 +193,11 @@ namespace AppManager.Settings.AppEdit
             CurrentModelValue.AppTriggers = triggers;
             
             RefreshTriggersListBox();
+            Edited();
         }
 
         private void AddActionButton_Click(object sender, RoutedEventArgs e)
         {
-            Edited();
-
             var newAction = new ActionModel
             {
                 AppName = CurrentModelValue.AppName,
@@ -216,6 +210,7 @@ namespace AppManager.Settings.AppEdit
             CurrentModelValue.AppActions = actions;
             
             RefreshActionsListBox();
+            Edited();
         }
 
         private void EditTriggerButton_Click(object sender, RoutedEventArgs e)
@@ -255,8 +250,7 @@ namespace AppManager.Settings.AppEdit
                 catch (Exception ex)
                 {
                     Debug.WriteLine($"Error opening trigger editor: {ex.Message}");
-                    MessageBox.Show($"Error opening trigger editor: {ex.Message}", "Error", 
-                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show($"Error opening trigger editor: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
@@ -304,9 +298,7 @@ namespace AppManager.Settings.AppEdit
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            if (null == ProfileManager.CurrentProfile) { throw new Exception("Unable to save apps, no profile loaded."); }
-            // Save profile to file
-            int id = ProfileManager.CurrentProfile.Apps.Select((app, index) => new { app, index }).Where(x => x.app.AppName == PageNameStored).Select(x => x.index).FirstOrDefault();
+            int id = ProfileManager.CurrentProfile.Apps.Select((app, index) => new { app, index }).Where(x => x.app.AppName == PageNameValue).Select(x => x.index).FirstOrDefault();
             ProfileManager.CurrentProfile.Apps[id] = CurrentModelValue.Clone();
             ProfileManager.SaveProfile();
             SetBackupModel();

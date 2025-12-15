@@ -8,7 +8,7 @@ namespace AppManager.Settings.AppGroupEdit
     /// </summary>
     public partial class ShortcutsPage : Page, IPageWithParameter
     {
-        private string PageNameStored = "";
+        private string PageNameValue = "";
 
         public ShortcutsPage()
         {
@@ -19,7 +19,7 @@ namespace AppManager.Settings.AppGroupEdit
         {
             
 
-            PageNameStored = pageName;
+            PageNameValue = pageName;
             // Use the pageName parameter as needed
             // For example, you can set it to a label or use it for navigation logic
             // This is just a placeholder implementation

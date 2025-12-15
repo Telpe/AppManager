@@ -31,6 +31,8 @@ namespace AppManager.Settings.ActionEdit
             }
         }
 
+        public event PropertyChangedEventHandler? PropertyChanged;
+
         public string DisplayName => $"Action: {Model.ActionType}";
         public int ConditionCount => Model.Conditions?.Length ?? 0;
         public bool HasConditions => ConditionCount > 0;
@@ -41,9 +43,6 @@ namespace AppManager.Settings.ActionEdit
             Model = model;
             _page = page;
         }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected void OnPropertyChanged(string propertyName) =>
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        protected void OnPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }

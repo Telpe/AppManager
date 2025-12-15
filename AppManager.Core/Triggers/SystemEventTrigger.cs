@@ -13,8 +13,8 @@ namespace AppManager.Core.Triggers
     {
         public override TriggerTypeEnum TriggerType => TriggerTypeEnum.SystemEvent;
 
-        private EventLogWatcher EventWatcherStored;
-        private CancellationTokenSource CancellationTokenSourceStored;
+        private EventLogWatcher EventWatcherValue;
+        private CancellationTokenSource CancellationTokenSourceValue;
 
         public string? EventName { get; set; }
         public string? EventSource { get; set; }
@@ -42,7 +42,7 @@ namespace AppManager.Core.Triggers
 
                 try
                 {
-                    CancellationTokenSourceStored = new CancellationTokenSource();
+                    CancellationTokenSourceValue = new CancellationTokenSource();
 
                     // Monitor Windows security events (logon/logoff events)
                     string logName = "Security";
@@ -56,10 +56,10 @@ namespace AppManager.Core.Triggers
                     }
 
                     var query = new EventLogQuery(logName, PathType.LogName, queryString);
-                    EventWatcherStored = new EventLogWatcher(query);
-                    EventWatcherStored.EventRecordWritten += OnSystemEvent;
+                    EventWatcherValue = new EventLogWatcher(query);
+                    EventWatcherValue.EventRecordWritten += OnSystemEvent;
                     
-                    EventWatcherStored.Enabled = true;
+                    EventWatcherValue.Enabled = true;
                     
                     Debug.WriteLine($"System event trigger '{Name}' started monitoring for '{EventName}'");
                     return true;
@@ -76,11 +76,11 @@ namespace AppManager.Core.Triggers
         {
             try
             {
-                CancellationTokenSourceStored?.Cancel();
-                if (null != EventWatcherStored)
+                CancellationTokenSourceValue?.Cancel();
+                if (null != EventWatcherValue)
                 {
-                    EventWatcherStored.Enabled = false;
-                    EventWatcherStored.Dispose();
+                    EventWatcherValue.Enabled = false;
+                    EventWatcherValue.Dispose();
                 }
                 
                 Debug.WriteLine($"System event trigger '{Name}' stopped");
@@ -139,7 +139,7 @@ namespace AppManager.Core.Triggers
         public override void Dispose()
         {
             Stop();
-            CancellationTokenSourceStored?.Dispose();
+            CancellationTokenSourceValue?.Dispose();
             base.Dispose();
         }
 

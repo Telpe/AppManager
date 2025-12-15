@@ -11,33 +11,26 @@ namespace AppManager.Settings.Utils
         public static readonly string DefaultProfileFilename = "default";
 
         private static ProfileModel? _CurrentProfile;
-        public static ProfileModel? CurrentProfile 
+        public static ProfileModel CurrentProfile 
         { 
             get => _CurrentProfile ??= LoadProfile(); 
             private set => _CurrentProfile = value; 
         }
 
-        public static ProfileModel? LoadProfile(string? profileName = null)
+        public static ProfileModel LoadProfile(string? profileName = null)
         {
-            ProfileModel? profile = null;
-            try
-            {
-                string profileFile = FileManager.GetProfilePath(profileName ?? DefaultProfileFilename);
-                profile = FileManager.LoadJsonFile<ProfileModel>(profileFile);
+            ProfileModel profile;
+            
+            string profileFile = FileManager.GetProfilePath(profileName ?? DefaultProfileFilename);
+            profile = FileManager.LoadJsonFile<ProfileModel>(profileFile);
                 
-                if (profile?.Name != null) // Check if file existed and was loaded
-                {
-                    Debug.WriteLine($"Profile '{profile.Name}' loaded successfully");
-                }
-                else
-                {
-                    Debug.WriteLine($"Profile {profileName} not found.");
-                    profile = null;
-                }
-            }
-            catch (Exception ex)
+            if (profile.Name != null)
             {
-                Debug.WriteLine($"Error loading profile: {ex.Message}");
+                Debug.WriteLine($"Profile '{profile.Name}' loaded successfully");
+            }
+            else
+            {
+                Debug.WriteLine($"Profile {profileName} may be broken.");
             }
 
             return profile;
@@ -136,10 +129,9 @@ namespace AppManager.Settings.Utils
             return profile;
         }
 
-        public static bool ProfileExist(string profileName = null)
+        public static bool ProfileExist(string? profileName = null)
         {
-            string profileFile = FileManager.GetProfilePath(profileName ?? DefaultProfileFilename);
-            return FileManager.FileExists(profileFile);
+            return FileManager.FileExists(FileManager.GetProfilePath(profileName ?? DefaultProfileFilename));
         }
 
         public static void ResetProfile()

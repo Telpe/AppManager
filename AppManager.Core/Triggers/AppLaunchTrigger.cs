@@ -14,8 +14,8 @@ namespace AppManager.Core.Triggers
     {
         public override TriggerTypeEnum TriggerType => TriggerTypeEnum.AppLaunch;
 
-        private ManagementEventWatcher ProcessWatcherStored = new ManagementEventWatcher();
-        private CancellationTokenSource CancellationTokenSourceStored = new CancellationTokenSource();
+        private ManagementEventWatcher ProcessWatcherValue = new ManagementEventWatcher();
+        private CancellationTokenSource CancellationTokenSourceValue = new CancellationTokenSource();
 
         public string? ProcessName { get; set; }
         public string? ExecutablePath { get; set; }
@@ -45,14 +45,14 @@ namespace AppManager.Core.Triggers
 
                 try
                 {
-                    CancellationTokenSourceStored = new CancellationTokenSource();
+                    CancellationTokenSourceValue = new CancellationTokenSource();
 
                     // Use WMI to monitor process creation events (most reliable method)
                     var query = new WqlEventQuery("SELECT * FROM Win32_ProcessStartTrace");
-                    ProcessWatcherStored = new ManagementEventWatcher(query);
-                    ProcessWatcherStored.EventArrived += OnProcessStarted;
+                    ProcessWatcherValue = new ManagementEventWatcher(query);
+                    ProcessWatcherValue.EventArrived += OnProcessStarted;
                     
-                    ProcessWatcherStored.Start();
+                    ProcessWatcherValue.Start();
                     
                     Debug.WriteLine($"App launch trigger '{Name}' started monitoring for '{ProcessName}'");
                     return true;
@@ -69,10 +69,10 @@ namespace AppManager.Core.Triggers
         {
             try
             {
-                CancellationTokenSourceStored.Cancel();
+                CancellationTokenSourceValue.Cancel();
                 
-                ProcessWatcherStored.Stop();
-                ProcessWatcherStored.Dispose();
+                ProcessWatcherValue.Stop();
+                ProcessWatcherValue.Dispose();
                 
                 Debug.WriteLine($"App launch trigger '{Name}' stopped");
             }
@@ -127,7 +127,7 @@ namespace AppManager.Core.Triggers
         public override void Dispose()
         {
             Stop();
-            CancellationTokenSourceStored?.Dispose();
+            CancellationTokenSourceValue?.Dispose();
             base.Dispose();
         }
 

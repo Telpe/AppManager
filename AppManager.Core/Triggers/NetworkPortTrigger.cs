@@ -46,7 +46,7 @@ namespace AppManager.Core.Triggers
 
             return Task.Run<bool>(() =>
             {
-                if (!IsActive) { return false; }
+                if (Inactive) { return false; }
 
                 try
                 {
@@ -89,7 +89,7 @@ namespace AppManager.Core.Triggers
         {
             try
             {
-                while (!cancellationToken.IsCancellationRequested && IsActive)
+                while (!cancellationToken.IsCancellationRequested && Inactive)
                 {
                     var tcpClient = await _tcpListener.AcceptTcpClientAsync();
                     
@@ -147,7 +147,7 @@ namespace AppManager.Core.Triggers
             return new TriggerModel
             {
                 TriggerType = TriggerType,
-                IsActive = IsActive,
+                Inactive = Inactive,
                 Port = Port,
                 IPAddress = IPAddress,
                 TimeoutMs = TimeoutMs,

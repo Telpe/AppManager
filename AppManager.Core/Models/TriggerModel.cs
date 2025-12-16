@@ -7,7 +7,7 @@ namespace AppManager.Core.Models
     public class TriggerModel : IAppCloseTrigger, IAppLaunchTrigger, IShortcutTrigger, ISystemEventTrigger, INetworkPortTrigger, IButtonTrigger
     {
         public TriggerTypeEnum TriggerType { get; set; }
-        public bool IsActive { get; set; } = false;
+        public bool? Inactive { get; set; }
 
         // Shortcut-specific parameters
         public Key? Key { get; set; }

@@ -46,7 +46,7 @@ namespace AppManager.Core.Triggers
         {
             return Task.Run<bool>(() =>
             {
-                if (!IsActive) { return false; }
+                if (Inactive) { return false; }
 
                 try
                 {
@@ -190,7 +190,7 @@ namespace AppManager.Core.Triggers
             return new TriggerModel
             {
                 TriggerType = TriggerType,
-                IsActive = IsActive,
+                Inactive = Inactive,
                 Key = Key,
                 Modifiers = Modifiers,
                 ShortcutCombination = ShortcutCombination,

@@ -1,5 +1,5 @@
 ﻿using AppManager.Core.Models;
-using AppManager.Settings.AppEdit;
+using AppManager.Settings.Apps;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -7,26 +7,24 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AppManager.Settings.ActionEdit
+namespace AppManager.Settings.Actions
 {
     // ViewModel for Action items in the ListBox
-    internal class ActionViewModel : INotifyPropertyChanged
+    internal class ActionListItem : INotifyPropertyChanged
     {
         private readonly MainPage _page;
         public int Id { get; }
         public ActionModel Model { get; }
 
-        private bool _isActive = true;
         public bool IsActive
         {
-            get => _isActive;
+            get => !Model.Inactive ?? true;
             set
             {
-                if (_isActive != value)
+                if (IsActive != value)
                 {
-                    _isActive = value;
+                    Model.Inactive = !value;
                     OnPropertyChanged(nameof(IsActive));
-                    // TODO: Update model when Active property is added to ActionModel
                 }
             }
         }
@@ -37,7 +35,7 @@ namespace AppManager.Settings.ActionEdit
         public int ConditionCount => Model.Conditions?.Length ?? 0;
         public bool HasConditions => ConditionCount > 0;
 
-        public ActionViewModel(int id, ActionModel model, MainPage page)
+        public ActionListItem(int id, ActionModel model, MainPage page)
         {
             Id = id;
             Model = model;

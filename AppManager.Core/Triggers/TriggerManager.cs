@@ -58,7 +58,7 @@ namespace AppManager.Core.Triggers
 
             trigger.TriggerActivated -= OnTriggerActivated;
             trigger.Stop(); // TODO: Make Stop async if needed
-            var stopped = true;
+            var stopped = true; // trigger.StopAsync().Wait();
             if (stopped)
             {
                 _triggers.Remove(triggerName);
@@ -71,7 +71,7 @@ namespace AppManager.Core.Triggers
 
         public static IEnumerable<ITrigger> GetActiveTriggers()
         {
-            return _triggers.Values.Where(t => t.IsActive);
+            return _triggers.Values.Where(t => !t.Inactive);
         }
 
         public static IEnumerable<string> GetTriggerNames()

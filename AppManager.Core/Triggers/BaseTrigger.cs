@@ -10,7 +10,7 @@ namespace AppManager.Core.Triggers
         public abstract TriggerTypeEnum TriggerType { get; }
         public string Name { get; set; }
         public string Description { get; set; } = "";
-        public bool IsActive { get; set; }
+        public bool Inactive { get; set; }
 
         public event EventHandler<TriggerActivatedEventArgs> TriggerActivated;
 
@@ -22,7 +22,7 @@ namespace AppManager.Core.Triggers
             }
 
             Name = TriggerType.ToString();
-            IsActive = model.IsActive;
+            Inactive = model.Inactive ?? false;
             TriggerActivated = new EventHandler<TriggerActivatedEventArgs>((s, e) => { });
         }
 

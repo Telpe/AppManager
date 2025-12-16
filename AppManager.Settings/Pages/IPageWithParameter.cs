@@ -1,4 +1,4 @@
-namespace AppManager.Settings.AppGroupEdit
+namespace AppManager.Settings.Pages
 {
     /// <summary>
     /// Interface that defines the contract for pages that accept parameters

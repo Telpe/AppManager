@@ -8,10 +8,12 @@ using AppManager.Core.Actions;
 using AppManager.Core.Conditions;
 using AppManager.Core.Models;
 using AppManager.Core.Utils;
+using AppManager.Settings.Actions;
+using AppManager.Settings.Conditions;
 using AppManager.Settings.UI;
 using Microsoft.Win32;
 
-namespace AppManager.Settings.ActionEdit
+namespace AppManager.Settings.Actions
 {
     public partial class ActionEditorControl : OverlayContent
     {

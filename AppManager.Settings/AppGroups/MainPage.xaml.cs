@@ -1,4 +1,5 @@
 using AppManager.Core.Models;
+using AppManager.Settings.Pages;
 using AppManager.Settings.Utils;
 using System;
 using System.Diagnostics;
@@ -7,7 +8,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 
-namespace AppManager.Settings.AppGroupEdit
+namespace AppManager.Settings.AppGroups
 {
     /// <summary>
     /// Interaction logic for AppGroupsPage.xaml

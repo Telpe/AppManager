@@ -9,10 +9,12 @@ using AppManager.Core.Models;
 using AppManager.Core.Triggers;
 using AppManager.Core.Actions;
 using AppManager.Settings.Utils;
-using AppManager.Settings.AppGroupEdit;
-using AppManager.Settings.ActionEdit;
+using AppManager.Settings.AppGroups;
+using AppManager.Settings.Actions;
+using AppManager.Settings.Triggers;
+using AppManager.Settings.Pages;
 
-namespace AppManager.Settings.AppEdit
+namespace AppManager.Settings.Apps
 {
     /// <summary>
     /// Interaction logic for Apps.xaml
@@ -29,9 +31,10 @@ namespace AppManager.Settings.AppEdit
             get { return CurrentPageValue.CurrentModel ?? new AppManagedModel(); } 
             set { CurrentPageValue.CurrentModel = value; }
         }
-
-        private ObservableCollection<TriggerViewModel> TriggerViewModelsValue = new();
-        private ObservableCollection<ActionViewModel> ActionViewModelsValue = new();
+        
+        private ObservableCollection<TriggerListItem> TriggerViewModelsValue = new();
+        private ObservableCollection<ActionListItem> ActionViewModelsValue = new();
+        
 
         public MainPage()
         {
@@ -125,7 +128,7 @@ namespace AppManager.Settings.AppEdit
             TriggerViewModelsValue.Clear();
             foreach (var kvp in CurrentModelValue.AppTriggers)
             {
-                TriggerViewModelsValue.Add(new TriggerViewModel(kvp.Key, kvp.Value, this));
+                TriggerViewModelsValue.Add(new TriggerListItem(kvp.Key, kvp.Value, this));
             }
         }
 
@@ -134,7 +137,7 @@ namespace AppManager.Settings.AppEdit
             ActionViewModelsValue.Clear();
             foreach (var kvp in CurrentModelValue.AppActions)
             {
-                ActionViewModelsValue.Add(new ActionViewModel(kvp.Key, kvp.Value, this));
+                ActionViewModelsValue.Add(new ActionListItem(kvp.Key, kvp.Value, this));
             }
         }
         private void DisableButtons()   
@@ -215,7 +218,7 @@ namespace AppManager.Settings.AppEdit
 
         private void EditTriggerButton_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button button && button.Tag is TriggerViewModel viewModel)
+            if (sender is Button button && button.Tag is TriggerListItem viewModel)
             {
                 Debug.WriteLine($"Edit trigger: {viewModel.DisplayName}");
                 
@@ -257,7 +260,7 @@ namespace AppManager.Settings.AppEdit
 
         private void EditActionButton_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button button && button.Tag is ActionViewModel viewModel)
+            if (sender is Button button && button.Tag is ActionListItem viewModel)
             {
                 Debug.WriteLine($"Edit action: {viewModel.DisplayName}");
                 

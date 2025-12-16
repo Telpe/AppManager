@@ -1,4 +1,5 @@
 ﻿using AppManager.Core.Models;
+using AppManager.Settings.Apps;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -6,10 +7,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AppManager.Settings.AppEdit
+namespace AppManager.Settings.Triggers
 {
     // ViewModel for Trigger items in the ListBox
-    internal class TriggerViewModel : INotifyPropertyChanged
+    internal class TriggerListItem : INotifyPropertyChanged
     {
         private readonly MainPage _page;
         public int Id { get; }
@@ -34,7 +35,7 @@ namespace AppManager.Settings.AppEdit
         public int ConditionCount => 0; // TODO: Implement when conditions are added to TriggerModel
         public bool HasConditions => ConditionCount > 0;
 
-        public TriggerViewModel(int id, TriggerModel model, MainPage page)
+        public TriggerListItem(int id, TriggerModel model, MainPage page)
         {
             Id = id;
             Model = model;

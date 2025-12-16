@@ -10,6 +10,7 @@ namespace AppManager.Core.Models
     {
         public string? AppName { get; set; }
         public AppActionTypeEnum ActionType { get; set; }
+        public bool? Inactive { get; set; }
         public bool? ForceOperation { get; set; }
         public bool? IncludeChildProcesses { get; set; }
         public bool? IncludeSimilarNames { get; set; }

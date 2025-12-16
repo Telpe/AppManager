@@ -1,5 +1,5 @@
 ﻿using AppManager.Core.Utils;
-using AppManager.Settings.AppGroupEdit;
+using AppManager.Settings.AppGroups;
 using AppManager.Settings.UI;
 using System;
 using System.Diagnostics;
@@ -7,12 +7,13 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using AppManager.Settings.AppEdit;
+using AppManager.Settings.Apps;
 using AppManager.Core.Models;
 using AppManager.Settings.Utils;
 using System.ComponentModel;
 using System.IO;
 using System.Numerics;
+using AppManager.Settings.Pages;
 
 namespace AppManager.Settings
 {
@@ -23,8 +24,8 @@ namespace AppManager.Settings
     /// </summary>
     public partial class MainWindow : Window
     {
-        private readonly AppEdit.MainPage AppsPage = new();
-        private readonly AppGroupEdit.MainPage AppGroupsPage = new();
+        private readonly Apps.MainPage AppsPage = new();
+        private readonly AppGroups.MainPage AppGroupsPage = new();
         private readonly ShortcutsPage ShortcutsPage = new();
         private OverlayManager OverlayManagerValue;
 

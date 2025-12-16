@@ -8,7 +8,7 @@ using AppManager.Core.Triggers;
 using AppManager.Core.Utils;
 using AppManager.Settings.UI;
 
-namespace AppManager.Settings.AppEdit
+namespace AppManager.Settings.Triggers
 {
     public partial class TriggerEditorControl : OverlayContent
     {

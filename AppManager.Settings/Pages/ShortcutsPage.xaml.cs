@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Windows.Controls;
 
-namespace AppManager.Settings.AppGroupEdit
+namespace AppManager.Settings.Pages
 {
     /// <summary>
     /// Interaction logic for ShortcutsPage.xaml

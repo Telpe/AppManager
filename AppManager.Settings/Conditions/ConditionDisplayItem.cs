@@ -1,7 +1,7 @@
 using AppManager.Core.Conditions;
 using AppManager.Core.Models;
 
-namespace AppManager.Settings.ActionEdit
+namespace AppManager.Settings.Conditions
 {
     public class ConditionDisplayItem
     {

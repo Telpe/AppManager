@@ -10,7 +10,7 @@ namespace AppManager.Core.Triggers
         TriggerTypeEnum TriggerType { get; }
         string Name { get; set; }
         string Description { get; set; }
-        bool IsActive { get; set; }
+        bool Inactive { get; set; }
         
         event EventHandler<TriggerActivatedEventArgs> TriggerActivated;
         

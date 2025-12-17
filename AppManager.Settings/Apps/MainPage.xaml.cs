@@ -13,6 +13,8 @@ using AppManager.Settings.AppGroups;
 using AppManager.Settings.Actions;
 using AppManager.Settings.Triggers;
 using AppManager.Settings.Pages;
+using AppManager.Settings.UI;
+using System.Windows.Navigation;
 
 namespace AppManager.Settings.Apps
 {
@@ -25,15 +27,23 @@ namespace AppManager.Settings.Apps
         private static int MaxBackupModelsValue = 5;
 
         private Dictionary<string, AppPageModel> LoadedPagesValue = new();
-        private AppPageModel CurrentPageValue { get; set; } = new AppPageModel();
+        private AppPageModel CurrentPageValue { get; set; } = new AppPageModel(new AppManagedModel("None", false));
         private AppManagedModel CurrentModelValue
         { 
-            get { return CurrentPageValue.CurrentModel ?? new AppManagedModel(); } 
+            get { return CurrentPageValue.CurrentModel; } 
             set { CurrentPageValue.CurrentModel = value; }
         }
-        
-        private ObservableCollection<TriggerListItem> TriggerViewModelsValue = new();
-        private ObservableCollection<ActionListItem> ActionViewModelsValue = new();
+
+        public AppManagedModel CurrentModel { get { return CurrentModelValue; } }
+
+        public bool IsActive
+        {
+            get { return CurrentModelValue.Active; }
+            set { CurrentModelValue.Active = value; }
+        }
+
+        private ObservableCollection<ModelListItem<TriggerModel>> TriggerViewModelsValue = new();
+        private ObservableCollection<ModelListItem<ActionModel>> ActionViewModelsValue = new();
         
 
         public MainPage()
@@ -55,20 +65,13 @@ namespace AppManager.Settings.Apps
 
             try
             {
-                if (LoadedPagesValue.TryGetValue(PageNameValue, out AppPageModel? pageModel) && null != pageModel)
+                if (!LoadedPagesValue.TryGetValue(pageName, out AppPageModel? pageModel))
                 {
-                    CurrentPageValue = pageModel;
+                    pageModel = new AppPageModel(ProfileManager.CurrentProfile.Apps.Where(app => app.AppName == pageName).FirstOrDefault() ?? throw new Exception("App not in profile."));
+                    LoadedPagesValue[pageName] = pageModel;
                 }
-                else
-                {
-                    var model = ProfileManager.CurrentProfile.Apps.Where(app => app.AppName == PageNameValue).FirstOrDefault() ?? throw new Exception("App not in profile.");
 
-                    LoadedPagesValue[PageNameValue] = new AppPageModel()
-                    {
-                        CurrentModel = model.Clone(),
-                        BackupModels = [model.Clone()]
-                    };
-                }
+                CurrentPageValue = pageModel;
 
                 LoadFromModel();
                 
@@ -128,7 +131,7 @@ namespace AppManager.Settings.Apps
             TriggerViewModelsValue.Clear();
             foreach (var kvp in CurrentModelValue.AppTriggers)
             {
-                TriggerViewModelsValue.Add(new TriggerListItem(kvp.Key, kvp.Value, this));
+                TriggerViewModelsValue.Add(new ModelListItem<TriggerModel>(kvp.Key, kvp.Value, this));
             }
         }
 
@@ -137,7 +140,7 @@ namespace AppManager.Settings.Apps
             ActionViewModelsValue.Clear();
             foreach (var kvp in CurrentModelValue.AppActions)
             {
-                ActionViewModelsValue.Add(new ActionListItem(kvp.Key, kvp.Value, this));
+                ActionViewModelsValue.Add(new ModelListItem<ActionModel>(kvp.Key, kvp.Value, this));
             }
         }
         private void DisableButtons()   
@@ -218,7 +221,7 @@ namespace AppManager.Settings.Apps
 
         private void EditTriggerButton_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button button && button.Tag is TriggerListItem viewModel)
+            if (sender is Button button && button.Tag is ModelListItem<TriggerModel> viewModel)
             {
                 Debug.WriteLine($"Edit trigger: {viewModel.DisplayName}");
                 
@@ -260,7 +263,7 @@ namespace AppManager.Settings.Apps
 
         private void EditActionButton_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button button && button.Tag is ActionListItem viewModel)
+            if (sender is Button button && button.Tag is ModelListItem<ActionModel> viewModel)
             {
                 Debug.WriteLine($"Edit action: {viewModel.DisplayName}");
                 

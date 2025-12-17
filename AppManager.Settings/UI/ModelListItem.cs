@@ -1,5 +1,4 @@
 ﻿using AppManager.Core.Models;
-using AppManager.Settings.Apps;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -7,14 +6,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AppManager.Settings.Actions
+namespace AppManager.Settings.UI
 {
-    // ViewModel for Action items in the ListBox
-    internal class ActionListItem : INotifyPropertyChanged
+    internal class ModelListItem<T> : INotifyPropertyChanged where T : ConditionalModel
     {
-        private readonly MainPage _page;
+        private readonly Apps.MainPage _page;
         public int Id { get; }
-        public ActionModel Model { get; }
+        public T Model { get; }
 
         public bool IsActive
         {
@@ -31,16 +29,34 @@ namespace AppManager.Settings.Actions
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        public string DisplayName => $"Action: {Model.ActionType}";
+        public string DisplayName 
+        { 
+            get 
+            {
+                if (Model is ActionModel model)
+                {
+                    return $"Action: {model.ActionType}"; 
+                }
+
+                if (Model is TriggerModel triggerModel)
+                {
+                    return $"Trigger: {triggerModel.TriggerType}";
+                }
+
+                return "Unknown Type";
+            }
+        }
+        
         public int ConditionCount => Model.Conditions?.Length ?? 0;
         public bool HasConditions => ConditionCount > 0;
 
-        public ActionListItem(int id, ActionModel model, MainPage page)
+        public ModelListItem(int id, T model, Apps.MainPage page)
         {
             Id = id;
             Model = model;
             _page = page;
         }
+        
         protected void OnPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }

@@ -214,10 +214,7 @@ namespace AppManager.Settings
                     var newAppTextBox = NewNavigationAddItemTextBox("Enter app name...", (appName) =>
                     {
                         // Create new AppManagedModel
-                        var newApp = new AppManagedModel
-                        {
-                            AppName = appName
-                        };
+                        var newApp = new AppManagedModel(appName, false);
 
                         // Add to current profile
                         ProfileManager.CurrentProfile.Apps = ProfileManager.CurrentProfile.Apps.Append(newApp).ToArray();

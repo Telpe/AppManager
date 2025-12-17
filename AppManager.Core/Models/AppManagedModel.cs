@@ -13,15 +13,16 @@ namespace AppManager.Core.Models
         public Dictionary<int, ActionModel> AppActions { get; set; } = new Dictionary<int, ActionModel>();
 
 
-        public AppManagedModel() 
-        { }
+        public AppManagedModel(string appName, bool active)
+        {
+            AppName = appName;
+            Active = active;
+        }
 
         public AppManagedModel Clone()
         {
-            return new()
+            return new(this.AppName, this.Active)
             {
-                AppName = this.AppName,
-                Active = this.Active,
                 AppTriggers = this.AppTriggers.Select(kvp => new KeyValuePair<int, TriggerModel>(kvp.Key, kvp.Value.Clone())).ToDictionary(),
                 AppActions = this.AppActions.Select(kvp => new KeyValuePair<int, ActionModel>(kvp.Key, kvp.Value.Clone())).ToDictionary()
             };

@@ -9,8 +9,14 @@ namespace AppManager.Settings.Apps
 {
     internal class AppPageModel
     {
-        public AppManagedModel[] BackupModels { get; set; } = Array.Empty<AppManagedModel>();
+        public AppManagedModel[] BackupModels { get; set; }
         public AppManagedModel CurrentModel { get; set; }
         public bool IsStored { get; set; } = true;
+
+        public AppPageModel(AppManagedModel firstModel)
+        {
+            CurrentModel = firstModel.Clone();
+            BackupModels = [firstModel.Clone()];
+        }
     }
 }

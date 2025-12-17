@@ -4,10 +4,9 @@ using System.Windows.Input;
 
 namespace AppManager.Core.Models
 {
-    public class TriggerModel : IAppCloseTrigger, IAppLaunchTrigger, IShortcutTrigger, ISystemEventTrigger, INetworkPortTrigger, IButtonTrigger
+    public class TriggerModel : ConditionalModel, IAppCloseTrigger, IAppLaunchTrigger, IShortcutTrigger, ISystemEventTrigger, INetworkPortTrigger, IButtonTrigger
     {
         public TriggerTypeEnum TriggerType { get; set; }
-        public bool? Inactive { get; set; }
 
         // Shortcut-specific parameters
         public Key? Key { get; set; }
@@ -51,7 +50,8 @@ namespace AppManager.Core.Models
                 IPAddress = IPAddress,
                 PollingIntervalMs = PollingIntervalMs,
                 TimeoutMs = TimeoutMs,
-                CustomProperties = null != CustomProperties ? new Dictionary<string, object>(CustomProperties) : null
+                CustomProperties = null != CustomProperties ? new Dictionary<string, object>(CustomProperties) : null,
+                Conditions = this.Conditions?.Select(c => c.Clone()).ToArray()
             };
 
         }

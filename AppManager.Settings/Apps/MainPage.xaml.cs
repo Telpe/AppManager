@@ -1,19 +1,20 @@
-﻿using System;
+﻿using AppManager.Core.Actions;
+using AppManager.Core.Models;
+using AppManager.Core.Triggers;
+using AppManager.Settings.Actions;
+using AppManager.Settings.AppGroups;
+using AppManager.Settings.Pages;
+using AppManager.Settings.Triggers;
+using AppManager.Settings.UI;
+using AppManager.Settings.Utils;
+using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Collections.ObjectModel;
-using AppManager.Core.Models;
-using AppManager.Core.Triggers;
-using AppManager.Core.Actions;
-using AppManager.Settings.Utils;
-using AppManager.Settings.AppGroups;
-using AppManager.Settings.Actions;
-using AppManager.Settings.Triggers;
-using AppManager.Settings.Pages;
-using AppManager.Settings.UI;
+using System.Windows.Media;
 using System.Windows.Navigation;
 
 namespace AppManager.Settings.Apps
@@ -42,8 +43,8 @@ namespace AppManager.Settings.Apps
             set { CurrentModelValue.Active = value; }
         }
 
-        private ObservableCollection<ModelListItem<TriggerModel>> TriggerViewModelsValue = new();
-        private ObservableCollection<ModelListItem<ActionModel>> ActionViewModelsValue = new();
+        private ObservableCollection<ModelListItem<TriggerModel>> TriggerListItemsValue = new();
+        private ObservableCollection<ModelListItem<ActionModel>> ActionListItemsValue = new();
         
 
         public MainPage()
@@ -51,8 +52,8 @@ namespace AppManager.Settings.Apps
             InitializeComponent();
 
             // Set ItemsSource for ListBoxes
-            TriggersListBox.ItemsSource = TriggerViewModelsValue;
-            ActionsListBox.ItemsSource = ActionViewModelsValue;
+            TriggersListBox.ItemsSource = TriggerListItemsValue;
+            ActionsListBox.ItemsSource = ActionListItemsValue;
 
             DisableButtons();
         }
@@ -128,19 +129,40 @@ namespace AppManager.Settings.Apps
 
         private void RefreshTriggersListBox()
         {
-            TriggerViewModelsValue.Clear();
+            ClearTriggers();
             foreach (var kvp in CurrentModelValue.AppTriggers)
             {
-                TriggerViewModelsValue.Add(new ModelListItem<TriggerModel>(kvp.Key, kvp.Value, this));
+                TriggerListItemsValue.Add(new ModelListItem<TriggerModel>(kvp.Key, kvp.Value, this));
             }
+            Dispatcher.BeginInvoke(() => SubscribeToTriggerButtonEvents(), System.Windows.Threading.DispatcherPriority.Loaded);
         }
 
         private void RefreshActionsListBox()
         {
-            ActionViewModelsValue.Clear();
+            ClearActions();
             foreach (var kvp in CurrentModelValue.AppActions)
             {
-                ActionViewModelsValue.Add(new ModelListItem<ActionModel>(kvp.Key, kvp.Value, this));
+                ActionListItemsValue.Add(new ModelListItem<ActionModel>(kvp.Key, kvp.Value, this));
+            }
+            Dispatcher.BeginInvoke(() => SubscribeToActionButtonEvents(), System.Windows.Threading.DispatcherPriority.Loaded);
+        }
+        private void SubscribeToActionButtonEvents()
+        {
+            var buttons = FindEditButtonsInListBox(ActionsListBox);
+            foreach (var button in buttons)
+            {
+                //button.Click -= EditActionButton_Click; // Prevent double subscription
+                button.Click += EditActionButton_Click;
+            }
+        }
+
+        private void SubscribeToTriggerButtonEvents()
+        {
+            var buttons = FindEditButtonsInListBox(TriggersListBox);
+            foreach (var button in buttons)
+            {
+                //button.Click -= EditTriggerButton_Click; // Prevent double subscription
+                button.Click += EditTriggerButton_Click;
             }
         }
         private void DisableButtons()   
@@ -330,6 +352,67 @@ namespace AppManager.Settings.Apps
         public bool HasUnsavedChanges()
         {
             return LoadedPagesValue?.Values.Any(page => !page.IsStored) ?? false;
+        }
+
+        public void ClearActions()
+        {
+            var buttons = FindEditButtonsInListBox(ActionsListBox);
+            foreach (var button in buttons)
+            {
+                button.Click -= EditActionButton_Click;
+            }
+            ActionListItemsValue.Clear();
+        }
+
+        public void ClearTriggers()
+        {
+            var buttons = FindEditButtonsInListBox(TriggersListBox);
+            foreach (var button in buttons)
+            {
+                button.Click -= EditTriggerButton_Click;
+            }
+            ActionListItemsValue.Clear();
+        }
+
+        private IEnumerable<Button> FindEditButtonsInListBox(ListBox listBox)
+        {
+            var buttons = new List<Button>();
+
+            for (int i = 0; i < listBox.Items.Count; i++)
+            {
+                var container = listBox.ItemContainerGenerator.ContainerFromIndex(i) as ListBoxItem;
+                if (container != null)
+                {
+                    var button = FindVisualChild<Button>(container, b => b.Content?.ToString() == "Edit");
+                    if (button != null)
+                    {
+                        buttons.Add(button);
+                    }
+                }
+            }
+
+            return buttons;
+        }
+
+        private T? FindVisualChild<T>(DependencyObject parent, Func<T, bool>? predicate = null) where T : DependencyObject
+        {
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+            {
+                var child = VisualTreeHelper.GetChild(parent, i);
+
+                if (child is T childOfType && (predicate == null || predicate(childOfType)))
+                {
+                    return childOfType;
+                }
+
+                var childOfChild = FindVisualChild<T>(child, predicate);
+                if (childOfChild != null)
+                {
+                    return childOfChild;
+                }
+            }
+
+            return null;
         }
     }
 

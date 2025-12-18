@@ -2,8 +2,18 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:AppManager.Settings"
+             xmlns:triggers="clr-namespace:AppManager.Settings.Triggers"
+             xmlns:actions="clr-namespace:AppManager.Settings.Actions"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
-    </Application.Resources>
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceDictionary Source="Actions/ActionListItem.xaml" />
+				<ResourceDictionary Source="Triggers/TriggerListItem.xaml" />
+			</ResourceDictionary.MergedDictionaries>
+
+			<!-- <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" /> -->
+			
+		</ResourceDictionary>
+	</Application.Resources>
 </Application>

@@ -85,16 +85,16 @@ namespace AppManager.Core.Triggers
             return trigger;
         }
 
-        private static void OnTriggerActivated(object? sender, TriggerActivatedEventArgs? e)
+        private static void OnTriggerActivated(object? sender, TriggerActivatedEventArgs? eve)
         {
-            if (null == sender || null == e) { return; }
+            if (null == sender || null == eve) { return; }
 
             try
             {
-                System.Diagnostics.Debug.WriteLine($"Trigger '{e.TriggerName}' activated - executing action '{e.ActionToExecute}' on '{e.TargetAppName}'");
+                System.Diagnostics.Debug.WriteLine($"Trigger '{eve.TriggerName}' activated - executing action '{eve.ActionToExecute}' on '{eve.TargetAppName}'");
 
                 
-                _ = null == e.Model ? null : ActionManager.ExecuteActionAsync(e.Model);
+                _ = null == eve.Model ? null : ActionManager.ExecuteActionAsync(eve.Model);
 
                 // Forward the event
                 //TriggerActivated?.Invoke(this, e);

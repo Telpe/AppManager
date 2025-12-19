@@ -8,18 +8,10 @@
              mc:Ignorable="d" 
              d:DesignHeight="500" d:DesignWidth="600">
 
-	<Grid Margin="10">
-		<Grid.RowDefinitions>
-			<RowDefinition Height="Auto"/>
-			<RowDefinition Height="Auto"/>
-			<RowDefinition Height="Auto"/>
-			<RowDefinition Height="Auto"/>
-			<RowDefinition Height="*"/>
-			<RowDefinition Height="Auto"/>
-		</Grid.RowDefinitions>
+	<StackPanel Orientation="Vertical" Margin="10">
 
 		<!-- Trigger Type Selection -->
-		<GroupBox Header="Trigger Configuration" Grid.Row="0" Margin="5">
+		<GroupBox Header="Trigger Configuration" Margin="5">
 			<Grid Margin="5">
 				<Grid.RowDefinitions>
 					<RowDefinition Height="Auto"/>
@@ -40,8 +32,40 @@
 			</Grid>
 		</GroupBox>
 
+		<!-- Conditions Section -->
+		<GroupBox Header="Conditions" Margin="5">
+			<Grid Margin="5">
+				<Grid.RowDefinitions>
+					<RowDefinition Height="Auto"/>
+					<RowDefinition Height="100"/>
+				</Grid.RowDefinitions>
+
+				<WrapPanel Grid.Row="0" Margin="0,0,0,5">
+					<ComboBox x:Name="ConditionTypeComboBox" Width="150" Margin="0,0,5,0"/>
+					<Button Content="Add Condition" Width="100" Height="25" 
+                    Click="AddConditionButton_Click"/>
+				</WrapPanel>
+
+				<ListBox x:Name="ConditionsListBox" Grid.Row="1">
+					<ListBox.ItemTemplate>
+						<DataTemplate>
+							<Grid>
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="*"/>
+									<ColumnDefinition Width="Auto"/>
+								</Grid.ColumnDefinitions>
+								<TextBlock Grid.Column="0" Text="{Binding DisplayText}" VerticalAlignment="Center"/>
+								<Button Grid.Column="1" Content="Remove" Width="60" Height="20" 
+                                Click="RemoveConditionButton_Click" Tag="{Binding}"/>
+							</Grid>
+						</DataTemplate>
+					</ListBox.ItemTemplate>
+				</ListBox>
+			</Grid>
+		</GroupBox>
+
 		<!-- Shortcut Configuration -->
-		<GroupBox x:Name="ShortcutConfigGroup" Header="Shortcut Configuration" Grid.Row="1" Margin="5" Visibility="Collapsed">
+		<GroupBox x:Name="ShortcutConfigGroup" Header="Shortcut Configuration" Margin="5" Visibility="Collapsed">
 			<Grid Margin="5">
 				<Grid.RowDefinitions>
 					<RowDefinition Height="Auto"/>
@@ -69,7 +93,7 @@
 		</GroupBox>
 
 		<!-- App Monitoring Configuration -->
-		<GroupBox x:Name="AppMonitoringGroup" Header="App Monitoring Configuration" Grid.Row="2" Margin="5" Visibility="Collapsed">
+		<GroupBox x:Name="AppMonitoringGroup" Header="App Monitoring Configuration" Margin="5" Visibility="Collapsed">
 			<Grid Margin="5">
 				<Grid.RowDefinitions>
 					<RowDefinition Height="Auto"/>
@@ -98,7 +122,7 @@
 		</GroupBox>
 
 		<!-- Network/System Configuration -->
-		<GroupBox x:Name="NetworkSystemGroup" Header="Network/System Configuration" Grid.Row="3" Margin="5" Visibility="Collapsed">
+		<GroupBox x:Name="NetworkSystemGroup" Header="Network/System Configuration" Margin="5" Visibility="Collapsed">
 			<Grid Margin="5">
 				<Grid.RowDefinitions>
 					<RowDefinition Height="Auto"/>
@@ -132,7 +156,7 @@
 		</GroupBox>
 
 		<!-- Timing Configuration -->
-		<GroupBox Header="Timing Configuration" Grid.Row="4" Margin="5">
+		<GroupBox Header="Timing Configuration" Margin="5">
 			<Grid Margin="5">
 				<Grid.RowDefinitions>
 					<RowDefinition Height="Auto"/>
@@ -164,7 +188,7 @@
 		</GroupBox>
 
 		<!-- Action Buttons -->
-		<WrapPanel Grid.Row="5" HorizontalAlignment="Right" Margin="5">
+		<WrapPanel HorizontalAlignment="Right" Margin="5">
 			<Button Content="Test Trigger" Width="80" Height="25" Margin="0,0,5,0"
                     Click="TestTriggerButton_Click"/>
 			<Button x:Name="SaveTriggerButton" Content="Save" Width="75" Height="25" 
@@ -172,5 +196,5 @@
 			<Button x:Name="CancelTriggerButton" Content="Cancel" Width="75" Height="25" 
                     Margin="5,0,0,0" Click="CancelTriggerButton_Click"/>
 		</WrapPanel>
-	</Grid>
+	</StackPanel>
 </src:OverlayContent>

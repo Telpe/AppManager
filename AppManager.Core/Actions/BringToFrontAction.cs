@@ -71,7 +71,7 @@ namespace AppManager.Core.Actions
             return !(_TargetProcess?.HasExited ?? true);
         }
 
-        protected override Task<bool> ExecuteAsync()
+        protected override Task<bool> ExecuteActionAsync()
         {
             return Task<bool>.Run(() =>
             {

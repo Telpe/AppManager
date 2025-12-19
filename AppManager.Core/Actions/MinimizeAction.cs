@@ -42,7 +42,7 @@ namespace AppManager.Core.Actions
             return !string.IsNullOrEmpty(AppName) && !TargetProcessesValue.Any(p => p.HasExited);
         }
 
-        protected override Task<bool> ExecuteAsync()
+        protected override Task<bool> ExecuteActionAsync()
         {
             return Task<bool>.Run(() =>
             {

@@ -38,7 +38,7 @@ namespace AppManager
                     AppName = notSelf.ProcessName
                 }, notSelf);
 
-                if (bringToFrontAction.CanExecute()) { bringToFrontAction.ExecuteActionAsync(); }
+                if (bringToFrontAction.CanExecute()) { bringToFrontAction.ExecuteAsync(); }
 
                 Debug.WriteLine($"{notSelf.ProcessName} is already running, bringing existing instance to front");
 

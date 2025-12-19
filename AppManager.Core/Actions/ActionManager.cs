@@ -62,7 +62,7 @@ namespace AppManager.Core.Actions
             try
             {
                 var action = CreateAction(model);
-                return action.ExecuteActionAsync();
+                return action.ExecuteAsync();
             }
             catch (Exception ex)
             {

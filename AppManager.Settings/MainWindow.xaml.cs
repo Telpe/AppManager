@@ -1,19 +1,20 @@
-﻿using AppManager.Core.Utils;
+﻿using AppManager.Core.Actions;
+using AppManager.Core.Models;
+using AppManager.Core.Utils;
 using AppManager.Settings.AppGroups;
+using AppManager.Settings.Apps;
+using AppManager.Settings.Pages;
 using AppManager.Settings.UI;
+using AppManager.Settings.Utils;
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Numerics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using AppManager.Settings.Apps;
-using AppManager.Core.Models;
-using AppManager.Settings.Utils;
-using System.ComponentModel;
-using System.IO;
-using System.Numerics;
-using AppManager.Settings.Pages;
 
 namespace AppManager.Settings
 {
@@ -279,45 +280,17 @@ namespace AppManager.Settings
 
         private void LoadPage(string pageName)
         {
-            switch (ProfileManager.CurrentProfile.SelectedNav1Menu.ToLower())
+            IPageWithParameter page = ProfileManager.CurrentProfile.SelectedNav1Menu.ToLower() switch
             {
-                case "apps":
-                {
-                    if (AppsPage is IPageWithParameter appsPageWithParam)
-                    {
-                        appsPageWithParam.LoadPageByName(pageName);
-                    }
-                    MainFrame.Navigate(AppsPage);
-                    break;
-                }
-                case "groups":
-                {
-                    if (AppGroupsPage is IPageWithParameter groupsPageWithParam)
-                    {
-                        groupsPageWithParam.LoadPageByName(pageName);
-                    }
-                    MainFrame.Navigate(AppGroupsPage);
-                    break;
-                }
-                case "shortcuts":
-                {
-                    if (ShortcutsPage is IPageWithParameter shortcutsPageWithParam)
-                    {
-                        shortcutsPageWithParam.LoadPageByName(pageName);
-                    }
-                    MainFrame.Navigate(ShortcutsPage);
-                    break;
-                }
-                default:
-                {
-                    if (AppsPage is IPageWithParameter defaultPageWithParam)
-                    {
-                        defaultPageWithParam.LoadPageByName(pageName);
-                    }
-                    MainFrame.Navigate(AppsPage);
-                    break;
-                }
-            }
+                "apps" => AppsPage,
+                "groups" => AppGroupsPage,
+                "shortcuts" => ShortcutsPage,
+                _ => throw new Exception($"Page not found: {pageName}")
+            };
+            
+            page.LoadPageByName(pageName);
+
+            MainFrame.Navigate(page);
         }
 
         private void Nav1MenuButton_Click(object sender, RoutedEventArgs e)

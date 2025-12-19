@@ -54,14 +54,12 @@ namespace AppManager.Core.Actions
 
         public abstract ActionModel ToModel();
 
-        protected abstract Task<bool> ExecuteAsync();
+        protected abstract Task<bool> ExecuteActionAsync();
 
         protected virtual bool CanExecuteAction() { return true; }
 
         protected virtual bool CheckConditions()
         {
-            if (_Conditions.Length == 0) { return true; }
-
             foreach (var condition in _Conditions)
             {
                 if (!condition.Execute())
@@ -74,7 +72,7 @@ namespace AppManager.Core.Actions
             return true;
         }
 
-        public Task<bool> ExecuteActionAsync()
+        public Task<bool> ExecuteAsync()
         {
             if (!CanExecute())
             {
@@ -82,7 +80,7 @@ namespace AppManager.Core.Actions
             }
             else
             {
-                return ExecuteAsync();
+                return ExecuteActionAsync();
             }
         }
 

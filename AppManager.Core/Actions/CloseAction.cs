@@ -27,7 +27,7 @@ namespace AppManager.Core.Actions
             ForceOperation = model.ForceOperation;
         }
 
-        protected override Task<bool> ExecuteAsync()
+        protected override Task<bool> ExecuteActionAsync()
         {
             return Task<bool>.Run(() =>
             {

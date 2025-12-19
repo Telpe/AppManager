@@ -371,7 +371,7 @@ namespace AppManager.Settings.Apps
             {
                 button.Click -= EditTriggerButton_Click;
             }
-            ActionListItemsValue.Clear();
+            TriggerListItemsValue.Clear();
         }
 
         private IEnumerable<Button> FindEditButtonsInListBox(ListBox listBox)

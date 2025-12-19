@@ -1,12 +1,15 @@
-﻿using System;
+﻿using AppManager.Core.Conditions;
+using AppManager.Core.Models;
+using AppManager.Core.Triggers;
+using AppManager.Core.Utils;
+using AppManager.Settings.Conditions;
+using AppManager.Settings.UI;
+using System;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using AppManager.Core.Models;
-using AppManager.Core.Triggers;
-using AppManager.Core.Utils;
-using AppManager.Settings.UI;
 
 namespace AppManager.Settings.Triggers
 {
@@ -14,6 +17,7 @@ namespace AppManager.Settings.Triggers
     {
         private TriggerModel CurrentTriggerValue;
         private bool IsCapturingShortcutValue = false;
+        private ObservableCollection<ConditionDisplayItem> _conditions = new ObservableCollection<ConditionDisplayItem>();
 
         public event EventHandler<TriggerModel> TriggerSaved;
         public event EventHandler TriggerCancelled;
@@ -334,5 +338,43 @@ namespace AppManager.Settings.Triggers
         // Event handlers for text changes to update preview
         private void TextBox_TextChanged(object sender, TextChangedEventArgs e) => UpdatePreview();
         private void CheckBox_Changed(object sender, RoutedEventArgs e) => UpdatePreview();
+
+        private void AddConditionButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (ConditionTypeComboBox?.SelectedItem is ConditionTypeEnum conditionType)
+                {
+                    var conditionModel = new ConditionModel { ConditionType = conditionType };
+
+                    var conditionDialog = new ConditionConfigDialog(conditionModel);
+                    if (conditionDialog.ShowDialog() == true)
+                    {
+                        _conditions.Add(new ConditionDisplayItem(conditionDialog.ConditionModel));
+                        UpdatePreview();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error adding condition: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void RemoveConditionButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (sender is Button button && button.Tag is ConditionDisplayItem condition)
+                {
+                    _conditions.Remove(condition);
+                    UpdatePreview();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"RemoveConditionButton_Click error: {ex.Message}");
+            }
+        }
     }
 }

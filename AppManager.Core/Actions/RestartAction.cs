@@ -47,7 +47,7 @@ namespace AppManager.Core.Actions
             return _Launch.CanExecute();
         }
 
-        protected override Task<bool> ExecuteAsync()
+        protected override Task<bool> ExecuteActionAsync()
         {
             return Task<bool>.Run(() =>
             {
@@ -56,7 +56,7 @@ namespace AppManager.Core.Actions
                     if (_Close?.CanExecute()??false)
                     {
                         // First close the application
-                        var closed = _Close.ExecuteActionAsync();
+                        var closed = _Close.ExecuteAsync();
                         closed.Wait();
 
                         if (!(closed?.Result ?? false))
@@ -72,7 +72,7 @@ namespace AppManager.Core.Actions
                         Debug.WriteLine($"Close action can not be executed for {AppName}, proceeding to launch.");
                     }
 
-                    var launched = _Launch?.ExecuteActionAsync();
+                    var launched = _Launch?.ExecuteAsync();
                     launched?.Wait();
 
                     if (!(launched?.Result ?? false))

@@ -1,0 +1,8 @@
+::FOR /F "tokens=*" %%G IN ('DIR /B /AD /S bin') DO RMDIR /S /Q "%%G"
+::FOR /F "tokens=*" %%G IN ('DIR /B /AD /S obj') DO RMDIR /S /Q "%%G"
+RMDIR /S /Q "AppManager/bin"
+RMDIR /S /Q "AppManager/obj"
+RMDIR /S /Q "AppManager.Core/bin"
+RMDIR /S /Q "AppManager.Core/obj"
+RMDIR /S /Q "AppManager.Settings/bin"
+RMDIR /S /Q "AppManager.Settings/obj"

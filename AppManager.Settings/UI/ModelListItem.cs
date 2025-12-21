@@ -10,7 +10,7 @@ namespace AppManager.Settings.UI
 {
     internal class ModelListItem<T> : INotifyPropertyChanged where T : ConditionalModel
     {
-        private readonly Apps.MainPage _page;
+        //private readonly Apps.MainPage _page;
         public int Id { get; }
         public T Model { get; }
 
@@ -50,11 +50,11 @@ namespace AppManager.Settings.UI
         public int ConditionCount => Model.Conditions?.Length ?? 0;
         public bool HasConditions => ConditionCount > 0;
 
-        public ModelListItem(int id, T model, Apps.MainPage page)
+        public ModelListItem(int id, T model, Apps.MainPage? page = null)
         {
             Id = id;
             Model = model;
-            _page = page;
+            //_page = page;
         }
         
         protected void OnPropertyChanged(string propertyName) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

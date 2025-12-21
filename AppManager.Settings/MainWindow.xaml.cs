@@ -7,6 +7,7 @@ using AppManager.Settings.Pages;
 using AppManager.Settings.UI;
 using AppManager.Settings.Utils;
 using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -29,10 +30,20 @@ namespace AppManager.Settings
         private readonly AppGroups.MainPage AppGroupsPage = new();
         private readonly ShortcutsPage ShortcutsPage = new();
         private OverlayManager OverlayManagerValue;
+        private readonly ObservableCollection<string> Nav1ListValue = new();
+        private string Nav1NewItemPlaceholderValue = "Enter new item...";
+        private readonly ObservableCollection<string> Nav1MenuValue = new()
+        {
+            "Apps",
+            "Groups",
+            "Shortcuts"
+        };
 
         public MainWindow()
         {
             InitializeComponent();
+
+            
 
             Debug.WriteLine("MainWindow initialized");
 
@@ -50,8 +61,7 @@ namespace AppManager.Settings
             // Apply settings to window
             ApplyWindowSettings();
 
-            // Load navigation based on profile's last selected page
-            LoadNav1List(ProfileManager.CurrentProfile.SelectedNav1Menu);
+            InitiateNav1();
         }
 
         private void SetWindowIcon()
@@ -156,91 +166,71 @@ namespace AppManager.Settings
             }
         }
 
-        private TextBox NewNavigationAddItemTextBox(string placeholderText, Action<string> onItemAdded)
+        private void InitiateNav1()
         {
-            var textBox = new TextBox
-            {
-                Margin = new Thickness(5),
-                Width = 100,
-                HorizontalAlignment = HorizontalAlignment.Left,
-                Text = placeholderText,
-                Foreground = Brushes.Gray
-            };
+            Nav1List.ItemsSource = Nav1ListValue;
+            Nav1List.AddHandler(Button.ClickEvent, new RoutedEventHandler(Nav1ListButton_Click));
 
-            textBox.GotFocus += (s, e) =>
+            LoadNav1List(ProfileManager.CurrentProfile.SelectedNav1Menu);
+
+            Nav1NewItemTextBox.GotFocus += (s, e) =>
             {
-                if (textBox.Text == placeholderText)
+                if (Nav1NewItemTextBox.Text == Nav1NewItemPlaceholderValue)
                 {
-                    textBox.Text = "";
-                    textBox.Foreground = Brushes.Black;
+                    Nav1NewItemTextBox.Text = "";
+                    Nav1NewItemTextBox.Foreground = Brushes.Black;
                 }
             };
 
-            textBox.LostFocus += (s, e) =>
+            Nav1NewItemTextBox.LostFocus += (s, e) =>
             {
-                if (string.IsNullOrWhiteSpace(textBox.Text))
+                if (string.IsNullOrWhiteSpace(Nav1NewItemTextBox.Text))
                 {
-                    textBox.Text = placeholderText;
-                    textBox.Foreground = Brushes.Gray;
+                    Nav1NewItemTextBox.Text = Nav1NewItemPlaceholderValue;
+                    Nav1NewItemTextBox.Foreground = Brushes.Gray;
                 }
             };
 
-            textBox.KeyDown += (s, e) =>
+            Nav1NewItemTextBox.KeyDown += (s, e) =>
             {
                 if (e.Key == System.Windows.Input.Key.Enter && 
-                    !string.IsNullOrWhiteSpace(textBox.Text) && 
-                    textBox.Text != placeholderText)
+                    !string.IsNullOrWhiteSpace(Nav1NewItemTextBox.Text) &&
+                    Nav1NewItemTextBox.Text != Nav1NewItemPlaceholderValue)
                 {
                     // Call the provided action with the entered text
-                    onItemAdded?.Invoke(textBox.Text.Trim());
+                    AddNew(ProfileManager.CurrentProfile.SelectedNav1Menu, Nav1NewItemTextBox.Text.Trim());
 
                     // Reset the text box
-                    textBox.Text = placeholderText;
-                    textBox.Foreground = Brushes.Gray;
+                    Nav1NewItemTextBox.Text = "";
+                    //Nav1NewItemTextBox.Text = Nav1NewItemPlaceholderValue;
+                    //Nav1NewItemTextBox.Foreground = Brushes.Gray;
+                    Nav1List.Focus();
                 }
             };
-
-            return textBox;
         }
 
-        private void LoadNav1List(string pageName)
+        private void AddNew(string category, string name)
         {
-            switch (pageName.ToLower())
+            switch (category.ToLower())
             {
                 case "apps":
-                {
-                    LoadNavigation(Nav1List.Children, ProfileManager.CurrentProfile.Apps.Select(a=> a.AppName).ToArray(), Nav1ListButton_Click);
-                    
-                    // Add text input for creating new apps using the general method
-                    var newAppTextBox = NewNavigationAddItemTextBox("Enter app name...", (appName) =>
                     {
-                        // Create new AppManagedModel
-                        var newApp = new AppManagedModel(appName, false);
+                        var newApp = new AppManagedModel(name, false);
 
-                        // Add to current profile
                         ProfileManager.CurrentProfile.Apps = ProfileManager.CurrentProfile.Apps.Append(newApp).ToArray();
 
                         // Reload the navigation list
                         LoadNav1List("apps");
 
                         Debug.WriteLine($"Added new app: {newApp.AppName}");
-                    });
 
-                    Nav1List.Children.Add(newAppTextBox);
-                    break;
-                }
+                        break;
+                    }
                 case "groups":
-                {
-                    // Extract group names from GroupManagedModel array
-                    LoadNavigation(Nav1List.Children, ProfileManager.CurrentProfile.AppGroups.Select(g => g.GroupName).ToArray(), Nav1ListButton_Click);
-                    
-                    // Add text input for creating new groups using the general method
-                    var newGroupTextBox = NewNavigationAddItemTextBox("Enter group name...", (groupName) =>
                     {
-                        // Create new GroupManagedModel
                         var newGroup = new GroupManagedModel
                         {
-                            GroupName = groupName,
+                            GroupName = name,
                             Description = "New group"
                         };
 
@@ -251,9 +241,38 @@ namespace AppManager.Settings
                         LoadNav1List("groups");
 
                         Debug.WriteLine($"Added new group: {newGroup.GroupName}");
-                    });
 
-                    Nav1List.Children.Add(newGroupTextBox);
+                        break;
+                    }
+            }
+        }
+
+        private void LoadNav1List(string pageName)
+        {
+            Nav1ListValue.Clear();
+
+            switch (pageName.ToLower())
+            {
+                case "apps":
+                {
+                    foreach (AppManagedModel app in ProfileManager.CurrentProfile.Apps)
+                    {
+                        Nav1ListValue.Add(app.AppName);
+                    }
+
+                    Nav1NewItemPlaceholderValue = "Enter app name...";
+
+                    break;
+                }
+                case "groups":
+                {
+                    foreach (GroupManagedModel grp in ProfileManager.CurrentProfile.AppGroups)
+                    {
+                        Nav1ListValue.Add(grp.GroupName);
+                    }
+
+                    Nav1NewItemPlaceholderValue = "Enter group name...";
+
                     break;
                 }
                 case "shortcuts":
@@ -276,10 +295,13 @@ namespace AppManager.Settings
                     break;
                 }
             }
+
+            Nav1NewItemTextBox.Text = Nav1NewItemPlaceholderValue;
         }
 
-        private void LoadPage(string pageName)
+        private void LoadPage()
         {
+            string pageName = ProfileManager.CurrentProfile.SelectedNav1List;
             IPageWithParameter page = ProfileManager.CurrentProfile.SelectedNav1Menu.ToLower() switch
             {
                 "apps" => AppsPage,
@@ -293,84 +315,29 @@ namespace AppManager.Settings
             MainFrame.Navigate(page);
         }
 
-        private void Nav1MenuButton_Click(object sender, RoutedEventArgs e)
+        private void Nav1MenuButton_Click(object? sender, RoutedEventArgs e)
         {
             if(sender is Button fromSender)
             {
-                Debug.WriteLine($"Nav1MenuButton_Click: {fromSender.Content.ToString()}\nGetting Nav1List");
-                LoadNav1List(fromSender.Content.ToString()??"");
+                Debug.WriteLine($"Nav1MenuButton_Click: {fromSender.Content}\nGetting Nav1List");
+                ProfileManager.CurrentProfile.SelectedNav1Menu = fromSender.Content.ToString() ?? "";
+                LoadNav1List(ProfileManager.CurrentProfile.SelectedNav1Menu);
                 Debug.WriteLine($"Update profile with selected page");
                 // Update profile with selected page
-                ProfileManager.CurrentProfile.SelectedNav1Menu = fromSender.Content.ToString();
+                
             }
             
         }
 
-        private void Nav1ListButton_Click(object sender, RoutedEventArgs e)
+        private void Nav1ListButton_Click(object? sender, RoutedEventArgs e)
         {
-            if (sender is Button fromSender && null != fromSender.Content)
+            if (e.OriginalSource is Button fromSender && fromSender.Content is string selectedNav1ListItem)
             {
-                LoadPage(fromSender.Content.ToString()??"");
-
-                // Update profile with last selected page
-                ProfileManager.CurrentProfile.SelectedNav1List = fromSender.Content.ToString()??"";
+                ProfileManager.CurrentProfile.SelectedNav1List = selectedNav1ListItem;
+                LoadPage();
             }
         }
 
-        private Button NewNavigationButton(string content, RoutedEventHandler clickHandler)
-        {
-            var b = new Button
-            {
-                Content = content,
-                Margin = new Thickness(5),
-                Width = 100,
-                HorizontalAlignment = HorizontalAlignment.Left,
-                Background = Brushes.Transparent,
-                BorderThickness = new Thickness(1),
-                BorderBrush = Brushes.Gray
-            };
-
-            b.Click += clickHandler;
-
-            return b;
-        }
-
-        private void LoadNavigation(UIElementCollection listParent, string[] namesList, RoutedEventHandler clickHandler)
-        {
-            listParent.Clear();
-
-            foreach (string name in namesList)
-            {
-                Button b = NewNavigationButton(name, clickHandler);
-                listParent.Add(b);
-            }
-        }
-
-        private StackPanel FindNavigationStackPanel()
-        {
-            // Find the navigation StackPanel in your XAML structure
-            var mainGrid = (Grid)this.Content;
-            var leftColumn = (StackPanel)mainGrid.Children[1]; // The left column StackPanel
-            var scrollViewer = (ScrollViewer)leftColumn.Children[1]; // The ScrollViewer containing navigation
-            return (StackPanel)scrollViewer.Content; // The actual navigation StackPanel
-        }
-
-        private Button CreateNavigationItem(string text, Action clickAction)
-        {
-            var navigationButton = new Button
-            {
-                Content = text,
-                Margin = new Thickness(5),
-                Width = 100,
-                HorizontalAlignment = HorizontalAlignment.Left,
-                Background = Brushes.Transparent,
-                BorderThickness = new Thickness(1),
-                BorderBrush = Brushes.Gray
-            };
-
-            navigationButton.Click += (s, e) => clickAction();
-            return navigationButton;
-        }
 
         // Navigation action methods for Apps page
         private void ShowAllApps()
@@ -434,7 +401,7 @@ namespace AppManager.Settings
             Debug.WriteLine("Showing quick actions");
         }
 
-        private void Window_Closing(object sender, CancelEventArgs e)
+        private void Window_Closing(object? sender, CancelEventArgs e)
         {
             e.Cancel = true;
 

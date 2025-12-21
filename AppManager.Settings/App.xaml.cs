@@ -21,8 +21,8 @@ namespace AppManager.Settings
 
         private static Dictionary<string, string> UnsavedPages = new();
 
-        private Timer CheckIfAppsRunningValue = new();
-        public Timer CheckIfAppsRunning { get { return CheckIfAppsRunningValue; } }
+        private System.Timers.Timer CheckIfAppsRunningValue = new();
+        public System.Timers.Timer CheckIfAppsRunning { get { return CheckIfAppsRunningValue; } }
 
         public static readonly AppManager.Core.Version Version;
 

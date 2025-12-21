@@ -1,12 +1,18 @@
-﻿using AppManager.Core.Conditions;
+﻿using AppManager.Core.Actions;
+using AppManager.Core.Conditions;
 using AppManager.Core.Models;
 using AppManager.Core.Triggers;
 using AppManager.Core.Utils;
+using AppManager.Settings.Actions;
 using AppManager.Settings.Conditions;
 using AppManager.Settings.UI;
+using AppManager.Settings.Utils;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -19,8 +25,10 @@ namespace AppManager.Settings.Triggers
         private bool IsCapturingShortcutValue = false;
         private ObservableCollection<ConditionDisplayItem> _conditions = new ObservableCollection<ConditionDisplayItem>();
 
-        public event EventHandler<TriggerModel> TriggerSaved;
-        public event EventHandler TriggerCancelled;
+        public event EventHandler<TriggerModel>? TriggerSaved;
+        public event EventHandler? TriggerCancelled;
+
+        private ObservableCollection<ModelListItem<ActionModel>> ActionListItemsValue = new();
 
         public TriggerModel CurrentTrigger
         {
@@ -32,19 +40,25 @@ namespace AppManager.Settings.Triggers
             }
         }
 
-        public TriggerEditorControl()
+        public TriggerEditorControl(TriggerModel triggerModel)
         {
+            CurrentTriggerValue = triggerModel;
+
             InitializeComponent();
-            
+
             InitializeComboBoxes();
+            LoadTriggerData();
             UpdatePreview();
         }
 
         private void InitializeComboBoxes()
         {
             // Populate Trigger Type ComboBox
-            TriggerTypeComboBox.ItemsSource = Enum.GetValues(typeof(TriggerTypeEnum)).Cast<TriggerTypeEnum>();
+            TriggerTypeComboBox.ItemsSource = Enum.GetValues<TriggerTypeEnum>();
             TriggerTypeComboBox.SelectedIndex = 0;
+
+            ActionsListBox.ItemsSource = ActionListItemsValue;
+            ActionsListBox.AddHandler(Button.ClickEvent, new RoutedEventHandler(EditActionButton_Click));
         }
 
         private void LoadTriggerData()
@@ -75,6 +89,8 @@ namespace AppManager.Settings.Triggers
             // Load timing data
             PollingIntervalTextBox.Text = CurrentTriggerValue.PollingIntervalMs.ToString();
             TriggerTimeoutTextBox.Text = CurrentTriggerValue.TimeoutMs.ToString();
+
+            RefreshActionsListBox();
 
             UpdatePreview();
         }
@@ -139,40 +155,40 @@ namespace AppManager.Settings.Triggers
         {
             try
             {
-                var trigger = CreateTriggerModel();
-                var preview = $"Trigger Type: {trigger.TriggerType}\n";
+                StringBuilder previewBuilder = new();
+                previewBuilder.AppendLine($"Trigger Type: {CurrentTriggerValue.TriggerType}");
 
-                switch (trigger.TriggerType)
+                switch (CurrentTriggerValue.TriggerType)
                 {
                     case TriggerTypeEnum.Shortcut:
-                        preview += $"Shortcut: {trigger.ShortcutCombination ?? "Not specified"}\n";
-                        preview += $"Modifiers: {trigger.Modifiers}\n";
-                        preview += $"Key: {trigger.Key}\n";
+                        previewBuilder.AppendLine($"Shortcut: {CurrentTriggerValue.ShortcutCombination ?? "Not specified"}");
+                        previewBuilder.AppendLine($"Modifiers: {CurrentTriggerValue.Modifiers}");
+                        previewBuilder.AppendLine($"Key: {CurrentTriggerValue.Key}");
                         break;
 
                     case TriggerTypeEnum.AppLaunch:
                     case TriggerTypeEnum.AppClose:
-                        preview += $"Process Name: {trigger.ProcessName ?? "Not specified"}\n";
-                        preview += $"Executable Path: {trigger.ExecutablePath ?? "Not specified"}\n";
-                        preview += $"Monitor Child Processes: {trigger.MonitorChildProcesses}\n";
+                        previewBuilder.AppendLine($"Process Name: {CurrentTriggerValue.ProcessName ?? "Not specified"}");
+                        previewBuilder.AppendLine($"Executable Path: {CurrentTriggerValue.ExecutablePath ?? "Not specified"}");
+                        previewBuilder.AppendLine($"Monitor Child Processes: {CurrentTriggerValue.MonitorChildProcesses}");
                         break;
 
                     case TriggerTypeEnum.NetworkPort:
-                        preview += $"IP Address: {trigger.IPAddress}\n";
-                        preview += $"Port: {trigger.Port}\n";
+                        previewBuilder.AppendLine($"IP Address: {CurrentTriggerValue.IPAddress}");
+                        previewBuilder.AppendLine($"Port: {CurrentTriggerValue.Port}");
                         break;
 
                     case TriggerTypeEnum.SystemEvent:
-                        preview += $"Event Name: {trigger.EventName ?? "Not specified"}\n";
-                        preview += $"Event Source: {trigger.EventSource ?? "Not specified"}\n";
+                        previewBuilder.AppendLine($"Event Name: {CurrentTriggerValue.EventName ?? "Not specified"}");
+                        previewBuilder.AppendLine($"Event Source: {CurrentTriggerValue.EventSource ?? "Not specified"}");
                         break;
                 }
 
-                preview += $"\nTiming Configuration:\n";
-                preview += $"Polling Interval: {trigger.PollingIntervalMs}ms\n";
-                preview += $"Timeout: {trigger.TimeoutMs}ms\n";
+                previewBuilder.AppendLine($"\nTiming Configuration:");
+                previewBuilder.AppendLine($"Polling Interval: {CurrentTriggerValue.PollingIntervalMs}ms");
+                previewBuilder.AppendLine($"Timeout: {CurrentTriggerValue.TimeoutMs}ms");
 
-                TriggerPreviewTextBlock.Text = preview;
+                TriggerPreviewTextBlock.Text = previewBuilder.ToString();
             }
             catch (Exception ex)
             {
@@ -298,8 +314,7 @@ namespace AppManager.Settings.Triggers
         {
             try
             {
-                var trigger = CreateTriggerModel();
-                var triggerInstance = TriggerManager.CreateTrigger(trigger);
+                var triggerInstance = TriggerManager.CreateTrigger(CurrentTriggerValue);
                 var canStart = triggerInstance.CanStart();
                 
                 var result = canStart ? "✓ Trigger configuration is valid" : "✗ Trigger configuration is invalid";
@@ -318,15 +333,14 @@ namespace AppManager.Settings.Triggers
         {
             try
             {
-                var trigger = CreateTriggerModel();
-                CurrentTriggerValue = trigger;
-                TriggerSaved?.Invoke(this, trigger);
-                DisableOverlay(); // Close the overlay after saving
+                TriggerSaved?.Invoke(this, CurrentTriggerValue.Clone());
+                DisableOverlay();
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Save failed: {ex.Message}", "Save Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+            
         }
 
         private void CancelTriggerButton_Click(object sender, RoutedEventArgs e)
@@ -376,5 +390,92 @@ namespace AppManager.Settings.Triggers
                 System.Diagnostics.Debug.WriteLine($"RemoveConditionButton_Click error: {ex.Message}");
             }
         }
+
+        private void AddActionButton_Click(object sender, RoutedEventArgs e)
+        {
+            var newAction = new ActionModel
+            {
+                AppName = ProfileManager.CurrentProfile.SelectedNav1List, // TODO: Consider purpose.
+                ActionType = AppActionTypeEnum.Launch // Default action
+            };
+
+            CurrentTriggerValue.Actions ??= [];
+            CurrentTriggerValue.Actions.Add(0 < CurrentTriggerValue.Actions.Count ? CurrentTriggerValue.Actions.Keys.Max() + 1 : 1, newAction);
+
+            RefreshActionsListBox();
+            //Edited();
+        }
+
+        private void EditActionButton_Click(object? sender, RoutedEventArgs e)
+        {
+            if (e.OriginalSource is Button button && button.Tag is ModelListItem<ActionModel> viewModel)
+            {
+                Debug.WriteLine($"Edit action: {viewModel.DisplayName}");
+
+                try
+                {
+                    // Create action editor control directly
+                    var actionEditor = new ActionEditorControl(viewModel.Model.Clone());
+
+                    // Subscribe to save event
+                    actionEditor.ActionSaved += (s, updatedAction) =>
+                    {
+                        // Update the model in the dictionary
+                        CurrentTriggerValue.Actions?[viewModel.Id] = updatedAction;
+
+                        // Refresh the UI to show changes
+                        RefreshActionsListBox();
+
+                        // Mark as edited
+                        //Edited();
+
+                        Debug.WriteLine($"Action {viewModel.DisplayName} updated successfully");
+                    };
+
+                    actionEditor.ActionCancelled += (s, args) =>
+                    {
+                        Debug.WriteLine($"Action editing cancelled for {viewModel.DisplayName}");
+                    };
+
+                    ((MainWindow)Application.Current.MainWindow)?.ShowOverlay(actionEditor, 80, 70, false);
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error opening action editor: {ex.Message}");
+                    MessageBox.Show($"Error opening action editor: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        private void RefreshActionsListBox()
+        {
+            ClearActions();
+            foreach (var kvp in CurrentTriggerValue.Actions??[])
+            {
+                ActionListItemsValue.Add(new ModelListItem<ActionModel>(kvp.Key, kvp.Value));
+            }
+            //Dispatcher.BeginInvoke(() => SubscribeToActionButtonEvents(), System.Windows.Threading.DispatcherPriority.Loaded);
+        }
+
+        public void ClearActions()
+        {
+            /*var buttons = FindEditButtonsInListBox(ActionsListBox);
+            foreach (var button in buttons)
+            {
+                button.Click -= EditActionButton_Click;
+            }*/
+            ActionListItemsValue.Clear();
+        }
+
+
+        /*private void SubscribeToActionButtonEvents()
+        {
+            var buttons = FindEditButtonsInListBox(ActionsListBox);
+            foreach (var button in buttons)
+            {
+                //button.Click -= EditActionButton_Click; // Prevent double subscription
+                button.Click += EditActionButton_Click;
+            }
+        }*/
     }
 }

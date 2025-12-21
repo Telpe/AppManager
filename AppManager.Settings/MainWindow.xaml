@@ -6,7 +6,14 @@
         xmlns:local="clr-namespace:AppManager.Settings"
         mc:Ignorable="d"
         Title="App Manager" Height="600" Width="600">
-    <Grid>
+	<Window.Resources>
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceDictionary Source="UI/Nav1ListItemTemplate.xaml" />
+			</ResourceDictionary.MergedDictionaries>
+		</ResourceDictionary>
+	</Window.Resources>
+	<Grid>
 		<Grid.RowDefinitions>
 			<RowDefinition MinHeight="32" Height="Auto"/>
 			<RowDefinition Height="*"/>
@@ -59,7 +66,6 @@
 		</Grid>
 		
 		<StackPanel Orientation="Vertical" Grid.Row="1" Grid.Column="0" Background="#D0D0D0" Height="auto">
-			
 			<!-- Nav 1 menu -->
 			<StackPanel Orientation="Horizontal" Background="#F0F0F0">
 				<Button x:Name="AppsButton" Content="Apps" Width="100" Height="30" Margin="5" Click="Nav1MenuButton_Click"/>
@@ -67,14 +73,10 @@
 				<Button x:Name="ShortcutsButton" Content="Shortcuts" Width="100" Height="30" Margin="5" Click="Nav1MenuButton_Click"/>
 			</StackPanel>
 			<!-- Nav 1 List -->
-			<ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-				<StackPanel x:Name="Nav1List" Orientation="Vertical" Background="#F0F0F0" Width="auto" HorizontalAlignment="Left">
-					<Label Content="Navigation1" FontWeight="Bold" Margin="5" Width="100"/>
-					<Label Content="Navigation2" FontWeight="Bold" Margin="5"/>
-					<Label Content="Navigation3" FontWeight="Bold" Margin="5"/>
-					<Label Content="Navigation4" FontWeight="Bold" Margin="5"/>
-				</StackPanel>
+			<ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="auto">
+				<ListBox x:Name="Nav1List" ItemTemplate="{StaticResource Nav1ListItemTemplate}" Background="#F0F0F0" Width="auto" HorizontalAlignment="Left" />
 			</ScrollViewer>
+			<TextBox x:Name="Nav1NewItemTextBox" Margin="5" Width="100" HorizontalAlignment="Left" Foreground="Gray" />
 		</StackPanel>
 
 			<!-- Page Content -->

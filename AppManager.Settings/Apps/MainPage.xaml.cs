@@ -44,7 +44,7 @@ namespace AppManager.Settings.Apps
         }
 
         private ObservableCollection<ModelListItem<TriggerModel>> TriggerListItemsValue = new();
-        private ObservableCollection<ModelListItem<ActionModel>> ActionListItemsValue = new();
+        //private ObservableCollection<ModelListItem<ActionModel>> ActionListItemsValue = new();
         
 
         public MainPage()
@@ -53,7 +53,7 @@ namespace AppManager.Settings.Apps
 
             // Set ItemsSource for ListBoxes
             TriggersListBox.ItemsSource = TriggerListItemsValue;
-            ActionsListBox.ItemsSource = ActionListItemsValue;
+            //ActionsListBox.ItemsSource = ActionListItemsValue;
 
             DisableButtons();
         }
@@ -122,7 +122,7 @@ namespace AppManager.Settings.Apps
 
             // Refresh the UI lists
             RefreshTriggersListBox();
-            RefreshActionsListBox();
+            //RefreshActionsListBox();
 
             EnableButtons();
         }
@@ -135,25 +135,6 @@ namespace AppManager.Settings.Apps
                 TriggerListItemsValue.Add(new ModelListItem<TriggerModel>(kvp.Key, kvp.Value, this));
             }
             Dispatcher.BeginInvoke(() => SubscribeToTriggerButtonEvents(), System.Windows.Threading.DispatcherPriority.Loaded);
-        }
-
-        private void RefreshActionsListBox()
-        {
-            ClearActions();
-            foreach (var kvp in CurrentModelValue.AppActions)
-            {
-                ActionListItemsValue.Add(new ModelListItem<ActionModel>(kvp.Key, kvp.Value, this));
-            }
-            Dispatcher.BeginInvoke(() => SubscribeToActionButtonEvents(), System.Windows.Threading.DispatcherPriority.Loaded);
-        }
-        private void SubscribeToActionButtonEvents()
-        {
-            var buttons = FindEditButtonsInListBox(ActionsListBox);
-            foreach (var button in buttons)
-            {
-                //button.Click -= EditActionButton_Click; // Prevent double subscription
-                button.Click += EditActionButton_Click;
-            }
         }
 
         private void SubscribeToTriggerButtonEvents()
@@ -224,23 +205,6 @@ namespace AppManager.Settings.Apps
             Edited();
         }
 
-        private void AddActionButton_Click(object sender, RoutedEventArgs e)
-        {
-            var newAction = new ActionModel
-            {
-                AppName = CurrentModelValue.AppName,
-                ActionType = AppActionTypeEnum.Launch // Default action
-            };
-
-            var actions = CurrentModelValue.AppActions ?? new Dictionary<int, ActionModel>();
-            int newId = actions.Count > 0 ? actions.Keys.Max() + 1 : 1;
-            actions.Add(newId, newAction);
-            CurrentModelValue.AppActions = actions;
-            
-            RefreshActionsListBox();
-            Edited();
-        }
-
         private void EditTriggerButton_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button button && button.Tag is ModelListItem<TriggerModel> viewModel)
@@ -250,8 +214,7 @@ namespace AppManager.Settings.Apps
                 try
                 {
                     // Create trigger editor control directly
-                    var triggerEditor = new TriggerEditorControl();
-                    triggerEditor.CurrentTrigger = viewModel.Model;
+                    var triggerEditor = new TriggerEditorControl(viewModel.Model);
                     
                     // Subscribe to save event
                     triggerEditor.TriggerSaved += (s, updatedTrigger) =>
@@ -279,47 +242,6 @@ namespace AppManager.Settings.Apps
                 {
                     Debug.WriteLine($"Error opening trigger editor: {ex.Message}");
                     MessageBox.Show($"Error opening trigger editor: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-            }
-        }
-
-        private void EditActionButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button button && button.Tag is ModelListItem<ActionModel> viewModel)
-            {
-                Debug.WriteLine($"Edit action: {viewModel.DisplayName}");
-                
-                try
-                {
-                    // Create action editor control directly
-                    var actionEditor = new ActionEditorControl(viewModel.Model.Clone());
-                    
-                    // Subscribe to save event
-                    actionEditor.ActionSaved += (s, updatedAction) =>
-                    {
-                        // Update the model in the dictionary
-                        CurrentModelValue.AppActions[viewModel.Id] = updatedAction;
-                        
-                        // Refresh the UI to show changes
-                        RefreshActionsListBox();
-                        
-                        // Mark as edited
-                        Edited();
-                        
-                        Debug.WriteLine($"Action {viewModel.DisplayName} updated successfully");
-                    };
-                    
-                    actionEditor.ActionCancelled += (s, args) =>
-                    {
-                        Debug.WriteLine($"Action editing cancelled for {viewModel.DisplayName}");
-                    };
-                    
-                    ((MainWindow)Application.Current.MainWindow)?.ShowOverlay(actionEditor, 80, 70, false);
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"Error opening action editor: {ex.Message}");
-                    MessageBox.Show($"Error opening action editor: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
@@ -352,16 +274,6 @@ namespace AppManager.Settings.Apps
         public bool HasUnsavedChanges()
         {
             return LoadedPagesValue?.Values.Any(page => !page.IsStored) ?? false;
-        }
-
-        public void ClearActions()
-        {
-            var buttons = FindEditButtonsInListBox(ActionsListBox);
-            foreach (var button in buttons)
-            {
-                button.Click -= EditActionButton_Click;
-            }
-            ActionListItemsValue.Clear();
         }
 
         public void ClearTriggers()

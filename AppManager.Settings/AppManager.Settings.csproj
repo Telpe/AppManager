@@ -1,13 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net10.0-windows7.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
     <UseWPF>true</UseWPF>
     <SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
     <StartupObject>AppManager.Settings.App</StartupObject>
     <Nullable>enable</Nullable>
-	
-	<!-- Additional metadata -->
+    <ImplicitUsings>enable</ImplicitUsings>
+
+    <!-- Additional metadata -->
     <Product>AppManager.Settings</Product>
     <Company>Telpe</Company>
     <Copyright>Telpe</Copyright>
@@ -16,5 +18,5 @@
   <ItemGroup>
     <ProjectReference Include="..\AppManager.Core\AppManager.Core.csproj" />
   </ItemGroup>
-  
+
 </Project>

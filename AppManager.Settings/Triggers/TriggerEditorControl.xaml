@@ -155,6 +155,19 @@
 			</Grid>
 		</GroupBox>
 
+		<!-- Actions Section -->
+		<GroupBox Header="Actions" Margin="5">
+			<StackPanel>
+				<ListBox x:Name="ActionsListBox" Height="150" Margin="5" ItemTemplate="{StaticResource ActionListItemTemplate}" />
+				<Button x:Name="AddActionButton" 
+							Content="Add Action" 
+							Width="100" 
+							HorizontalAlignment="Left" 
+							Margin="5"
+							Click="AddActionButton_Click" />
+			</StackPanel>
+		</GroupBox>
+
 		<!-- Timing Configuration -->
 		<GroupBox Header="Timing Configuration" Margin="5">
 			<Grid Margin="5">

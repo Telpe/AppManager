@@ -18,10 +18,6 @@ namespace AppManager.Core.Models
         public string? ExecutablePath { get; set; }
         public string? Arguments { get; set; }
 
-        public ActionModel() { }
-
-        
-
         public ActionModel Clone()
         {
             return new()

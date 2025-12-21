@@ -59,7 +59,7 @@
 					</StackPanel>
 				</GroupBox>
 
-				<!-- Actions Section -->
+				<!-- Actions Section 
 				<GroupBox Header="Actions" Margin="5">
 					<StackPanel>
 						<ListBox x:Name="ActionsListBox" Height="150" Margin="5" ItemTemplate="{StaticResource ActionListItemTemplate}" />
@@ -70,7 +70,7 @@
 								Margin="5"
 								Click="AddActionButton_Click" />
 					</StackPanel>
-				</GroupBox>
+				</GroupBox>-->
 			</StackPanel>
 		</ScrollViewer>
 

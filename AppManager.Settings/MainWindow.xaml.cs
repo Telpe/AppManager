@@ -26,8 +26,8 @@ namespace AppManager.Settings
     /// </summary>
     public partial class MainWindow : Window
     {
-        private readonly Apps.MainPage AppsPage = new();
-        private readonly AppGroups.MainPage AppGroupsPage = new();
+        private readonly Apps.AppsPage AppsPage = new();
+        private readonly AppGroups.AppGroupsPage AppGroupsPage = new();
         private readonly ShortcutsPage ShortcutsPage = new();
         private OverlayManager OverlayManagerValue;
         private readonly ObservableCollection<string> Nav1ListValue = new();

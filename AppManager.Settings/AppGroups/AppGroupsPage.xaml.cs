@@ -13,12 +13,12 @@ namespace AppManager.Settings.AppGroups
     /// <summary>
     /// Interaction logic for AppGroupsPage.xaml
     /// </summary>
-    public partial class MainPage : Page, IPageWithParameter
+    public partial class AppGroupsPage : Page, IPageWithParameter
     {
         private string _PageName = "";
         private GroupManagedModel? _currentGroup;
 
-        public MainPage()
+        public AppGroupsPage()
         {
             InitializeComponent();
         }

@@ -22,7 +22,7 @@ namespace AppManager.Settings.Apps
     /// <summary>
     /// Interaction logic for Apps.xaml
     /// </summary>
-    public partial class MainPage : Page, IPageWithParameter
+    public partial class AppsPage : Page, IPageWithParameter
     {
         private string PageNameValue = "";
         private static int MaxBackupModelsValue = 5;
@@ -47,7 +47,7 @@ namespace AppManager.Settings.Apps
         //private ObservableCollection<ModelListItem<ActionModel>> ActionListItemsValue = new();
         
 
-        public MainPage()
+        public AppsPage()
         {
             InitializeComponent();
 

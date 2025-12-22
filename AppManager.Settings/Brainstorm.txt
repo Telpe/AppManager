@@ -7,9 +7,10 @@ Config should be together with what it configures.
 Perhaps some general config require a config page.
 
 Main pages/sort by::
-List of controlled apps.
-List of shortcuts used.
-About.
+List of apps managed.
+List of groups of apps managed.
+List of keybinds used (swap trigger type).
+(About).
 
 Open app control by clicking a shortcut or an app from above menus.
 

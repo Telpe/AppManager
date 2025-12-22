@@ -64,8 +64,8 @@
 			</Grid>
 		</GroupBox>
 
-		<!-- Shortcut Configuration -->
-		<GroupBox x:Name="ShortcutConfigGroup" Header="Shortcut Configuration" Margin="5" Visibility="Collapsed">
+		<!-- Keybind Configuration -->
+		<GroupBox x:Name="KeybindConfigGroup" Header="Keybind Configuration" Margin="5" Visibility="Collapsed">
 			<Grid Margin="5">
 				<Grid.RowDefinitions>
 					<RowDefinition Height="Auto"/>
@@ -78,10 +78,10 @@
 				</Grid.ColumnDefinitions>
 
 				<Label Content="Key Combination:" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center"/>
-				<TextBox x:Name="ShortcutTextBox" Grid.Row="0" Grid.Column="1" Margin="5,0,5,0" 
+				<TextBox x:Name="KeybindTextBox" Grid.Row="0" Grid.Column="1" Margin="5,0,5,0" 
                          VerticalAlignment="Center" Height="22" IsReadOnly="True"/>
-				<Button Content="Capture" Grid.Row="0" Grid.Column="2" Width="80" Height="25"
-                        Click="CaptureShortcutButton_Click"/>
+				<Button x:Name="KeybindCaptureButton" Content="Capture" Grid.Row="0" Grid.Column="2" Width="80" Height="25"
+                        Click="CaptureKeybindButton_Click"/>
 
 				<WrapPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Margin="0,5,0,0">
 					<CheckBox x:Name="CtrlModifierCheckBox" Content="Ctrl" Margin="0,0,10,0"/>

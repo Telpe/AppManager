@@ -9,11 +9,11 @@ using AppManager.Core.Models;
 
 namespace AppManager.Core.Triggers
 {
-    internal class ShortcutTrigger : BaseTrigger, IShortcutTrigger
+    internal class KeybindTrigger : BaseTrigger, IKeybindTrigger
     {
-        public override TriggerTypeEnum TriggerType => TriggerTypeEnum.Shortcut;
+        public override TriggerTypeEnum TriggerType => TriggerTypeEnum.Keybind;
 
-        private GlobalKeyboardHook GlobalKeyboardHookValue;
+        private GlobalKeyboardHook? GlobalKeyboardHookValue;
         private Key TargetKeyValue;
         private ModifierKeys TargetModifiersValue;
         private bool KeyPressedValue;
@@ -21,16 +21,16 @@ namespace AppManager.Core.Triggers
 
         public Key? Key { get; set; }
         public ModifierKeys? Modifiers { get; set; }
-        public string? ShortcutCombination { get; set; }
+        public string? KeybindCombination { get; set; }
         public Dictionary<string, object>? CustomProperties { get; set; }
 
-        public ShortcutTrigger(TriggerModel model) : base(model)
+        public KeybindTrigger(TriggerModel model) : base(model)
         {
             Description = "Monitors global keyboard shortcuts with high compatibility using GlobalKeyboardHook";
             
             Key = model.Key;
             Modifiers = model.Modifiers;
-            ShortcutCombination = model.ShortcutCombination;
+            KeybindCombination = model.KeybindCombination;
             CustomProperties = model.CustomProperties ?? new Dictionary<string, object>();
 
             TargetKeyValue = Key ?? System.Windows.Input.Key.None;
@@ -39,7 +39,7 @@ namespace AppManager.Core.Triggers
 
         public override bool CanStart()
         {
-            return Key != System.Windows.Input.Key.None || !string.IsNullOrEmpty(ShortcutCombination);
+            return Key != System.Windows.Input.Key.None || !string.IsNullOrEmpty(KeybindCombination);
         }
 
         public override Task<bool> StartAsync()
@@ -193,7 +193,7 @@ namespace AppManager.Core.Triggers
                 Inactive = Inactive,
                 Key = Key,
                 Modifiers = Modifiers,
-                ShortcutCombination = ShortcutCombination,
+                KeybindCombination = KeybindCombination,
                 CustomProperties = CustomProperties
             };
         }

@@ -2,7 +2,7 @@ namespace AppManager.Core.Triggers
 {
     public enum TriggerTypeEnum
     {
-        Shortcut,
+        Keybind,
         Button,
         AppLaunch,
         AppClose,

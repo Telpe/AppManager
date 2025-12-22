@@ -16,17 +16,7 @@ namespace AppManager.Core.Models
         /// <param name="condition">The condition to add</param>
         public void AddCondition(ConditionModel condition)
         {
-            if (condition == null)
-                return;
-
-            if (Conditions == null)
-            {
-                Conditions = new[] { condition };
-            }
-            else
-            {
-                Conditions = Conditions.Append(condition).ToArray();
-            }
+            Conditions = null == Conditions ? new[] { condition } : Conditions.Append(condition).ToArray();
         }
 
         /// <summary>
@@ -36,13 +26,14 @@ namespace AppManager.Core.Models
         /// <returns>True if the condition was found and removed, false otherwise</returns>
         public bool RemoveCondition(ConditionModel condition)
         {
-            if (condition == null || Conditions == null || Conditions.Length == 0) { return false; }
+            if (null == Conditions || Conditions.Length == 0) { return false; }
 
             int initialCount = Conditions.Length;
 
             Conditions = Conditions.Where(c => c != condition).ToArray();
 
-            return Conditions.Length < initialCount;
+            NullifyZeroLengthConditions();
+            return (Conditions?.Length ?? 0) < initialCount;
         }
 
         /// <summary>
@@ -52,12 +43,13 @@ namespace AppManager.Core.Models
         /// <returns>True if the condition was removed, false if the index was invalid</returns>
         public bool RemoveConditionAt(int index)
         {
-            if (Conditions == null || index < 0 || index >= Conditions.Length) { return false; }
+            if (null == Conditions || index < 0 || index >= Conditions.Length) { return false; }
 
             int initialCount = Conditions.Length;
             Conditions = Conditions.Where((_, i) => i != index).ToArray();
 
-            return Conditions.Length < initialCount;
+            NullifyZeroLengthConditions();
+            return (Conditions?.Length ?? 0) < initialCount;
         }
 
         /// <summary>
@@ -67,23 +59,30 @@ namespace AppManager.Core.Models
         /// <returns>The number of conditions removed</returns>
         public int RemoveConditionsByType(ConditionTypeEnum conditionType)
         {
-            if (Conditions == null || Conditions.Length == 0)
-                return 0;
+            if (null == Conditions || Conditions.Length == 0) { return 0; }
 
-            var initialCount = Conditions.Length;
+            int initialCount = Conditions.Length;
+
             Conditions = Conditions.Where(c => c.ConditionType != conditionType).ToArray();
 
-            return initialCount - Conditions.Length;
+            NullifyZeroLengthConditions();
+            return initialCount - (Conditions?.Length ?? 0);
         }
 
         /// <summary>
-        /// Removes all conditions from the action.
+        /// Removes all conditions from the model.
         /// </summary>
         public void ClearConditions()
         {
-            Conditions = Array.Empty<ConditionModel>();
+            Conditions = null;
         }
 
-
+        protected void NullifyZeroLengthConditions()
+        {
+            if (false != (Conditions?.Length == 0))
+            {
+                Conditions = null;
+            }
+        }
     }
 }

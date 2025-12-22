@@ -17,7 +17,7 @@ namespace AppManager.Core.Triggers
         {
             ITrigger trigger = model.TriggerType switch
             {
-                TriggerTypeEnum.Shortcut => new ShortcutTrigger(model),
+                TriggerTypeEnum.Keybind => new KeybindTrigger(model),
                 TriggerTypeEnum.Button => new ButtonTrigger(model),
                 TriggerTypeEnum.AppLaunch => new AppLaunchTrigger(model),
                 TriggerTypeEnum.AppClose => new AppCloseTrigger(model),
@@ -53,8 +53,7 @@ namespace AppManager.Core.Triggers
 
         public static bool UnregisterTrigger(string triggerName)
         {
-            if (!_triggers.TryGetValue(triggerName, out ITrigger trigger))
-                return false;
+            if (!_triggers.TryGetValue(triggerName, out ITrigger? trigger)){ return false; }
 
             trigger.TriggerActivated -= OnTriggerActivated;
             trigger.Stop(); // TODO: Make Stop async if needed

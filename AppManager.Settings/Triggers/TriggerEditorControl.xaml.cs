@@ -22,7 +22,7 @@ namespace AppManager.Settings.Triggers
     public partial class TriggerEditorControl : OverlayContent
     {
         private TriggerModel CurrentTriggerValue;
-        private bool IsCapturingShortcutValue = false;
+        private bool IsCapturingKeybindValue = false;
         private ObservableCollection<ConditionDisplayItem> _conditions = new ObservableCollection<ConditionDisplayItem>();
 
         public event EventHandler<TriggerModel>? TriggerSaved;
@@ -69,7 +69,7 @@ namespace AppManager.Settings.Triggers
             TriggerNameTextBox.Text = GenerateTriggerName(CurrentTriggerValue.TriggerType);
             
             // Load shortcut data
-            ShortcutTextBox.Text = CurrentTriggerValue.ShortcutCombination ?? string.Empty;
+            KeybindTextBox.Text = CurrentTriggerValue.KeybindCombination ?? string.Empty;
             CtrlModifierCheckBox.IsChecked = CurrentTriggerValue.Modifiers?.HasFlag(ModifierKeys.Control);
             ShiftModifierCheckBox.IsChecked = CurrentTriggerValue.Modifiers?.HasFlag(ModifierKeys.Shift);
             AltModifierCheckBox.IsChecked = CurrentTriggerValue.Modifiers?.HasFlag(ModifierKeys.Alt);
@@ -100,27 +100,6 @@ namespace AppManager.Settings.Triggers
             return $"{triggerType}Trigger_{DateTime.Now:HHmmss}";
         }
 
-        private TriggerModel CreateTriggerModel()
-        {
-            var trigger = new TriggerModel
-            {
-                TriggerType = (TriggerTypeEnum)(TriggerTypeComboBox.SelectedItem ?? TriggerTypeEnum.Shortcut),
-                ShortcutCombination = ShortcutTextBox.Text.Trim(),
-                Key = ParseKey(ShortcutTextBox.Text),
-                Modifiers = GetModifierKeys(),
-                ProcessName = ProcessNameTextBox.Text?.Trim(),
-                ExecutablePath = ExecutablePathMonitorTextBox.Text?.Trim(),
-                MonitorChildProcesses = MonitorChildProcessesCheckBox.IsChecked ?? false,
-                IPAddress = IPAddressTextBox.Text?.Trim() ?? "127.0.0.1",
-                Port = int.TryParse(PortTextBox.Text, out int port) ? port : 0,
-                EventName = EventNameTextBox.Text?.Trim(),
-                EventSource = EventSourceTextBox.Text?.Trim(),
-                PollingIntervalMs = int.TryParse(PollingIntervalTextBox.Text, out int polling) ? polling : 1000,
-                TimeoutMs = int.TryParse(TriggerTimeoutTextBox.Text, out int timeout) ? timeout : 30000
-            };
-
-            return trigger;
-        }
 
         private Key ParseKey(string shortcutText)
         {
@@ -160,8 +139,8 @@ namespace AppManager.Settings.Triggers
 
                 switch (CurrentTriggerValue.TriggerType)
                 {
-                    case TriggerTypeEnum.Shortcut:
-                        previewBuilder.AppendLine($"Shortcut: {CurrentTriggerValue.ShortcutCombination ?? "Not specified"}");
+                    case TriggerTypeEnum.Keybind:
+                        previewBuilder.AppendLine($"Keybind: {CurrentTriggerValue.KeybindCombination ?? "Not specified"}");
                         previewBuilder.AppendLine($"Modifiers: {CurrentTriggerValue.Modifiers}");
                         previewBuilder.AppendLine($"Key: {CurrentTriggerValue.Key}");
                         break;
@@ -203,7 +182,7 @@ namespace AppManager.Settings.Triggers
                 TriggerNameTextBox.Text = GenerateTriggerName(triggerType);
                 
                 // Show/hide relevant configuration groups
-                ShortcutConfigGroup.Visibility = triggerType == TriggerTypeEnum.Shortcut ? Visibility.Visible : Visibility.Collapsed;
+                KeybindConfigGroup.Visibility = triggerType == TriggerTypeEnum.Keybind ? Visibility.Visible : Visibility.Collapsed;
                 
                 AppMonitoringGroup.Visibility = (triggerType == TriggerTypeEnum.AppLaunch || triggerType == TriggerTypeEnum.AppClose) 
                     ? Visibility.Visible : Visibility.Collapsed;
@@ -214,14 +193,18 @@ namespace AppManager.Settings.Triggers
             UpdatePreview();
         }
 
-        private void CaptureShortcutButton_Click(object sender, RoutedEventArgs e)
+        private void CaptureKeybindButton_Click(object sender, RoutedEventArgs e)
         {
-            if (!IsCapturingShortcutValue)
+            if (!IsCapturingKeybindValue)
             {
-                IsCapturingShortcutValue = true;
-                ((Button)sender).Content = "Press key combination...";
-                ShortcutTextBox.Text = "Press key combination...";
-                ShortcutTextBox.Focus();
+                IsCapturingKeybindValue = true;
+                KeybindCaptureButton.Content = "Press key combination...";
+                KeybindTextBox.Text = "Press key combination...";
+                //KeybindTextBox.Focus();
+
+                // Add key event handler to capture keys
+                KeybindTextBox.KeyDown += OnKeyDown;
+                KeybindTextBox.Focus();
             }
             else
             {
@@ -231,15 +214,17 @@ namespace AppManager.Settings.Triggers
 
         private void StopCapturing()
         {
-            IsCapturingShortcutValue = false;
-            var button = this.FindName("CaptureShortcutButton") as Button;
-            if (button != null)
-                button.Content = "Capture";
+            IsCapturingKeybindValue = false;
+
+            KeybindCaptureButton.Content = "Capture";
+
+            // Remove key event handler
+            KeybindTextBox.KeyDown -= OnKeyDown;
         }
 
-        protected override void OnKeyDown(KeyEventArgs e)
+        private void OnKeyDown(object sender, KeyEventArgs e)
         {
-            if (IsCapturingShortcutValue)
+            if (IsCapturingKeybindValue)
             {
                 var modifiers = Keyboard.Modifiers;
                 var key = e.Key == Key.System ? e.SystemKey : e.Key;
@@ -253,9 +238,14 @@ namespace AppManager.Settings.Triggers
                     return;
                 }
 
-                var shortcutText = BuildShortcutText(modifiers, key);
-                ShortcutTextBox.Text = shortcutText;
-                
+                var keybindText = BuildKeybindText(modifiers, key);
+                KeybindTextBox.Text = keybindText;
+
+                // Update CurrentTriggerValue
+                CurrentTriggerValue.KeybindCombination = keybindText;
+                CurrentTriggerValue.Key = key;
+                CurrentTriggerValue.Modifiers = modifiers;
+
                 // Update checkboxes
                 CtrlModifierCheckBox.IsChecked = modifiers.HasFlag(ModifierKeys.Control);
                 ShiftModifierCheckBox.IsChecked = modifiers.HasFlag(ModifierKeys.Shift);
@@ -270,7 +260,7 @@ namespace AppManager.Settings.Triggers
             base.OnKeyDown(e);
         }
 
-        private string BuildShortcutText(ModifierKeys modifiers, Key key)
+        private string BuildKeybindText(ModifierKeys modifiers, Key key)
         {
             var parts = new System.Collections.Generic.List<string>();
             
@@ -454,28 +444,13 @@ namespace AppManager.Settings.Triggers
             {
                 ActionListItemsValue.Add(new ModelListItem<ActionModel>(kvp.Key, kvp.Value));
             }
-            //Dispatcher.BeginInvoke(() => SubscribeToActionButtonEvents(), System.Windows.Threading.DispatcherPriority.Loaded);
         }
 
         public void ClearActions()
         {
-            /*var buttons = FindEditButtonsInListBox(ActionsListBox);
-            foreach (var button in buttons)
-            {
-                button.Click -= EditActionButton_Click;
-            }*/
+            //ActionsListBox.RemoveHandler(Button.ClickEvent, new RoutedEventHandler(EditActionButton_Click));
             ActionListItemsValue.Clear();
         }
 
-
-        /*private void SubscribeToActionButtonEvents()
-        {
-            var buttons = FindEditButtonsInListBox(ActionsListBox);
-            foreach (var button in buttons)
-            {
-                //button.Click -= EditActionButton_Click; // Prevent double subscription
-                button.Click += EditActionButton_Click;
-            }
-        }*/
     }
 }

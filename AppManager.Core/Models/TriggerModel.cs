@@ -4,14 +4,14 @@ using System.Windows.Input;
 
 namespace AppManager.Core.Models
 {
-    public class TriggerModel : ConditionalModel, IAppCloseTrigger, IAppLaunchTrigger, IShortcutTrigger, ISystemEventTrigger, INetworkPortTrigger, IButtonTrigger
+    public class TriggerModel : ConditionalModel, IAppCloseTrigger, IAppLaunchTrigger, IKeybindTrigger, ISystemEventTrigger, INetworkPortTrigger, IButtonTrigger
     {
         public TriggerTypeEnum TriggerType { get; set; }
 
         // Shortcut-specific parameters
         public Key? Key { get; set; }
         public ModifierKeys? Modifiers { get; set; }
-        public string? ShortcutCombination { get; set; }
+        public string? KeybindCombination { get; set; }
         
         // App monitoring parameters
         public string? ProcessName { get; set; }
@@ -42,7 +42,7 @@ namespace AppManager.Core.Models
                 TriggerType = TriggerType,
                 Key = Key,
                 Modifiers = Modifiers,
-                ShortcutCombination = ShortcutCombination,
+                KeybindCombination = KeybindCombination,
                 ProcessName = ProcessName,
                 ExecutablePath = ExecutablePath,
                 MonitorChildProcesses = MonitorChildProcesses,

@@ -53,6 +53,7 @@ namespace AppManager.Settings.Apps
 
             // Set ItemsSource for ListBoxes
             TriggersListBox.ItemsSource = TriggerListItemsValue;
+            TriggersListBox.AddHandler(Button.ClickEvent, new RoutedEventHandler(EditTriggerButton_Click));
             //ActionsListBox.ItemsSource = ActionListItemsValue;
 
             DisableButtons();
@@ -130,14 +131,14 @@ namespace AppManager.Settings.Apps
         private void RefreshTriggersListBox()
         {
             ClearTriggers();
-            foreach (var kvp in CurrentModelValue.AppTriggers)
+            foreach (var kvp in CurrentModelValue?.Triggers ?? [])
             {
                 TriggerListItemsValue.Add(new ModelListItem<TriggerModel>(kvp.Key, kvp.Value, this));
             }
-            Dispatcher.BeginInvoke(() => SubscribeToTriggerButtonEvents(), System.Windows.Threading.DispatcherPriority.Loaded);
+            //Dispatcher.BeginInvoke(() => SubscribeToTriggerButtonEvents(), System.Windows.Threading.DispatcherPriority.Loaded);
         }
 
-        private void SubscribeToTriggerButtonEvents()
+        /*private void SubscribeToTriggerButtonEvents()
         {
             var buttons = FindEditButtonsInListBox(TriggersListBox);
             foreach (var button in buttons)
@@ -145,7 +146,7 @@ namespace AppManager.Settings.Apps
                 //button.Click -= EditTriggerButton_Click; // Prevent double subscription
                 button.Click += EditTriggerButton_Click;
             }
-        }
+        }*/
         private void DisableButtons()   
         {
             try
@@ -193,21 +194,19 @@ namespace AppManager.Settings.Apps
         {
             var newTrigger = new TriggerModel
             {
-                TriggerType = TriggerTypeEnum.Shortcut // Default type
+                TriggerType = TriggerTypeEnum.Keybind
             };
 
-            var triggers = CurrentModelValue.AppTriggers ?? new Dictionary<int, TriggerModel>();
-            int newId = triggers.Count > 0 ? triggers.Keys.Max() + 1 : 1;
-            triggers.Add(newId, newTrigger);
-            CurrentModelValue.AppTriggers = triggers;
-            
+            CurrentModelValue.AddTrigger(newTrigger);
+
+
             RefreshTriggersListBox();
             Edited();
         }
 
-        private void EditTriggerButton_Click(object sender, RoutedEventArgs e)
+        private void EditTriggerButton_Click(object? sender, RoutedEventArgs e)
         {
-            if (sender is Button button && button.Tag is ModelListItem<TriggerModel> viewModel)
+            if (e.OriginalSource is Button button && button.Tag is ModelListItem<TriggerModel> viewModel)
             {
                 Debug.WriteLine($"Edit trigger: {viewModel.DisplayName}");
                 
@@ -220,8 +219,8 @@ namespace AppManager.Settings.Apps
                     triggerEditor.TriggerSaved += (s, updatedTrigger) =>
                     {
                         // Update the model in the dictionary
-                        CurrentModelValue.AppTriggers[viewModel.Id] = updatedTrigger;
-                        
+                        CurrentModelValue.Triggers?[viewModel.Id] ??= updatedTrigger;
+
                         // Refresh the UI to show changes
                         RefreshTriggersListBox();
                         
@@ -278,11 +277,7 @@ namespace AppManager.Settings.Apps
 
         public void ClearTriggers()
         {
-            var buttons = FindEditButtonsInListBox(TriggersListBox);
-            foreach (var button in buttons)
-            {
-                button.Click -= EditTriggerButton_Click;
-            }
+            //TriggersListBox.RemoveHandler(Button.ClickEvent, new RoutedEventHandler(EditTriggerButton_Click));
             TriggerListItemsValue.Clear();
         }
 

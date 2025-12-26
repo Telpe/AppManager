@@ -1,12 +1,12 @@
-<src:OverlayContent xmlns:src="clr-namespace:AppManager.Settings.UI" 
-			 x:Class="AppManager.Settings.Actions.ActionEditorControl"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-			 xmlns:local="clr-namespace:AppManager.Settings.Actions"
-             mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="600">
+<UserControl
+	x:Class="AppManager.Settings.Actions.ActionEditorControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+	xmlns:local="clr-namespace:AppManager.Settings.Actions"
+    mc:Ignorable="d" 
+    d:DesignHeight="450" d:DesignWidth="600">
 
 	<Grid Margin="10">
 		<Grid.RowDefinitions>
@@ -136,4 +136,4 @@
                     Margin="5,0,0,0" Click="CancelButton_Click"/>
 		</WrapPanel>
 	</Grid>
-</src:OverlayContent>
+</UserControl>

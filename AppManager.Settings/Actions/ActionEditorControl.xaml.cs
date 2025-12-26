@@ -15,13 +15,18 @@ using Microsoft.Win32;
 
 namespace AppManager.Settings.Actions
 {
-    public partial class ActionEditorControl : OverlayContent
+    public partial class ActionEditorControl : UserControl, IInputEditControl
     {
         private ActionModel CurrentActionModelValue;
         private ObservableCollection<ConditionDisplayItem> _conditions = new ObservableCollection<ConditionDisplayItem>();
 
-        public event EventHandler<ActionModel> ActionSaved;
-        public event EventHandler ActionCancelled;
+        public event EventHandler? OnEdit;
+
+        public event EventHandler? OnCancel;
+
+        public event EventHandler<InputEditEventArgs>? OnSave;
+        /*public event EventHandler<ActionModel> ActionSaved;
+        public event EventHandler ActionCancelled;*/
 
         public ActionModel CurrentActionModel
         {
@@ -451,6 +456,21 @@ namespace AppManager.Settings.Actions
             }
         }
 
+        protected void Edited()
+        {
+            OnEdit?.Invoke(this, EventArgs.Empty);
+        }
+
+        protected void Cancel()
+        {
+            OnCancel?.Invoke(this, EventArgs.Empty);
+        }
+
+        protected void Save(ActionModel model)
+        {
+            OnSave?.Invoke(this, new InputEditEventArgs(model));
+        }
+
         private void RemoveConditionButton_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -510,21 +530,12 @@ namespace AppManager.Settings.Actions
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                ActionSaved?.Invoke(this, CurrentActionModelValue);
-                DisableOverlay();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Save failed: {ex.Message}", "Save Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            Save(CurrentActionModelValue.Clone());
         }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
-            ActionCancelled?.Invoke(this, EventArgs.Empty);
-            DisableOverlay();
+            Cancel();
         }
 
         private void TextBox_TextChanged(object sender, TextChangedEventArgs e) => UpdatePreview();

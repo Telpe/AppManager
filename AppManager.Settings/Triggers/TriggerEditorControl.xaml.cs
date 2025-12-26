@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -19,14 +20,19 @@ using System.Windows.Input;
 
 namespace AppManager.Settings.Triggers
 {
-    public partial class TriggerEditorControl : OverlayContent
+    public partial class TriggerEditorControl : UserControl, IInputEditControl
     {
         private TriggerModel CurrentTriggerValue;
         private bool IsCapturingKeybindValue = false;
         private ObservableCollection<ConditionDisplayItem> _conditions = new ObservableCollection<ConditionDisplayItem>();
 
-        public event EventHandler<TriggerModel>? TriggerSaved;
-        public event EventHandler? TriggerCancelled;
+        public event EventHandler? OnEdit;
+
+        public event EventHandler? OnCancel;
+
+        public event EventHandler<InputEditEventArgs>? OnSave;
+        //public event EventHandler<TriggerModel>? TriggerSaved;
+        //public event EventHandler? TriggerCancelled;
 
         private ObservableCollection<ModelListItem<ActionModel>> ActionListItemsValue = new();
 
@@ -319,29 +325,36 @@ namespace AppManager.Settings.Triggers
             }
         }
 
-        private void SaveTriggerButton_Click(object sender, RoutedEventArgs e)
+        private void SaveTriggerButton_Click(object sender, RoutedEventArgs e) => Save(CurrentTriggerValue);
+
+        private void CancelTriggerButton_Click(object sender, RoutedEventArgs e) => Cancel();
+
+        protected void Edited()
         {
-            try
-            {
-                TriggerSaved?.Invoke(this, CurrentTriggerValue.Clone());
-                DisableOverlay();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Save failed: {ex.Message}", "Save Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-            
+            OnEdit?.Invoke(this, EventArgs.Empty);
         }
 
-        private void CancelTriggerButton_Click(object sender, RoutedEventArgs e)
+        protected void Cancel()
         {
-            TriggerCancelled?.Invoke(this, EventArgs.Empty);
-            DisableOverlay(); // Close the overlay when cancelling
+            OnCancel?.Invoke(this, EventArgs.Empty);
+        }
+
+        protected void Save(TriggerModel model)
+        {
+            OnSave?.Invoke(this, new InputEditEventArgs(model));
         }
 
         // Event handlers for text changes to update preview
-        private void TextBox_TextChanged(object sender, TextChangedEventArgs e) => UpdatePreview();
-        private void CheckBox_Changed(object sender, RoutedEventArgs e) => UpdatePreview();
+        private void TextBox_TextChanged(object sender, TextChangedEventArgs e) 
+        {
+            Edited();
+            UpdatePreview();
+        }
+        private void CheckBox_Changed(object sender, RoutedEventArgs e)
+        {
+            Edited();
+            UpdatePreview();
+        }
 
         private void AddConditionButton_Click(object sender, RoutedEventArgs e)
         {
@@ -355,6 +368,7 @@ namespace AppManager.Settings.Triggers
                     if (conditionDialog.ShowDialog() == true)
                     {
                         _conditions.Add(new ConditionDisplayItem(conditionDialog.ConditionModel));
+                        Edited();
                         UpdatePreview();
                     }
                 }
@@ -372,6 +386,7 @@ namespace AppManager.Settings.Triggers
                 if (sender is Button button && button.Tag is ConditionDisplayItem condition)
                 {
                     _conditions.Remove(condition);
+                    Edited();
                     UpdatePreview();
                 }
             }
@@ -393,7 +408,7 @@ namespace AppManager.Settings.Triggers
             CurrentTriggerValue.Actions.Add(0 < CurrentTriggerValue.Actions.Count ? CurrentTriggerValue.Actions.Keys.Max() + 1 : 1, newAction);
 
             RefreshActionsListBox();
-            //Edited();
+            Edited();
         }
 
         private void EditActionButton_Click(object? sender, RoutedEventArgs e)
@@ -408,26 +423,36 @@ namespace AppManager.Settings.Triggers
                     var actionEditor = new ActionEditorControl(viewModel.Model.Clone());
 
                     // Subscribe to save event
-                    actionEditor.ActionSaved += (s, updatedAction) =>
+                    actionEditor.OnSave += (s, updatedAction) =>
                     {
+                        if (null == updatedAction.ActionModel) { return; }
+
                         // Update the model in the dictionary
-                        CurrentTriggerValue.Actions?[viewModel.Id] = updatedAction;
+                        CurrentTriggerValue.Actions?[viewModel.Id] = updatedAction.ActionModel;
 
                         // Refresh the UI to show changes
                         RefreshActionsListBox();
 
                         // Mark as edited
-                        //Edited();
+                        //Save(CurrentTriggerValue.Clone());
 
                         Debug.WriteLine($"Action {viewModel.DisplayName} updated successfully");
+                        ((MainWindow)Application.Current.MainWindow)?.HideOverlay();
                     };
 
-                    actionEditor.ActionCancelled += (s, args) =>
+                    actionEditor.OnEdit += (s, args) =>
+                    {
+                        Debug.WriteLine($"Action edited for {viewModel.DisplayName}");
+                        Edited();
+                    };
+
+                    actionEditor.OnCancel += (s, args) =>
                     {
                         Debug.WriteLine($"Action editing cancelled for {viewModel.DisplayName}");
+                        ((MainWindow)Application.Current.MainWindow)?.HideOverlay();
                     };
 
-                    ((MainWindow)Application.Current.MainWindow)?.ShowOverlay(actionEditor, 80, 70, false);
+                    ((MainWindow)Application.Current.MainWindow)?.ShowOverlay(actionEditor);
                 }
                 catch (Exception ex)
                 {

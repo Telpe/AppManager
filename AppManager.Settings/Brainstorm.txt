@@ -65,3 +65,9 @@ await actionManager.ExecuteActionAsync(AppActionEnum.Launch, "notepad");
 
 // Using string (backward compatibility)
 await actionManager.ExecuteActionAsync("Launch", "notepad");
+
+
+
+
+Overlay:
+Ask window for showing overlay with my InputEditControl

@@ -44,17 +44,14 @@ namespace AppManager.Settings.Apps
         }
 
         private ObservableCollection<ModelListItem<TriggerModel>> TriggerListItemsValue = new();
-        //private ObservableCollection<ModelListItem<ActionModel>> ActionListItemsValue = new();
         
 
         public AppsPage()
         {
             InitializeComponent();
 
-            // Set ItemsSource for ListBoxes
             TriggersListBox.ItemsSource = TriggerListItemsValue;
             TriggersListBox.AddHandler(Button.ClickEvent, new RoutedEventHandler(EditTriggerButton_Click));
-            //ActionsListBox.ItemsSource = ActionListItemsValue;
 
             DisableButtons();
         }
@@ -120,10 +117,7 @@ namespace AppManager.Settings.Apps
             AppNameBox.Text = CurrentModelValue.AppName;
             ActiveBox.IsChecked = CurrentModelValue.Active;
             
-
-            // Refresh the UI lists
             RefreshTriggersListBox();
-            //RefreshActionsListBox();
 
             EnableButtons();
         }
@@ -135,18 +129,8 @@ namespace AppManager.Settings.Apps
             {
                 TriggerListItemsValue.Add(new ModelListItem<TriggerModel>(kvp.Key, kvp.Value, this));
             }
-            //Dispatcher.BeginInvoke(() => SubscribeToTriggerButtonEvents(), System.Windows.Threading.DispatcherPriority.Loaded);
         }
 
-        /*private void SubscribeToTriggerButtonEvents()
-        {
-            var buttons = FindEditButtonsInListBox(TriggersListBox);
-            foreach (var button in buttons)
-            {
-                //button.Click -= EditTriggerButton_Click; // Prevent double subscription
-                button.Click += EditTriggerButton_Click;
-            }
-        }*/
         private void DisableButtons()   
         {
             try
@@ -166,12 +150,10 @@ namespace AppManager.Settings.Apps
 
         private void EnableButtons()
         {
-            // Initialize button events if needed
             AppNameBox.TextChanged += AppNameBox_TextChanged;
             ActiveBox.Checked += ActiveBox_Changed;
             ActiveBox.Unchecked += ActiveBox_Changed;
             
-            // Set Cancel and Save buttons based on IsStored status
             CancelButton.IsEnabled = !CurrentPageValue.IsStored;
             SaveButton.IsEnabled = !CurrentPageValue.IsStored;
         }
@@ -216,10 +198,12 @@ namespace AppManager.Settings.Apps
                     var triggerEditor = new TriggerEditorControl(viewModel.Model);
                     
                     // Subscribe to save event
-                    triggerEditor.TriggerSaved += (s, updatedTrigger) =>
+                    triggerEditor.OnSave += (s, updatedTrigger) =>
                     {
+                        if (null == updatedTrigger.TriggerModel) { return; }
+
                         // Update the model in the dictionary
-                        CurrentModelValue.Triggers?[viewModel.Id] ??= updatedTrigger;
+                        CurrentModelValue.Triggers?[viewModel.Id] = updatedTrigger.TriggerModel;
 
                         // Refresh the UI to show changes
                         RefreshTriggersListBox();
@@ -228,14 +212,22 @@ namespace AppManager.Settings.Apps
                         Edited();
                         
                         Debug.WriteLine($"Trigger {viewModel.DisplayName} updated successfully");
+                        ((MainWindow)Application.Current.MainWindow)?.HideOverlay();
                     };
-                    
-                    triggerEditor.TriggerCancelled += (s, args) =>
+
+                    triggerEditor.OnEdit += (s, args) =>
+                    {
+                        Debug.WriteLine($"Trigger edited for {viewModel.DisplayName}");
+                        Edited();
+                    };
+
+                    triggerEditor.OnCancel += (s, args) =>
                     {
                         Debug.WriteLine($"Trigger editing cancelled for {viewModel.DisplayName}");
+                        ((MainWindow)Application.Current.MainWindow)?.HideOverlay();
                     };
                     
-                    ((MainWindow)Application.Current.MainWindow)?.ShowOverlay(triggerEditor, 80, 70, false);
+                    ((MainWindow)Application.Current.MainWindow)?.ShowOverlay(triggerEditor);
                 }
                 catch (Exception ex)
                 {
@@ -281,49 +273,6 @@ namespace AppManager.Settings.Apps
             TriggerListItemsValue.Clear();
         }
 
-        private IEnumerable<Button> FindEditButtonsInListBox(ListBox listBox)
-        {
-            var buttons = new List<Button>();
-
-            for (int i = 0; i < listBox.Items.Count; i++)
-            {
-                var container = listBox.ItemContainerGenerator.ContainerFromIndex(i) as ListBoxItem;
-                if (container != null)
-                {
-                    var button = FindVisualChild<Button>(container, b => b.Content?.ToString() == "Edit");
-                    if (button != null)
-                    {
-                        buttons.Add(button);
-                    }
-                }
-            }
-
-            return buttons;
-        }
-
-        private T? FindVisualChild<T>(DependencyObject parent, Func<T, bool>? predicate = null) where T : DependencyObject
-        {
-            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
-            {
-                var child = VisualTreeHelper.GetChild(parent, i);
-
-                if (child is T childOfType && (predicate == null || predicate(childOfType)))
-                {
-                    return childOfType;
-                }
-
-                var childOfChild = FindVisualChild<T>(child, predicate);
-                if (childOfChild != null)
-                {
-                    return childOfChild;
-                }
-            }
-
-            return null;
-        }
     }
-
-    
-
     
 }

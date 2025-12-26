@@ -29,7 +29,7 @@ namespace AppManager.Settings
         private readonly Apps.AppsPage AppsPage = new();
         private readonly AppGroups.AppGroupsPage AppGroupsPage = new();
         private readonly ShortcutsPage ShortcutsPage = new();
-        private OverlayManager OverlayManagerValue;
+        private OverlayManager? OverlayManagerValue;
         private readonly ObservableCollection<string> Nav1ListValue = new();
         private string Nav1NewItemPlaceholderValue = "Enter new item...";
         private readonly ObservableCollection<string> Nav1MenuValue = new()
@@ -48,12 +48,6 @@ namespace AppManager.Settings
             Debug.WriteLine("MainWindow initialized");
 
             this.Closing += Window_Closing;
-
-            // Initialize overlay manager
-            OverlayManagerValue = new OverlayManager(this);
-
-            // Handle window size changes
-            this.SizeChanged += (sender, e) => OverlayManagerValue.UpdateSize();
 
             // Set window icon using FileManager
             SetWindowIcon();
@@ -99,12 +93,15 @@ namespace AppManager.Settings
         /// <summary>
         /// Shows an overlay with the specified content and active area size
         /// </summary>
-        /// <param name="content">Content that inherits from OverlayContent</param>
+        /// <param name="content">Content that inherits from InputEditControl</param>
         /// <param name="widthPercent">Width of active area as percentage (0-100)</param>
         /// <param name="heightPercent">Height of active area as percentage (0-100)</param>
-        public void ShowOverlay(OverlayContent content, double widthPercent = -100, double heightPercent = -100, bool clickHide = true)
+        /// <param name="clickHide">Whether to hide the overlay when clicking outside of it</param>
+        public void ShowOverlay(IInputEditControl content)
         {
-            OverlayManagerValue.ShowOverlay(content, new Vector2() { X = (float)(0.01f * widthPercent), Y = (float)(0.01 * heightPercent)}, clickHide);
+            OverlayManagerValue ??= new OverlayManager(this, new Vector2() { X = (float)(0.01f * 85), Y = (float)(0.01 * 85) }, false);
+            OverlayManagerValue.ShowOverlay(content);
+            //this.SizeChanged += (sender, e) => OverlayManagerValue.UpdateSize();
         }
 
         /// <summary>
@@ -112,13 +109,17 @@ namespace AppManager.Settings
         /// </summary>
         public void HideOverlay()
         {
-            OverlayManagerValue.HideOverlay();
+            if (true == OverlayManagerValue?.HideOverlay())
+            {
+                OverlayManagerValue = null;
+            }
+            
         }
 
         /// <summary>
         /// Gets whether an overlay is currently visible
         /// </summary>
-        public bool IsOverlayVisible => OverlayManagerValue.IsOverlayVisible;
+        public bool IsOverlayVisible => OverlayManagerValue?.IsOverlayVisible ?? false;
 
 
         private void DataFolderButton_Click(object sender, RoutedEventArgs e)
@@ -443,25 +444,6 @@ namespace AppManager.Settings
             ConsolePanel.Children.Add(new Label() { Content = text });
         }
 
-        private void TestOverlayButton_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                // Create example overlay content
-                var overlayContent = new ExampleOverlayContent("This is a test overlay!\nClick 'Close Overlay' or click outside to dismiss.");
-                
-                // Show overlay with 60% width and 40% height
-                ShowOverlay(overlayContent, 60, 40);
-                
-                Debug.WriteLine("Test overlay displayed");
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error showing overlay: {ex.Message}", "Error", 
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-                Debug.WriteLine($"Error showing overlay: {ex.Message}");
-            }
-        }
     }
 }
 

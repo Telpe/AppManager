@@ -12,6 +12,8 @@ namespace AppManager.Settings.UI
     /// </summary>
     public class OverlayManager
     {
+        private Stack<IInputEditControl> ContentQueueValue = [];
+
         private ScrollViewer _scrollViewer = new()
             {
                 IsHitTestVisible = true,
@@ -46,21 +48,25 @@ namespace AppManager.Settings.UI
                 MinWidth = 250,
                 MinHeight = 300
             };
-        private OverlayContent? _currentContent
+        private object? CurrentContentValue
         {
-            get { return (OverlayContent?)_scrollViewer.Content; }
+            get { return _scrollViewer.Content; }
             set { _scrollViewer.Content = value; }
         }
+        private bool ClickHideValue = true;
         private readonly Window _parentWindow;
-        private MouseButtonEventHandler? _backgroundClickHandler;
         public static double BorderRadiusIndent { get; } = 5.0;
         public static Vector2 ContentAreaSizeOfParentDefault { get; } = new Vector2(0.8f, 0.8f);
         private static Vector2? ContentAreaSizeOfParentValue { get; set; }
         public static Vector2 ContentAreaSizeOfParent { get { return ContentAreaSizeOfParentValue ?? ContentAreaSizeOfParentDefault; } }
+        public object? CurrentContent { get =>CurrentContentValue; }
+        //public Stack<IInputEditControl<object>> ContentQueue { get => ContentQueueValue; }
 
-        public OverlayManager(Window parentWindow)
+        public OverlayManager(Window parentWindow, Vector2? sizeFactor = null, bool clickHide = true)
         {
-            _parentWindow = parentWindow ?? throw new ArgumentNullException(nameof(parentWindow));
+            ContentAreaSizeOfParentValue = sizeFactor;
+            _parentWindow = parentWindow;
+            ClickHideValue = clickHide;
             InitializeOverlay();
         }
 
@@ -70,23 +76,16 @@ namespace AppManager.Settings.UI
         /// <param name="content">Content that inherits from OverlayContent</param>
         /// <param name="sizeFactor">Size factor of parent window (0-1)</param>
         /// <param name="clickHide">Whether clicking outside the active area should hide the overlay</param>
-        public void ShowOverlay(OverlayContent content, Vector2? sizeFactor = null, bool clickHide = true)
+        public void ShowOverlay(IInputEditControl content)
         {
-            if (null == content) { throw new ArgumentNullException(nameof(content)); }
-            ContentAreaSizeOfParentValue = sizeFactor;
-
-            HideOverlay();
+            ContentQueueValue.Push(content);
+            CurrentContentValue = content;
 
             // Add background click handler if clickHide is enabled
-            if (clickHide)
+            if (ClickHideValue)
             {
-                _backgroundClickHandler = (sender, e) => HideOverlay();
-                _overlayBackground.MouseDown += _backgroundClickHandler;
+                _overlayBackground.MouseDown += OnBackgroundClick;
             }
-
-            // Set up new content
-            _currentContent = content;
-            _currentContent.DisableOverlayRequested += OnDisableOverlayRequested;
 
             UpdateSize();
 
@@ -100,26 +99,28 @@ namespace AppManager.Settings.UI
         /// <summary>
         /// Hides the overlay
         /// </summary>
-        public void HideOverlay()
+        public bool HideOverlay()
         {
-            // Disable window size changed event handler
+            ContentQueueValue.Pop();
+
+            if (ContentQueueValue.TryPeek(out IInputEditControl? lastQueued))
+            {
+                CurrentContentValue = lastQueued;
+
+                return false;
+            }
+
             _parentWindow.SizeChanged -= OnWindowSizeChanged;
+            _overlayBackground.MouseDown -= OnBackgroundClick;
 
-            if (_currentContent != null)
-            {
-                _currentContent.DisableOverlayRequested -= OnDisableOverlayRequested;
-                _scrollViewer.Content = null;
-                _currentContent = null;
-            }
-
-            // Remove background click handler
-            if (_backgroundClickHandler != null)
-            {
-                _overlayBackground.MouseDown -= _backgroundClickHandler;
-                _backgroundClickHandler = null;
-            }
-            ContentAreaSizeOfParentValue = null;
             _overlayContainer.Visibility = Visibility.Collapsed;
+
+            return true;
+        }
+
+        private void OnBackgroundClick(object sender, MouseButtonEventArgs eve)
+        {
+            HideOverlay();
         }
 
         /// <summary>
@@ -150,14 +151,6 @@ namespace AppManager.Settings.UI
             UpdateSize();
         }
 
-        private void OnDisableOverlayRequested(object? sender, EventArgs? e)
-        {
-            HideOverlay();
-        }
-
-        /// <summary>
-        /// Updates overlay size when window is resized
-        /// </summary>
         public void UpdateSize()
         {
             _activeArea.Width = _parentWindow.ActualWidth * (ContentAreaSizeOfParent.X < 0 ? ContentAreaSizeOfParentDefault.X : ContentAreaSizeOfParent.X);

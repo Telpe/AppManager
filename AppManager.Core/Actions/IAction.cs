@@ -4,7 +4,7 @@ using AppManager.Core.Models;
 
 namespace AppManager.Core.Actions
 {
-    public interface IAppAction
+    public interface IAction
     {
         public AppActionTypeEnum ActionType { get; }
         string Description { get; }

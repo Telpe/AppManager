@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using AppManager.Core.Actions;
+using AppManager.Core.Conditions;
 using AppManager.Core.Models;
 
 namespace AppManager.Core.Triggers
@@ -12,7 +13,20 @@ namespace AppManager.Core.Triggers
         public string Description { get; set; } = "";
         public bool Inactive { get; set; }
 
-        public event EventHandler<TriggerActivatedEventArgs> TriggerActivated;
+        protected ICondition[] ConditionsValue { get; set; } = [];
+        public ICondition[] Conditions 
+        {
+            get => ConditionsValue;
+            set => ConditionsValue = value;
+        }
+        protected IAction[] ActionsValue { get; set; } = [];
+        public IAction[] Actions 
+        {
+            get => ActionsValue;
+            set => ActionsValue = value;
+        }
+
+        public event EventHandler? OnTriggerActivated;
 
         protected BaseTrigger(TriggerModel model)
         {
@@ -23,34 +37,95 @@ namespace AppManager.Core.Triggers
 
             Name = TriggerType.ToString();
             Inactive = model.Inactive ?? false;
-            TriggerActivated = new EventHandler<TriggerActivatedEventArgs>((s, e) => { });
+            InitializeConditions(model);
+            InitializeActions(model);
         }
 
-        public abstract TriggerModel ToModel();
+        protected void InitializeConditions(TriggerModel model)
+        {
+            if (model.Conditions != null && model.Conditions.Length > 0)
+            {
+                var conditions = new List<ICondition>();
+                foreach (var conditionModel in model.Conditions)
+                {
+                    ICondition condition = ConditionFactory.CreateCondition(conditionModel);
+                    conditions.Add(condition);
+                }
+                ConditionsValue = conditions.ToArray();
+            }
+        }
+
+        protected void InitializeActions(TriggerModel model)
+        {
+            if (null == model.Actions) { return; }
+
+            ActionsValue = model.Actions.Select(a => ActionManager.CreateAction(a)).ToArray();
+        }
+
+        public virtual TriggerModel ToModel()
+        {
+            var model = new TriggerModel
+            {
+                TriggerType = TriggerType,
+                Inactive = Inactive,
+                Conditions = ConditionsValue.Select(c => c.ToModel()).ToArray(),
+                Actions = ActionsValue.Select(a => a.ToModel()).ToArray()
+            };
+            return model;
+        }
         public abstract Task<bool> StartAsync();
         public abstract void Stop();
-        public abstract bool CanStart();
-
-        protected virtual void OnTriggerActivated(TriggerActivatedEventArgs args)
+        protected virtual bool CanStartTrigger() { return true; }
+        public bool CanStart() 
         {
-            args.TriggerName = Name;
-            args.TriggerType = TriggerType;
-            TriggerActivated?.Invoke(this, args);
+            if (Inactive) { return false; }
+
+            return CanStartTrigger();
+        }
+        protected virtual bool CanExecuteTrigger() { return true; }
+        public bool CanExecute()
+        {
+            if (Inactive || !CheckConditions()) { return false; }
+
+            return CanExecuteTrigger();
         }
 
-        protected virtual void OnTriggerActivated(string targetAppName, AppActionTypeEnum action, ActionModel? actionParams = null, object? triggerData = null)
+        protected void ExecuteActions()
         {
-            var args = new TriggerActivatedEventArgs
+            foreach (var action in ActionsValue)
             {
-                TriggerName = Name,
-                TriggerType = TriggerType,
-                TargetAppName = targetAppName,
-                ActionToExecute = action,
-                Model = actionParams,
-                TriggerData = triggerData
-            };
-            
-            OnTriggerActivated(args);
+                if (action.CanExecute())
+                {
+                    System.Diagnostics.Debug.WriteLine($"Executing action {action.ActionType} for trigger {GetType().Name}");
+                    _ = action.ExecuteAsync();
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"Action {action.ActionType} cannot be executed for trigger {GetType().Name}");
+                }
+            }
+
+        }
+
+        protected virtual bool CheckConditions()
+        {
+            foreach (var condition in ConditionsValue)
+            {
+                if (!condition.Execute())
+                {
+                    System.Diagnostics.Debug.WriteLine($"Condition {condition.ConditionType} failed for trigger {GetType().Name}");
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        protected void TriggerActivated()
+        {
+            if (CanExecute()) { ExecuteActions(); }
+
+            OnTriggerActivated?.Invoke(this, EventArgs.Empty);
         }
 
         public virtual void Dispose()

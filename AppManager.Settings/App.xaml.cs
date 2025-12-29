@@ -17,7 +17,7 @@ namespace AppManager.Settings
     /// </summary>
     public partial class App : Application
     {
-        private static GlobalKeyboardHook? GlobalKeyboardHookValue;
+        //private static GlobalKeyboardHook? GlobalKeyboardHookValue;
 
         private static Dictionary<string, string> UnsavedPages = new();
 
@@ -45,25 +45,25 @@ namespace AppManager.Settings
 
             CheckCoreRunning();
 
-            string profileToLoad = !string.IsNullOrEmpty(SettingsManager.CurrentSettings.LastUsedProfileName) 
-                ? SettingsManager.CurrentSettings.LastUsedProfileName 
-                : ProfileManager.DefaultProfileFilename;
+            //string profileToLoad = !string.IsNullOrEmpty(SettingsManager.CurrentSettings.LastUsedProfileName) 
+            //    ? SettingsManager.CurrentSettings.LastUsedProfileName 
+            //    : ProfileManager.DefaultProfileFilename;
 
-            // Load the specific profile
-            if (ProfileManager.ProfileExist(profileToLoad))
-            {
-                ProfileManager.LoadAndSetProfile(profileToLoad);
-                Debug.WriteLine($"Loaded last used profile: {profileToLoad}");
-            }
-            else
-            {
-                _ = ProfileManager.CurrentProfile;
-                Debug.WriteLine($"Profile '{profileToLoad}' not found, loaded default profile instead");
-            }
+            //// Load the specific profile
+            //if (ProfileManager.ProfileExist(profileToLoad))
+            //{
+            //    ProfileManager.LoadAndSetProfile(profileToLoad);
+            //    Debug.WriteLine($"Loaded last used profile: {profileToLoad}");
+            //}
+            //else
+            //{
+            //    _ = ProfileManager.CurrentProfile;
+            //    Debug.WriteLine($"Profile '{profileToLoad}' not found, loaded default profile instead");
+            //}
 
-            CheckIfAppsRunningValue.Interval = ProfileManager.CurrentProfile.ScanInterval;
-            CheckIfAppsRunningValue.AutoReset = true;
-            CheckIfAppsRunningValue.Elapsed += new ElapsedEventHandler(CheckRunningHandler);
+            //CheckIfAppsRunningValue.Interval = ProfileManager.CurrentProfile.ScanInterval;
+            //CheckIfAppsRunningValue.AutoReset = true;
+            //CheckIfAppsRunningValue.Elapsed += new ElapsedEventHandler(CheckRunningHandler);
             //CheckIfAppsRunningValue.Start();
         }
 
@@ -121,14 +121,14 @@ namespace AppManager.Settings
             base.OnExit(e);
         }
 
-        private void CheckRunningHandler(object? sender, ElapsedEventArgs? eve)
+        /*private void CheckRunningHandler(object? sender, ElapsedEventArgs? eve)
         {
             Application.Current.Dispatcher.InvokeAsync(CheckRunning).Wait();
-        }
+        }*/
 
-        public void CheckRunning()
+        /*public void CheckRunning()
         {
-            /*for (int i = 0; i < AppsList.Length; i++)
+            for (int i = 0; i < AppsList.Length; i++)
             {
                 AppManaged app;
                 try
@@ -148,63 +148,63 @@ namespace AppManager.Settings
 
                 }
 
-            }*/
-
-        }
-/*
-        private void AppScanInterval_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            if (int.TryParse(AppScanInterval.Text, out int interval))
-            {
-                if (interval < 100) { interval = 100; }
-                CheckIfAppsRunningValue.Interval = interval;
             }
-        }
-        private void AppScanStartStop_Click(object sender, RoutedEventArgs e)
-        {
-            if (CheckIfAppsRunningValue.Enabled)
-            {
-                // Stop the timer
-                CheckIfAppsRunningValue.Stop();
 
-                // Update button appearance for "Start" state
-                AppScanStartStop.Background = System.Windows.Media.Brushes.Yellow;
-                AppScanStartStop.Content = "Start Scan";
-            }
-            else
-            {
-                // Start the timer with the current interval
-                CheckIfAppsRunningValue.Start();
+        }*/
+        /*
+                private void AppScanInterval_TextChanged(object sender, TextChangedEventArgs e)
+                {
+                    if (int.TryParse(AppScanInterval.Text, out int interval))
+                    {
+                        if (interval < 100) { interval = 100; }
+                        CheckIfAppsRunningValue.Interval = interval;
+                    }
+                }
+                private void AppScanStartStop_Click(object sender, RoutedEventArgs e)
+                {
+                    if (CheckIfAppsRunningValue.Enabled)
+                    {
+                        // Stop the timer
+                        CheckIfAppsRunningValue.Stop();
 
-                // Update button appearance for "Stop" state
-                AppScanStartStop.Background = System.Windows.Media.Brushes.Red;
-                AppScanStartStop.Content = "Stop Scan";
-            }
-        }
-*/
-/*
-        public static void buttonHook_Click(object sender, EventArgs e)
-        {
-            // Hooks only into specified Keys (here "A" and "B").
-            GlobalKeyboardHookStored = new GlobalKeyboardHook(new Key[] { Key.A, Key.B });
+                        // Update button appearance for "Start" state
+                        AppScanStartStop.Background = System.Windows.Media.Brushes.Yellow;
+                        AppScanStartStop.Content = "Start Scan";
+                    }
+                    else
+                    {
+                        // Start the timer with the current interval
+                        CheckIfAppsRunningValue.Start();
 
-            // Hooks into all keys.
-            GlobalKeyboardHookStored = new GlobalKeyboardHook();
-            GlobalKeyboardHookStored.KeyboardPressed += OnKeyPressed;
-        }
+                        // Update button appearance for "Stop" state
+                        AppScanStartStop.Background = System.Windows.Media.Brushes.Red;
+                        AppScanStartStop.Content = "Stop Scan";
+                    }
+                }
+        */
+        /*
+                public static void buttonHook_Click(object sender, EventArgs e)
+                {
+                    // Hooks only into specified Keys (here "A" and "B").
+                    GlobalKeyboardHookStored = new GlobalKeyboardHook(new Key[] { Key.A, Key.B });
 
-        internal static void OnKeyPressed(object sender, GlobalKeyboardHookEventArgs e)
-        {
-            // EDT: No need to filter for VkSnapshot anymore. This now gets handled
-            // through the constructor of GlobalKeyboardHook(...).
-            if (e.KeyboardState == KeyboardState.KeyDown)
-            {
-                // Now you can access both, the key and virtual code
-                Key loggedKey = e.KeyboardData.Key;
-                int loggedVkCode = e.KeyboardData.VirtualCode;
-            }
-        }
-*/
+                    // Hooks into all keys.
+                    GlobalKeyboardHookStored = new GlobalKeyboardHook();
+                    GlobalKeyboardHookStored.KeyboardPressed += OnKeyPressed;
+                }
+
+                internal static void OnKeyPressed(object sender, GlobalKeyboardHookEventArgs e)
+                {
+                    // EDT: No need to filter for VkSnapshot anymore. This now gets handled
+                    // through the constructor of GlobalKeyboardHook(...).
+                    if (e.KeyboardState == KeyboardState.KeyDown)
+                    {
+                        // Now you can access both, the key and virtual code
+                        Key loggedKey = e.KeyboardData.Key;
+                        int loggedVkCode = e.KeyboardData.VirtualCode;
+                    }
+                }
+        */
     }
 
 }

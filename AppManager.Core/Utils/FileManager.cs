@@ -1,4 +1,5 @@
 using AppManager.Core.Models;
+using Microsoft.VisualBasic.FileIO;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
@@ -102,42 +103,20 @@ namespace AppManager.Core.Utils
                 {
                     if (nameExtended)
                     {
-                        if (slobbySearch)
-                        {
-                            results.AddRange(Directory.GetFiles(
-                                basePath,
-                                $"*{appName}", 
-                                false != includeAllDirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly
-                                ));
-                        }
-                        else
-                        {
-                            results.AddRange(Directory.GetFiles(
-                                basePath,
-                                $"{appName}",
-                                true != includeAllDirectories ? SearchOption.TopDirectoryOnly : SearchOption.AllDirectories
-                                ));
-                        }
+                        results.AddRange(Directory.GetFiles(
+                            basePath,
+                            slobbySearch ? $"*{appName}" : appName,
+                            false != includeAllDirectories ? System.IO.SearchOption.AllDirectories : System.IO.SearchOption.TopDirectoryOnly
+                            ));
                     }
 
                     foreach (string ext in ExecuteableExtensions)
                     {
-                        if (slobbySearch)
-                        {
-                            results.AddRange(Directory.GetFiles(
-                                basePath,
-                                $"*{appName}*{ext}",
-                                false != includeAllDirectories ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly
-                                ));
-                        }
-                        else
-                        {
-                            results.AddRange(Directory.GetFiles(
-                                basePath,
-                                $"{appName}{ext}",
-                                true != includeAllDirectories ? SearchOption.TopDirectoryOnly : SearchOption.AllDirectories
-                                ));
-                        }
+                        results.AddRange(Directory.GetFiles(
+                            basePath,
+                            slobbySearch ? $"*{appName}*{ext}" : $"{appName}{ext}",
+                            true != includeAllDirectories ? System.IO.SearchOption.TopDirectoryOnly : System.IO.SearchOption.AllDirectories
+                            ));
                     }
                 }
                 catch (Exception ex)
@@ -167,7 +146,7 @@ namespace AppManager.Core.Utils
                 // Find all executable files
                 foreach (string ext in executableExtensions)
                 {
-                    var files = Directory.GetFiles(OSShortcutsPath, $"*{ext}", SearchOption.TopDirectoryOnly);
+                    var files = Directory.GetFiles(OSShortcutsPath, $"*{ext}", System.IO.SearchOption.TopDirectoryOnly);
                     executableFiles.AddRange(files);
                 }
 
@@ -431,21 +410,20 @@ namespace AppManager.Core.Utils
 #if DEBUG
             string[] otherPaths = AppDomain.CurrentDomain.BaseDirectory.Split(Path.DirectorySeparatorChar);
             int iop = Array.IndexOf(otherPaths, "AppManager");
-            var basePath = Path.Combine( otherPaths.Where((a,i)=> i <= iop).ToArray() );
-            var devCorePath = Path.Combine(basePath, "AppManager.Core", "bin", "Debug", "net8.0-windows");
-            var devSettingsPath = Path.Combine(basePath, "AppManager.Settings", "bin", "Debug", "net8.0-windows");
-            var devAppManagerPath = Path.Combine(basePath, "AppManager", "bin", "Debug", "net8.0-windows");
+            string basePath = Path.Combine( otherPaths.Where((a,i)=> i <= iop).ToArray() );
+            string devCorePath = Path.GetDirectoryName(FindExecutables("AppManager.Core.exe", [basePath], false, true).First()) ?? String.Empty;
+            string devSettingsPath = Path.GetDirectoryName(FindExecutables("AppManager.Settings.exe", [basePath], false, true).First()) ?? String.Empty;
+            string devAppManagerPath = Path.GetDirectoryName(FindExecutables("AppManager.exe", [basePath], false, true).First()) ?? String.Empty;
 #endif
             //var pathEnv = Environment.GetEnvironmentVariable("PATH")?.Split(Path.PathSeparator) ?? Array.Empty<string>();
-            var commonPaths = new[]
-            {
+            string[] commonPaths = [
 #if DEBUG
                 devCorePath, devSettingsPath,devAppManagerPath,
 #endif
                 AppDomain.CurrentDomain.BaseDirectory,
                 Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
                 Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86)
-            };
+            ];
             
             return commonPaths;
         }
@@ -641,6 +619,17 @@ namespace AppManager.Core.Utils
             bitmap.Freeze(); // Make it thread-safe
 
             return bitmap;
+        }
+
+        public static FileSystemWatcher BuildFileWatcher(string file)
+        {
+            string directory = Path.GetDirectoryName(file) ?? AppDataPath;
+            string fileName = Path.GetFileName(file);
+
+            Directory.CreateDirectory(directory);
+
+            return new FileSystemWatcher(directory, fileName);
+            
         }
     }
 }

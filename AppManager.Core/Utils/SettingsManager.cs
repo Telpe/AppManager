@@ -1,16 +1,14 @@
 using AppManager.Core.Models;
-using AppManager.Core.Utils;
 using System.Diagnostics;
 
-namespace AppManager.Settings.Utils
+namespace AppManager.Core.Utils
 {
     public static class SettingsManager
     {
-        private static SettingsModel _CurrentSettings;
+        private static SettingsModel? _CurrentSettings;
         public static SettingsModel CurrentSettings 
         { 
-            get => _CurrentSettings ??= LoadSettings(); 
-            private set => _CurrentSettings = value; 
+            get => _CurrentSettings ??= LoadSettings();
         }
 
         public static SettingsModel LoadSettings()
@@ -45,7 +43,7 @@ namespace AppManager.Settings.Utils
         public static void SaveSettings()
         {
             // Update version info before saving
-            CurrentSettings.Version = App.Version;
+            CurrentSettings.Version = FileManager.LoadVersion();
 
             string settingsFile = FileManager.GetSettingsPath();
             bool success = FileManager.SaveJsonFile(CurrentSettings, settingsFile);
@@ -59,5 +57,7 @@ namespace AppManager.Settings.Utils
                 Debug.WriteLine("Failed to save settings");
             }
         }
+
+        public static void ClearCache() { _CurrentSettings = null; }
     }
 }

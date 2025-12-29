@@ -33,7 +33,7 @@ namespace AppManager.Core.Models
         // Additional configuration
         public Dictionary<string, object>? CustomProperties { get; set; }
 
-        public Dictionary<int, ActionModel>? Actions { get; set; }
+        public ActionModel[]? Actions { get; set; }
 
         public TriggerModel Clone()
         {
@@ -54,7 +54,7 @@ namespace AppManager.Core.Models
                 TimeoutMs = TimeoutMs,
                 CustomProperties = null != CustomProperties ? new Dictionary<string, object>(CustomProperties) : null,
                 Conditions = this.Conditions?.Select(c => c.Clone()).ToArray(),
-                Actions = this.Actions?.Select(a => (a.Key, a.Value.Clone())).ToDictionary()
+                Actions = this.Actions?.Select(a => a.Clone()).ToArray()
             };
 
         }

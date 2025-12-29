@@ -7,7 +7,7 @@ using AppManager.Core.Models;
 
 namespace AppManager.Core.Actions
 {
-    public abstract class BaseAction : IAppAction
+    public abstract class BaseAction : IAction
     {
         public abstract AppActionTypeEnum ActionType { get; }
 

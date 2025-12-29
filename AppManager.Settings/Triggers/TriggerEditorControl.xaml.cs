@@ -405,7 +405,7 @@ namespace AppManager.Settings.Triggers
             };
 
             CurrentTriggerValue.Actions ??= [];
-            CurrentTriggerValue.Actions.Add(0 < CurrentTriggerValue.Actions.Count ? CurrentTriggerValue.Actions.Keys.Max() + 1 : 1, newAction);
+            CurrentTriggerValue.Actions = CurrentTriggerValue.Actions.Append(newAction).ToArray();
 
             RefreshActionsListBox();
             Edited();
@@ -465,9 +465,11 @@ namespace AppManager.Settings.Triggers
         private void RefreshActionsListBox()
         {
             ClearActions();
-            foreach (var kvp in CurrentTriggerValue.Actions??[])
+            CurrentTriggerValue.Actions ??= [];
+
+            foreach (ActionModel action in CurrentTriggerValue.Actions)
             {
-                ActionListItemsValue.Add(new ModelListItem<ActionModel>(kvp.Key, kvp.Value));
+                ActionListItemsValue.Add(new ModelListItem<ActionModel>(CurrentTriggerValue.Actions.IndexOf(action), action));
             }
         }
 

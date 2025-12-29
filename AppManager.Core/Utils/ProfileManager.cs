@@ -3,37 +3,48 @@ using AppManager.Core.Utils;
 using AppManager;
 using System;
 using System.Diagnostics;
+using System.Linq.Expressions;
 
-namespace AppManager.Settings.Utils 
+namespace AppManager.Core.Utils 
 { 
     public static class ProfileManager
     {
         public static readonly string DefaultProfileFilename = "default";
 
-        private static ProfileModel? _CurrentProfile;
+        private static ProfileModel? CurrentProfileValue;
         public static ProfileModel CurrentProfile 
         { 
-            get => _CurrentProfile ??= LoadProfile(); 
-            private set => _CurrentProfile = value; 
+            get => CurrentProfileValue ??= LoadLastUsedProfile();
         }
 
-        public static ProfileModel LoadProfile(string? profileName = null)
+        public static ProfileModel LoadLastUsedProfile()
         {
-            ProfileModel profile;
-            
-            string profileFile = FileManager.GetProfilePath(profileName ?? DefaultProfileFilename);
-            profile = FileManager.LoadJsonFile<ProfileModel>(profileFile);
-                
-            if (profile.Name != null)
-            {
-                Debug.WriteLine($"Profile '{profile.Name}' loaded successfully");
-            }
-            else
-            {
-                Debug.WriteLine($"Profile {profileName} may be broken.");
-            }
+            string profileName = SettingsManager.CurrentSettings.LastUsedProfileName ?? DefaultProfileFilename;
+            return LoadProfile(profileName);
+        }
 
-            return profile;
+        public static ProfileModel LoadProfile(string profileName)
+        {   
+            try
+            {
+                ProfileModel profile;
+
+                string profileFile = FileManager.GetProfilePath(profileName);
+                profile = FileManager.LoadJsonFile<ProfileModel>(profileFile);
+
+                Debug.WriteLine($"Profile '{profile.Name}' loaded successfully");
+
+                return profile;
+            }
+            catch(Exception e)
+            {
+                Debug.WriteLine($"Profile {profileName} may be broken.\nLoading caused error:\n{e.Message}\n{e.StackTrace}");
+                Debug.WriteLine($"Loading default profile instead");
+
+                if (DefaultProfileFilename == profileName) { throw new Exception($"Error loading default profile", e); }
+
+                return LoadProfile(DefaultProfileFilename);
+            }
         }
 
         /// <summary>
@@ -53,12 +64,12 @@ namespace AppManager.Settings.Utils
                     return false;
                 }
 
-                _CurrentProfile = profile;
+                CurrentProfileValue = profile;
 
                 // Update the settings with the new profile name
-                UpdateLastUsedProfileInSettings(_CurrentProfile.Name);
+                UpdateLastUsedProfileInSettings(CurrentProfileValue.Name);
 
-                Debug.WriteLine($"Successfully switched to profile: {_CurrentProfile.Name}");
+                Debug.WriteLine($"Successfully switched to profile: {CurrentProfileValue.Name}");
                 return true;
             }
             catch (Exception ex)
@@ -86,11 +97,11 @@ namespace AppManager.Settings.Utils
             }
         }
 
-        public static void SaveProfile(ProfileModel profile = null)
+        public static void SaveProfile(ProfileModel? profile = null)
         {
             if (profile == null)
             {
-                profile = _CurrentProfile;
+                profile = CurrentProfileValue;
 
                 if (profile == null)
                 {
@@ -100,7 +111,7 @@ namespace AppManager.Settings.Utils
             }
 
             // Update version info
-            profile.Version = App.Version;
+            profile.Version = FileManager.LoadVersion();
 
             string profileFile = FileManager.GetProfilePath(profile.Name);
             bool success = FileManager.SaveJsonFile(profile, profileFile);
@@ -134,14 +145,16 @@ namespace AppManager.Settings.Utils
             return FileManager.FileExists(FileManager.GetProfilePath(profileName ?? DefaultProfileFilename));
         }
 
-        public static void ResetProfile()
+        public static void ClearCache() { CurrentProfileValue = null; }
+
+        public static void ResetDefaultProfile()
         {
-            _CurrentProfile = new ProfileModel
+            CurrentProfileValue = new ProfileModel
             {
                 Name = DefaultProfileFilename,
                 Username = Environment.UserName
             };
-            SaveProfile(_CurrentProfile);
+            SaveProfile(CurrentProfileValue);
             Debug.WriteLine("Profile reset to defaults");
         }
     }

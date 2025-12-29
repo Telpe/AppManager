@@ -14,7 +14,7 @@ namespace AppManager.Core.Actions
             return Enum.GetValues(typeof(AppActionTypeEnum)).Cast<AppActionTypeEnum>();
         }
 
-        public static IAppAction CreateAction(ActionModel model, Process? specificTarget = null)
+        public static IAction CreateAction(ActionModel model, Process? specificTarget = null)
         {
             return model.ActionType switch
             {

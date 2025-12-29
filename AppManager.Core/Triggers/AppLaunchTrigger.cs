@@ -32,7 +32,7 @@ namespace AppManager.Core.Triggers
             CustomProperties = model.CustomProperties ?? [];
         }
 
-        public override bool CanStart()
+        protected override bool CanStartTrigger()
         {
             return !string.IsNullOrEmpty(ProcessName) || !string.IsNullOrEmpty(ExecutablePath);
         }
@@ -94,7 +94,7 @@ namespace AppManager.Core.Triggers
                     Debug.WriteLine($"App launch trigger '{Name}' detected launch of '{processName}' (PID: {processId})");
                     
                     // Trigger the configured action
-                    OnTriggerActivated(ProcessName ?? "target_app", AppActionTypeEnum.Focus, null, new { ProcessName = processName, ProcessId = processId });
+                    TriggerActivated();
                 }
             }
             catch (Exception ex)
@@ -133,15 +133,13 @@ namespace AppManager.Core.Triggers
 
         public override TriggerModel ToModel()
         {
-            return new TriggerModel
-            {
-                TriggerType = TriggerType,
-                Inactive = Inactive,
-                ProcessName = ProcessName,
-                ExecutablePath = ExecutablePath,
-                MonitorChildProcesses = MonitorChildProcesses,
-                CustomProperties = CustomProperties
-            };
+            TriggerModel model = base.ToModel();
+            model.ProcessName = ProcessName;
+            model.ExecutablePath = ExecutablePath;
+            model.MonitorChildProcesses = MonitorChildProcesses;
+            model.CustomProperties = CustomProperties;
+
+            return model;
         }
     }
 }

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace AppManager.Settings.UI
 {
-    public class InputEditEventArgs
+    public class InputEditEventArgs : EventArgs
     {
         public ActionModel? ActionModel { get; set; }
         public TriggerModel? TriggerModel { get; set; }

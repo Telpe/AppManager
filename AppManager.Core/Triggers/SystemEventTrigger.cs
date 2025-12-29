@@ -1,11 +1,12 @@
+using AppManager.Core.Actions;
+using AppManager.Core.Models;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.Eventing.Reader;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using AppManager.Core.Actions;
-using System.Collections.Generic;
-using AppManager.Core.Models;
 
 namespace AppManager.Core.Triggers
 {
@@ -29,7 +30,7 @@ namespace AppManager.Core.Triggers
             CustomProperties = model.CustomProperties ?? [];
         }
 
-        public override bool CanStart()
+        protected override bool CanStartTrigger()
         {
             return !string.IsNullOrEmpty(EventName);
         }
@@ -49,7 +50,7 @@ namespace AppManager.Core.Triggers
                     string queryString = "*[System[EventID=4624 or EventID=4634 or EventID=4647]]"; // Logon/Logoff events
                     
                     // For workstation lock/unlock events
-                    if (EventName.ToLower().Contains("lock") || EventName.ToLower().Contains("unlock"))
+                    if (null != EventName && (EventName.ToLower().Contains("lock") || EventName.ToLower().Contains("unlock")))
                     {
                         logName = "System";
                         queryString = "*[System[EventID=4800 or EventID=4801]]"; // Lock/Unlock events
@@ -91,7 +92,7 @@ namespace AppManager.Core.Triggers
             }
         }
 
-        private void OnSystemEvent(object sender, EventRecordWrittenEventArgs e)
+        private void OnSystemEvent(object? sender, EventRecordWrittenEventArgs e)
         {
             try
             {
@@ -105,7 +106,7 @@ namespace AppManager.Core.Triggers
                         Debug.WriteLine($"System event trigger '{Name}' detected event: {eventDescription}");
                         
                         // Trigger the configured action
-                        OnTriggerActivated("system", AppActionTypeEnum.Launch, null, new { EventId = eventId, Description = eventDescription });
+                        TriggerActivated();
                     }
                 }
             }
@@ -138,21 +139,18 @@ namespace AppManager.Core.Triggers
 
         public override void Dispose()
         {
-            Stop();
-            CancellationTokenSourceValue?.Dispose();
             base.Dispose();
+            CancellationTokenSourceValue?.Dispose();
         }
 
         public override TriggerModel ToModel()
         {
-            return new TriggerModel
-            {
-                TriggerType = TriggerType,
-                Inactive = Inactive,
-                EventName = EventName,
-                EventSource = EventSource,
-                CustomProperties = CustomProperties
-            };
+            TriggerModel model = base.ToModel();
+            model.EventName = EventName;
+            model.EventSource = EventSource;
+            model.CustomProperties = CustomProperties;
+
+            return model;
         }
     }
 }

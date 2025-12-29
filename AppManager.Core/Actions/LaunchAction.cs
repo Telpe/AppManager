@@ -35,9 +35,9 @@ namespace AppManager.Core.Actions
 
         private void SetExecutablePath()
         {
-            if (File.Exists(ExecutablePath)) { return; }
+            if (File.Exists(ExecutablePath) || null == AppName) { return; }
 
-            string[] executablePaths = !String.IsNullOrEmpty(ExecutablePath) ? FileManager.FindExecutables(AppName, [ExecutablePath]) : FileManager.FindExecutables(AppName);
+            string[] executablePaths = String.IsNullOrEmpty(ExecutablePath) ? FileManager.FindExecutables(AppName) : FileManager.FindExecutables(AppName, [ExecutablePath]);
 
 
             if (executablePaths.Length == 1)

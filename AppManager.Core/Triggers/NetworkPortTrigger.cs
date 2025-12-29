@@ -1,12 +1,13 @@
+using AppManager.Core.Actions;
+using AppManager.Core.Models;
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using AppManager.Core.Actions;
-using System.Collections.Generic;
-using AppManager.Core.Models;
+using System.Windows.Input;
 
 namespace AppManager.Core.Triggers
 {
@@ -32,7 +33,7 @@ namespace AppManager.Core.Triggers
             CustomProperties = model.CustomProperties ?? [];
         }
 
-        public override bool CanStart()
+        protected override bool CanStartTrigger()
         {
             return null != Port && Port > 0 && Port <= 65535;
         }
@@ -125,7 +126,7 @@ namespace AppManager.Core.Triggers
                         System.Diagnostics.Debug.WriteLine($"Network port trigger '{Name}' received data: {data}");
                         
                         // Trigger the configured action
-                        OnTriggerActivated("network_target", AppActionTypeEnum.Launch, null, new { Data = data, Client = client.Client.RemoteEndPoint });
+                        TriggerActivated();
                     }
                 }
             }
@@ -144,15 +145,13 @@ namespace AppManager.Core.Triggers
 
         public override TriggerModel ToModel()
         {
-            return new TriggerModel
-            {
-                TriggerType = TriggerType,
-                Inactive = Inactive,
-                Port = Port,
-                IPAddress = IPAddress,
-                TimeoutMs = TimeoutMs,
-                CustomProperties = CustomProperties
-            };
+            TriggerModel model = base.ToModel();
+            model.Port = Port;
+            model.IPAddress = IPAddress;
+            model.TimeoutMs = TimeoutMs;
+            model.CustomProperties = CustomProperties;
+
+            return model;
         }
     }
 }

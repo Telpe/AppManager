@@ -1,6 +1,6 @@
 using AppManager.Core.Models;
 using AppManager.Settings.Pages;
-using AppManager.Settings.Utils;
+using AppManager.Core.Utils;
 using System;
 using System.Diagnostics;
 using System.Linq;

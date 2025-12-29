@@ -6,7 +6,7 @@ using AppManager.Settings.AppGroups;
 using AppManager.Settings.Pages;
 using AppManager.Settings.Triggers;
 using AppManager.Settings.UI;
-using AppManager.Settings.Utils;
+using AppManager.Core.Utils;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;

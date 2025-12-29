@@ -1,54 +1,61 @@
-﻿using System;
+﻿using AppManager.Core.Actions;
+using AppManager.Core.Models;
+using AppManager.Core.Triggers;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 using System.Windows.Forms;
 using System.Windows.Interop;
 using System.Windows.Media.Imaging;
-using AppManager.Core.Actions;
-using AppManager.Core.Models;
-using AppManager.Core.Triggers;
 
 namespace AppManager.Core.Utils
 {
     public class TrayApplication : IDisposable
     {
-        private NotifyIcon _trayIcon;
-        private ContextMenuStrip _contextMenu;
+        private NotifyIcon TrayIconValue;
+        private ContextMenuStrip ContextMenuValue;
 
         public TrayApplication()
         {
-            InitializeTrayIcon();
+            ContextMenuValue = InitializeTrayMenu();
+            TrayIconValue = InitializeTrayIcon();
         }
 
-        private void InitializeTrayIcon()
+        private ContextMenuStrip InitializeTrayMenu()
         {
-            // Create context menu
-            _contextMenu = new ContextMenuStrip();
-            _contextMenu.Items.Add("Open AppManager", null, OnOpen);
-            _contextMenu.Items.Add("Settings", null, OnSettings);
-            _contextMenu.Items.Add("-"); // Separator
-            _contextMenu.Items.Add("About", null, OnAbout);
-            _contextMenu.Items.Add("-"); // Separator
-            _contextMenu.Items.Add("Exit", null, OnExit);
+            ContextMenuStrip contextMenu = new ContextMenuStrip();
+            contextMenu.Items.Add("Open AppManager", null, OnOpen);
+            contextMenu.Items.Add("Settings", null, OnSettings);
+            contextMenu.Items.Add("-");
+            contextMenu.Items.Add("About", null, OnAbout);
+            contextMenu.Items.Add("-");
+            contextMenu.Items.Add("Exit", null, OnExit);
 
-            // Load tray icon using FileManager
+            return contextMenu;
+        }
+
+        private NotifyIcon InitializeTrayIcon()
+        {
             Icon trayIcon = LoadTrayIcon();
 
             // Create tray icon
-            _trayIcon = new NotifyIcon()
+            NotifyIcon notifyIcon = new NotifyIcon()
             {
                 Icon = trayIcon,
-                ContextMenuStrip = _contextMenu,
+                ContextMenuStrip = ContextMenuValue,
                 Text = "AppManager",
                 Visible = true
             };
 
             // Handle double-click to show main window
-            _trayIcon.DoubleClick += OnOpen;
+            notifyIcon.DoubleClick += OnOpen;
+
+            return notifyIcon;
         }
 
         private Icon LoadTrayIcon()
@@ -73,15 +80,13 @@ namespace AppManager.Core.Utils
 
         private void OnExit(object? sender, EventArgs? e)
         {
-            ActionManager.ExecuteActionAsync(AppActionTypeEnum.Close, "AppManager").Wait();
-            ActionManager.ExecuteActionAsync(AppActionTypeEnum.Close, "AppManager.Settings").Wait();
             Application.Exit();
         }
 
         public void Dispose()
         {
-            _trayIcon?.Dispose();
-            _contextMenu?.Dispose();
+            TrayIconValue?.Dispose();
+            ContextMenuValue?.Dispose();
         }
     }
 }

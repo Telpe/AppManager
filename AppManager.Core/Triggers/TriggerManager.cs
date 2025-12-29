@@ -9,9 +9,10 @@ namespace AppManager.Core.Triggers
 {
     public static class TriggerManager
     {
-        private static readonly Dictionary<string, ITrigger> _triggers = new Dictionary<string, ITrigger>();
+        private static ITrigger[] TriggersValue = [];
+        public static ITrigger[] Triggers { get => TriggersValue; }
 
-        //public event EventHandler<TriggerActivatedEventArgs> TriggerActivated = new EventHandler<TriggerActivatedEventArgs>((s, e) => { });
+        private static List<Task<bool>> StartupTasks = [];
 
         public static ITrigger CreateTrigger(TriggerModel model)
         {
@@ -27,101 +28,77 @@ namespace AppManager.Core.Triggers
             };
 
             // Subscribe to trigger activation events
-            trigger.TriggerActivated += OnTriggerActivated;
+            trigger.OnTriggerActivated += OnTriggerActivated;
             
             return trigger;
         }
 
         public static bool RegisterTrigger(ITrigger trigger)
         {
-            if (trigger == null || _triggers.ContainsKey(trigger.Name))
-                return false;
+            if (TriggersValue.Contains(trigger)) { return false; }
 
-            if (!trigger.CanStart())
-                return false;
+            if (trigger.CanStart()) 
+            {
+                trigger.OnTriggerActivated += OnTriggerActivated;
+                StartupTasks.Add(trigger.StartAsync());
+            }
 
-            _ = trigger.StartAsync();
+            TriggersValue = TriggersValue.Append(trigger).ToArray();
 
-                
-            _triggers[trigger.Name] = trigger;
-            trigger.TriggerActivated += OnTriggerActivated;
             System.Diagnostics.Debug.WriteLine($"Trigger '{trigger.Name}' registered successfully");
-                
 
             return true;
         }
 
-        public static bool UnregisterTrigger(string triggerName)
+        public static void UnregisterTrigger(string triggerName)
         {
-            if (!_triggers.TryGetValue(triggerName, out ITrigger? trigger)){ return false; }
+            IEnumerable<ITrigger> triggers = TriggersValue.Where(a=> a.Name == triggerName);
+            TriggersValue = TriggersValue.Where(a => a.Name != triggerName).ToArray();
 
-            trigger.TriggerActivated -= OnTriggerActivated;
-            trigger.Stop(); // TODO: Make Stop async if needed
-            var stopped = true; // trigger.StopAsync().Wait();
-            if (stopped)
+            foreach (ITrigger trigger in triggers)
             {
-                _triggers.Remove(triggerName);
+                trigger.OnTriggerActivated -= OnTriggerActivated;
                 trigger.Dispose();
                 System.Diagnostics.Debug.WriteLine($"Trigger '{triggerName}' unregistered successfully");
             }
-
-            return stopped;
         }
 
         public static IEnumerable<ITrigger> GetActiveTriggers()
         {
-            return _triggers.Values.Where(t => !t.Inactive);
+            return TriggersValue.Where(t => !t.Inactive);
         }
 
         public static IEnumerable<string> GetTriggerNames()
         {
-            return _triggers.Keys;
+            return TriggersValue.Select(t => t.Name).ToArray();
         }
 
         public static ITrigger? GetTrigger(string name)
         {
-            _triggers.TryGetValue(name, out ITrigger? trigger);
-            return trigger;
+            return TriggersValue.Where(t => t.Name == name).FirstOrDefault();
         }
 
-        private static void OnTriggerActivated(object? sender, TriggerActivatedEventArgs? eve)
+        private static void OnTriggerActivated(object? sender, EventArgs eve)
         {
-            if (null == sender || null == eve) { return; }
-
-            try
+            if (sender is BaseTrigger trigger)
             {
-                System.Diagnostics.Debug.WriteLine($"Trigger '{eve.TriggerName}' activated - executing action '{eve.ActionToExecute}' on '{eve.TargetAppName}'");
-
-                
-                _ = null == eve.Model ? null : ActionManager.ExecuteActionAsync(eve.Model);
-
-                // Forward the event
-                //TriggerActivated?.Invoke(this, e);
+                System.Diagnostics.Debug.WriteLine($"Trigger '{trigger.Name}' activated");
             }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error handling trigger activation: {ex.Message}");
-            }
-        }
-
-        public static void StopAllTriggersAsync()
-        {
-            foreach (var trigger in _triggers.Values)
-            {
-                trigger.Stop();
-            }
-
-            System.Diagnostics.Debug.WriteLine("All triggers stopped");
         }
 
         public static void Dispose()
         {
-            foreach (var trigger in _triggers.Values)
-            {
-                trigger.Dispose();
-            }
+            Task.WaitAll(StartupTasks.ToArray());
 
-            _triggers.Clear();
+            Task[] triggerTasks = TriggersValue.Select(trigger => Task.Run(() =>
+            {
+                trigger.OnTriggerActivated -= OnTriggerActivated; // In case the trigger is kept alive elsewhere.
+                trigger.Dispose(); 
+            })).ToArray();
+            
+            Task.WaitAll(triggerTasks);
+
+            TriggersValue = [];
         }
     }
 }

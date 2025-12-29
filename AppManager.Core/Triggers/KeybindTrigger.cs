@@ -3,9 +3,9 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using AppManager.Core.Actions;
-using AppManager.Core.Shortcuts;
 using System.Collections.Generic;
 using AppManager.Core.Models;
+using AppManager.Core.Shortcuts;
 
 namespace AppManager.Core.Triggers
 {
@@ -37,7 +37,7 @@ namespace AppManager.Core.Triggers
             TargetModifiersValue = Modifiers ?? ModifierKeys.None;
         }
 
-        public override bool CanStart()
+        protected override bool CanStartTrigger()
         {
             return Key != System.Windows.Input.Key.None || !string.IsNullOrEmpty(KeybindCombination);
         }
@@ -171,7 +171,7 @@ namespace AppManager.Core.Triggers
                 Debug.WriteLine($"Shortcut trigger '{Name}' activated");
 
                 // Trigger the configured action
-                OnTriggerActivated("target_app", AppActionTypeEnum.Launch, null, new { Key = TargetKeyValue, Modifiers = TargetModifiersValue });
+                TriggerActivated();
 
                 // Reset state to prevent multiple activations
                 KeyPressedValue = false;
@@ -187,15 +187,13 @@ namespace AppManager.Core.Triggers
 
         public override TriggerModel ToModel()
         {
-            return new TriggerModel
-            {
-                TriggerType = TriggerType,
-                Inactive = Inactive,
-                Key = Key,
-                Modifiers = Modifiers,
-                KeybindCombination = KeybindCombination,
-                CustomProperties = CustomProperties
-            };
+            TriggerModel model = base.ToModel();
+            model.Key = Key;
+            model.Modifiers = Modifiers;
+            model.KeybindCombination = KeybindCombination;
+            model.CustomProperties = CustomProperties;
+
+            return model;
         }
     }
 }

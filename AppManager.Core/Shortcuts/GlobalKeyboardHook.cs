@@ -9,7 +9,7 @@ namespace AppManager.Core.Shortcuts
 {
     public class GlobalKeyboardHook : IDisposable
     {
-        public event EventHandler<GlobalKeyboardHookEventArgs> KeyboardPressed;
+        public event EventHandler<GlobalKeyboardHookEventArgs>? KeyboardPressed;
 
         // EDT: Added an optional parameter (registeredKeys) that accepts keys to restict
         // the logging mechanism.
@@ -17,7 +17,7 @@ namespace AppManager.Core.Shortcuts
         /// 
         /// </summary>
         /// <param name="registeredKeys">Keys that should trigger logging. Pass null for full logging.</param>
-        public GlobalKeyboardHook(Key[] registeredKeys = null)
+        public GlobalKeyboardHook(Key[]? registeredKeys = null)
         {
             RegisteredKeys = registeredKeys;
             WindowsHookHandleValue = IntPtr.Zero;
@@ -53,8 +53,6 @@ namespace AppManager.Core.Shortcuts
                     }
                     WindowsHookHandleValue = IntPtr.Zero;
 
-                    // ReSharper disable once DelegateSubtraction
-                    HookProcValue -= LowLevelKeyboardProc;
                 }
             }
 
@@ -124,7 +122,7 @@ namespace AppManager.Core.Shortcuts
         static extern IntPtr CallNextHookEx(IntPtr hHook, int code, IntPtr wParam, IntPtr lParam);
 
         // EDT: Replaced VkSnapshot(int) with RegisteredKeys(Key[])
-        public static Key[] RegisteredKeys;
+        public static Key[]? RegisteredKeys;
 
         public IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam)
         {
@@ -145,8 +143,7 @@ namespace AppManager.Core.Shortcuts
                 var key = (Key)p.VirtualCode;
                 if (RegisteredKeys == null || RegisteredKeys.Contains(key))
                 {
-                    EventHandler<GlobalKeyboardHookEventArgs> handler = KeyboardPressed;
-                    handler?.Invoke(this, eventArguments);
+                    KeyboardPressed?.Invoke(this, eventArguments);
 
                     fEatKeyStroke = eventArguments.Handled;
                 }

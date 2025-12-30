@@ -1,12 +1,27 @@
 ﻿using AppManager.Core.Utils;
 using System;
+using System.Diagnostics;
 using System.Text.Json.Serialization;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace AppManager.Core.Models
 {
     public class ProfileModel
     {
-        public string Name { get; set; } = ProfileManager.DefaultProfileFilename;
+        private string NameValue = ProfileManager.DefaultProfileFilename;
+        public string Name 
+        { 
+            get=>NameValue;
+            set
+            {
+                if(!IsValidProfileName(value))
+                {
+                    throw new ArgumentException($"Invalid profile name '{value}'");
+                }
+
+                NameValue = value;
+            }
+        }
 
         [JsonConverter(typeof(VersionJsonConverter))]
         public Version Version { get; set; } = FileManager.LoadVersion();
@@ -25,5 +40,14 @@ namespace AppManager.Core.Models
         public string SelectedNav1Menu { get; set; } = "Apps";
         public string SelectedNav1List { get; set; } = "";
 
+        public static bool IsValidProfileName(string profileName)
+        {
+            if (string.IsNullOrEmpty(profileName)
+             || profileName.IndexOfAny(Path.GetInvalidFileNameChars()) != -1)
+            {
+                return false;
+            }
+            return true;
+        }
     }
 }

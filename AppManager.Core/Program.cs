@@ -86,7 +86,8 @@ namespace AppManager.Core
             try
             {
                 // Create and configure the file watcher
-                string currentProfileName = SettingsManager.CurrentSettings.LastUsedProfileName ?? ProfileManager.DefaultProfileFilename;
+                SettingsManager.CurrentSettings.LastUsedProfileName ??= ProfileManager.DefaultProfileFilename;
+                string currentProfileName = SettingsManager.CurrentSettings.LastUsedProfileName;
                 ProfileFileWatcherValue = FileManager.BuildFileWatcher(FileManager.GetProfilePath(currentProfileName));
                 ProfileFileWatcherValue.NotifyFilter = NotifyFilters.LastWrite;
                 ProfileFileWatcherValue.EnableRaisingEvents = true;

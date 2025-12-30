@@ -11,6 +11,15 @@ namespace AppManager.Core.Utils
     {
         public static readonly string DefaultProfileFilename = "default";
 
+        public static ProfileModel NewDefaultProfile
+        {
+            get => new()
+            {
+                Name = DefaultProfileFilename,
+                Username = Environment.UserName
+            };
+        }
+
         private static ProfileModel? CurrentProfileValue;
         public static ProfileModel CurrentProfile 
         { 
@@ -19,8 +28,7 @@ namespace AppManager.Core.Utils
 
         public static ProfileModel LoadLastUsedProfile()
         {
-            string profileName = SettingsManager.CurrentSettings.LastUsedProfileName ?? DefaultProfileFilename;
-            return LoadProfile(profileName);
+            return LoadProfile(SettingsManager.CurrentSettings.LastUsedProfileName);
         }
 
         public static ProfileModel LoadProfile(string profileName)
@@ -38,11 +46,15 @@ namespace AppManager.Core.Utils
             }
             catch(Exception e)
             {
-                Debug.WriteLine($"Profile {profileName} may be broken.\nLoading caused error:\n{e.Message}\n{e.StackTrace}");
+                Debug.WriteLine($"Profile '{profileName}' may be broken. Loading caused error:\n{e.Message}\n{e.StackTrace}");
+
+                if (DefaultProfileFilename == profileName) 
+                {
+                    Debug.WriteLine($"Creating new default profile instead. Not saved.");
+                    return NewDefaultProfile;
+                }
+
                 Debug.WriteLine($"Loading default profile instead");
-
-                if (DefaultProfileFilename == profileName) { throw new Exception($"Error loading default profile", e); }
-
                 return LoadProfile(DefaultProfileFilename);
             }
         }
@@ -99,30 +111,28 @@ namespace AppManager.Core.Utils
 
         public static void SaveProfile(ProfileModel? profile = null)
         {
-            if (profile == null)
-            {
-                profile = CurrentProfileValue;
+            profile ??= CurrentProfileValue;
 
-                if (profile == null)
-                {
-                    Debug.WriteLine("No profile to save");
-                    return;
-                }
+            if (null == profile)
+            {
+                Debug.WriteLine("No profile to save");
+                return;
             }
 
-            // Update version info
-            profile.Version = FileManager.LoadVersion();
-
-            string profileFile = FileManager.GetProfilePath(profile.Name);
-            bool success = FileManager.SaveJsonFile(profile, profileFile);
-            
-            if (success)
+            try 
             {
+                profile.Version = FileManager.LoadVersion();
+
+                string profileFile = FileManager.GetProfilePath(profile.Name);
+
+                FileManager.SaveJsonFile(profile, profileFile);
+
                 Debug.WriteLine($"Profile {profile.Name} saved successfully");
             }
-            else
+            catch(Exception ex)
             {
-                Debug.WriteLine($"Failed to save profile {profile.Name}");
+                Debug.WriteLine($"Error saving profile '{profile.Name}': {ex.Message}");
+                return;
             }
         }
 
@@ -140,22 +150,17 @@ namespace AppManager.Core.Utils
             return profile;
         }
 
-        public static bool ProfileExist(string? profileName = null)
+        public static bool ProfileExist(string profileName)
         {
-            return FileManager.FileExists(FileManager.GetProfilePath(profileName ?? DefaultProfileFilename));
+            return FileManager.FileExists(FileManager.GetProfilePath(profileName));
         }
 
         public static void ClearCache() { CurrentProfileValue = null; }
 
         public static void ResetDefaultProfile()
         {
-            CurrentProfileValue = new ProfileModel
-            {
-                Name = DefaultProfileFilename,
-                Username = Environment.UserName
-            };
-            SaveProfile(CurrentProfileValue);
-            Debug.WriteLine("Profile reset to defaults");
+            SaveProfile(NewDefaultProfile);
+            Debug.WriteLine("Profile default resat");
         }
     }
 }

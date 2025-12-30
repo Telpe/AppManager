@@ -43,8 +43,6 @@ namespace AppManager.Settings
         {
             InitializeComponent();
 
-            
-
             Debug.WriteLine("MainWindow initialized");
 
             this.Closing += Window_Closing;
@@ -55,7 +53,105 @@ namespace AppManager.Settings
             // Apply settings to window
             ApplyWindowSettings();
 
+            // Initialize profile selector
+            InitializeProfileSelector();
+
             InitiateNav1();
+        }
+
+        /// <summary>
+        /// Initializes the profile selector ComboBox
+        /// </summary>
+        private void InitializeProfileSelector()
+        {
+            try
+            {
+                // Load all available profiles
+                string[] allProfiles = FileManager.GetAllProfiles();
+                
+                // Populate the ComboBox
+                ProfileSelector.ItemsSource = allProfiles;
+
+                // Set the current profile as selected
+                ProfileSelector.SelectedItem = SettingsManager.CurrentSettings.LastUsedProfileName;
+                
+                Debug.WriteLine($"Profile selector initialized with {allProfiles.Length} profiles. Current: {ProfileSelector.SelectedItem}");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error initializing profile selector: {ex.Message}");
+                
+                // Fallback: just show the current profile
+                ProfileSelector.ItemsSource = new[] { ProfileManager.DefaultProfileFilename };
+                ProfileSelector.SelectedItem = ProfileManager.DefaultProfileFilename;
+            }
+        }
+
+        /// <summary>
+        /// Handles profile selection changes
+        /// </summary>
+        private void ProfileSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            try
+            {
+                if (ProfileSelector.SelectedItem is string selectedProfile && ProfileModel.IsValidProfileName(selectedProfile))
+                {
+                    // Only update if the profile actually changed
+                    if (SettingsManager.CurrentSettings.LastUsedProfileName != selectedProfile)
+                    {
+                        Debug.WriteLine($"Profile changed from '{SettingsManager.CurrentSettings.LastUsedProfileName}' to '{selectedProfile}'");
+                        
+                        // Update settings
+                        SettingsManager.CurrentSettings.LastUsedProfileName = selectedProfile;
+                        SettingsManager.SaveSettings();
+                        
+                        // Clear profile cache and reload
+                        ProfileManager.ClearCache();
+                        
+                        // Reload the navigation and page content
+                        LoadNav1List(ProfileManager.CurrentProfile.SelectedNav1Menu);
+                        
+                        Debug.WriteLine($"Profile switched to: {selectedProfile}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error handling profile selection change: {ex.Message}");
+                MessageBox.Show($"Error switching profile: {ex.Message}", "Profile Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        /// <summary>
+        /// Refreshes the profile selector with the latest profiles
+        /// </summary>
+        public void RefreshProfileSelector()
+        {
+            try
+            {
+                string[] allProfiles = FileManager.GetAllProfiles();
+                string currentSelection = ProfileSelector.SelectedItem as string ?? "";
+                
+                ProfileSelector.ItemsSource = allProfiles;
+                
+                // Restore selection if it still exists
+                if (allProfiles.Contains(currentSelection))
+                {
+                    ProfileSelector.SelectedItem = currentSelection;
+                }
+                else
+                {
+                    // Select the current profile from settings
+                    string currentProfile = SettingsManager.CurrentSettings.LastUsedProfileName ?? ProfileManager.DefaultProfileFilename;
+                    ProfileSelector.SelectedItem = currentProfile;
+                }
+                
+                Debug.WriteLine($"Profile selector refreshed with {allProfiles.Length} profiles");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error refreshing profile selector: {ex.Message}")
+;            }
         }
 
         private void SetWindowIcon()

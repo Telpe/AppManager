@@ -25,46 +25,23 @@ namespace AppManager.Core.Utils
             WriteIndented = true,
             DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
         };
-
         public static readonly string IconfileDefault = "AppManagerIcon_temp.png";
-
-        public static readonly string AppDataPath = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "AppManager");
-
+        public static readonly string AppDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "AppManager");
         public static readonly string OSShortcutsPath = Path.Combine(AppDataPath, "Shortcuts");
+        public static readonly string ProfilesPath = Path.Combine(AppDataPath, "Profiles");
 
         // JSON Operations
-        public static T LoadJsonFile<T>(string filePath) where T : new()
+        public static T LoadJsonFile<T>(string filePath) //where T : new()
         {
-            try
-            {
-                if (File.Exists(filePath))
-                {
-                    var json = File.ReadAllText(filePath);
-                    return JsonSerializer.Deserialize<T>(json, JsonOptions) ?? new T();
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error loading JSON file {filePath}: {ex.Message}");
-            }
-            return new T();
+            return JsonSerializer.Deserialize<T>(File.ReadAllText(filePath), JsonOptions) ?? throw new Exception($"Error reading content of file '{filePath}'.");
         }
 
         public static bool SaveJsonFile<T>(T data, string filePath)
         {
-            try
-            {
-                Directory.CreateDirectory( Path.GetDirectoryName(filePath) ?? throw new ArgumentNullException("filePath can not be null."));
-                var json = JsonSerializer.Serialize(data, JsonOptions);
-                File.WriteAllText(filePath, json);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error saving JSON file {filePath}: {ex.Message}");
-                return false;
-            }
+            Directory.CreateDirectory( Path.GetDirectoryName(filePath) ?? throw new ArgumentNullException($"Error saving json. filePath '{filePath}' is not a complete path."));
+            var json = JsonSerializer.Serialize(data, JsonOptions);
+            File.WriteAllText(filePath, json);
+            return true;
         }
 
         // File Dialog Operations
@@ -428,8 +405,11 @@ namespace AppManager.Core.Utils
             return commonPaths;
         }
 
-        public static string GetProfilePath(string profileName = "default") =>
-            Path.Combine(AppDataPath, $"{profileName}.json");
+        public static string GetProfilePath(string profileName) 
+        {
+            if (!ProfileModel.IsValidProfileName(profileName)) { throw new ArgumentException($"Invalid profile name: {profileName}"); }
+            return Path.Combine(ProfilesPath, $"{profileName}.json"); 
+        }
 
         public static string GetSettingsPath() =>
             Path.Combine(AppDataPath, "settings.json");
@@ -630,6 +610,37 @@ namespace AppManager.Core.Utils
 
             return new FileSystemWatcher(directory, fileName);
             
+        }
+
+        /// <summary>
+        /// Gets all available profile names by scanning the ProfilesPath directory
+        /// </summary>
+        /// <returns>Array of profile names without file extensions</returns>
+        public static string[] GetAllProfiles()
+        {
+            try
+            {
+                // Ensure the profiles directory exists
+                Directory.CreateDirectory(ProfilesPath);
+
+                // Get all .json files in the profiles directory
+                string[] profileFiles = Directory.GetFiles(ProfilesPath, "*.json", System.IO.SearchOption.TopDirectoryOnly);
+
+                // Extract filenames without extensions and validate them
+                string[] profileNames = profileFiles
+                    .Select(a=> Path.GetFileNameWithoutExtension(a)??"" )
+                    .Where(ProfileModel.IsValidProfileName)
+                    .OrderBy(a => a)
+                    .ToArray();
+
+                Debug.WriteLine($"Found {profileNames.Length} profiles.");
+                return profileNames;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error getting profiles from {ProfilesPath}: {ex.Message}");
+                return [];
+            }
         }
     }
 }

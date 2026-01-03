@@ -1,4 +1,4 @@
-namespace AppManager.Core.Shortcuts
+namespace AppManager.Core.Keybinds
 {
     public enum KeyboardState
     {

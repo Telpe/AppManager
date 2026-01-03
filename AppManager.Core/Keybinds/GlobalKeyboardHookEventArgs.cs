@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace AppManager.Core.Shortcuts
+namespace AppManager.Core.Keybinds
 {
     public class GlobalKeyboardHookEventArgs : HandledEventArgs
     {

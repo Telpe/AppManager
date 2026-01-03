@@ -1,9 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using AppManager.Core.Actions;
 using AppManager.Core.Models;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Diagnostics.Eventing.Reader;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace AppManager.Core.Triggers
 {
@@ -11,8 +14,6 @@ namespace AppManager.Core.Triggers
     {
         private static ITrigger[] TriggersValue = [];
         public static ITrigger[] Triggers { get => TriggersValue; }
-
-        private static List<Task<bool>> StartupTasks = [];
 
         public static ITrigger CreateTrigger(TriggerModel model)
         {
@@ -34,20 +35,26 @@ namespace AppManager.Core.Triggers
         }
 
         public static bool RegisterTrigger(ITrigger trigger)
-        {
-            if (TriggersValue.Contains(trigger)) { return false; }
+        { try{
+                if (TriggersValue.Contains(trigger)) { throw new Exception("Error: Attempt to add duplicate trigger."); }
 
-            if (trigger.CanStart()) 
-            {
-                trigger.OnTriggerActivated += OnTriggerActivated;
-                StartupTasks.Add(trigger.StartAsync());
+                if (trigger.CanStart())
+                {
+                    trigger.OnTriggerActivated += OnTriggerActivated;
+                    trigger.Start();
+                }
+
+                TriggersValue = TriggersValue.Append(trigger).ToArray();
+
+                Debug.WriteLine($"Trigger '{trigger.Name}' registered successfully");
+
+                return true;
             }
-
-            TriggersValue = TriggersValue.Append(trigger).ToArray();
-
-            System.Diagnostics.Debug.WriteLine($"Trigger '{trigger.Name}' registered successfully");
-
-            return true;
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error registering trigger '{trigger.Name}': {ex.Message}");
+                return false;
+            }
         }
 
         public static void UnregisterTrigger(string triggerName)
@@ -88,15 +95,11 @@ namespace AppManager.Core.Triggers
 
         public static void Dispose()
         {
-            Task.WaitAll(StartupTasks.ToArray());
-
-            Task[] triggerTasks = TriggersValue.Select(trigger => Task.Run(() =>
+            foreach (ITrigger trigger in TriggersValue)
             {
                 trigger.OnTriggerActivated -= OnTriggerActivated; // In case the trigger is kept alive elsewhere.
-                trigger.Dispose(); 
-            })).ToArray();
-            
-            Task.WaitAll(triggerTasks);
+                trigger.Dispose();
+            }
 
             TriggersValue = [];
         }

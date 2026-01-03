@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Timers;
 using System.Windows;
 using System.Windows.Input;
-using AppManager.Core.Shortcuts;
+using AppManager.Core.Keybinds;
 using AppManager.Core.Actions;
 using AppManager.Core.Models;
 

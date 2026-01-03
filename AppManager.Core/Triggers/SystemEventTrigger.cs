@@ -35,42 +35,30 @@ namespace AppManager.Core.Triggers
             return !string.IsNullOrEmpty(EventName);
         }
 
-        public override Task<bool> StartAsync()
+        public override void Start()
         {
-            return Task.Run<bool>(() =>
+            if (!CanStart()) { return; }
+
+            CancellationTokenSourceValue = new CancellationTokenSource();
+
+            // Monitor Windows security events (logon/logoff events)
+            string logName = "Security";
+            string queryString = "*[System[EventID=4624 or EventID=4634 or EventID=4647]]"; // Logon/Logoff events
+                    
+            // For workstation lock/unlock events
+            if (null != EventName && (EventName.ToLower().Contains("lock") || EventName.ToLower().Contains("unlock")))
             {
-                if (Inactive) { return false; }
+                logName = "System";
+                queryString = "*[System[EventID=4800 or EventID=4801]]"; // Lock/Unlock events
+            }
 
-                try
-                {
-                    CancellationTokenSourceValue = new CancellationTokenSource();
+            var query = new EventLogQuery(logName, PathType.LogName, queryString);
+            EventWatcherValue = new EventLogWatcher(query);
+            EventWatcherValue.EventRecordWritten += OnSystemEvent;
+                    
+            EventWatcherValue.Enabled = true;
 
-                    // Monitor Windows security events (logon/logoff events)
-                    string logName = "Security";
-                    string queryString = "*[System[EventID=4624 or EventID=4634 or EventID=4647]]"; // Logon/Logoff events
-                    
-                    // For workstation lock/unlock events
-                    if (null != EventName && (EventName.ToLower().Contains("lock") || EventName.ToLower().Contains("unlock")))
-                    {
-                        logName = "System";
-                        queryString = "*[System[EventID=4800 or EventID=4801]]"; // Lock/Unlock events
-                    }
-
-                    var query = new EventLogQuery(logName, PathType.LogName, queryString);
-                    EventWatcherValue = new EventLogWatcher(query);
-                    EventWatcherValue.EventRecordWritten += OnSystemEvent;
-                    
-                    EventWatcherValue.Enabled = true;
-                    
-                    Debug.WriteLine($"System event trigger '{Name}' started monitoring for '{EventName}'");
-                    return true;
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"Error starting system event trigger '{Name}': {ex.Message}");
-                    return false;
-                }
-            });
+            System.Diagnostics.Debug.WriteLine($"System event trigger '{Name}' started.");
         }
 
         public override void Stop()

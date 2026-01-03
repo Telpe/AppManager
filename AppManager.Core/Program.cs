@@ -280,14 +280,18 @@ namespace AppManager.Core
         {
             try
             {
-                foreach (TriggerModel model in ProfileManager.CurrentProfile.Triggers)
+                TriggerModel[] triggers = ProfileManager.CurrentProfile.Apps.Where(a => null != a.Triggers).SelectMany(a => a.Triggers.Select(a => a.Value)).ToArray();
+                int count = 0;
+
+                foreach (TriggerModel model in triggers) // ProfileManager.CurrentProfile.Triggers
                 {
                     TriggerManager.RegisterTrigger(TriggerManager.CreateTrigger(model));
+                    count++;
                 }
 
-                ProfileManager.ClearCache();
+                Debug.WriteLine($"Loaded {count} triggers from profile: {ProfileManager.CurrentProfile.Name}");
 
-                Debug.WriteLine($"Loaded {ProfileManager.CurrentProfile.Triggers.Length} triggers from profile: {ProfileManager.CurrentProfile.Name}");
+                ProfileManager.ClearCache();
             }
             catch (Exception ex)
             {

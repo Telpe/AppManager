@@ -37,32 +37,20 @@ namespace AppManager.Core.Triggers
             return !string.IsNullOrEmpty(ProcessName) || !string.IsNullOrEmpty(ExecutablePath);
         }
 
-        public override Task<bool> StartAsync()
+        public override void Start()
         {
-            return Task.Run<bool>(() =>
-            {
-                if (Inactive) { return false; }
+            if (!CanStart()) { return; }
 
-                try
-                {
-                    CancellationTokenSourceValue = new CancellationTokenSource();
+            CancellationTokenSourceValue = new CancellationTokenSource();
 
-                    // Use WMI to monitor process creation events (most reliable method)
-                    var query = new WqlEventQuery("SELECT * FROM Win32_ProcessStartTrace");
-                    ProcessWatcherValue = new ManagementEventWatcher(query);
-                    ProcessWatcherValue.EventArrived += OnProcessStarted;
+            // Use WMI to monitor process creation events (most reliable method)
+            var query = new WqlEventQuery("SELECT * FROM Win32_ProcessStartTrace");
+            ProcessWatcherValue = new ManagementEventWatcher(query);
+            ProcessWatcherValue.EventArrived += OnProcessStarted;
                     
-                    ProcessWatcherValue.Start();
+            ProcessWatcherValue.Start();
                     
-                    Debug.WriteLine($"App launch trigger '{Name}' started monitoring for '{ProcessName}'");
-                    return true;
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"Error starting app launch trigger '{Name}': {ex.Message}");
-                    return false;
-                }
-            });
+            Debug.WriteLine($"App launch trigger '{Name}' started monitoring for '{ProcessName}'");
         }
 
         public override void Stop()

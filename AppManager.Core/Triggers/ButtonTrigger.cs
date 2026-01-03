@@ -32,28 +32,21 @@ namespace AppManager.Core.Triggers
             return CustomPropertiesDefined.ContainsKey("Button");
         }
 
-        public override Task<bool> StartAsync()
+        public override void Start()
         {
-            return Task.Run<bool>(() =>
+            if (!CanStart()) { return; }
+
+            if (CustomPropertiesDefined.TryGetValue("Button", out object? buttonObj) && buttonObj is System.Windows.Controls.Button button)
             {
-                try
-                {
-                    if (CustomPropertiesDefined.TryGetValue("Button", out object? buttonObj) && buttonObj is System.Windows.Controls.Button button)
-                    {
-                        MonitoredButtonValue = button;
-                        MonitoredButtonValue.Click += OnButtonClicked;
+                MonitoredButtonValue = button;
+                MonitoredButtonValue.Click += OnButtonClicked;
 
-                        System.Diagnostics.Debug.WriteLine($"Button trigger '{Name}' started monitoring button '{button.Name}'");
-                        return true;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Error starting button trigger '{Name}': {ex.Message}");
-                }
-
-                return false;
-            });
+                System.Diagnostics.Debug.WriteLine($"Button trigger '{Name}' started monitoring button '{button.Name}'");
+            }
+            else
+            {
+                throw new InvalidOperationException($"ButtonTrigger '{Name}' cannot start: 'Button' property is missing or invalid.");
+            }
         }
 
         public override void Stop()

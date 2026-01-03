@@ -1,7 +1,5 @@
 ﻿
 
-
-
 UI Flow:
 Config should be together with what it configures.
 Perhaps some general config require a config page.

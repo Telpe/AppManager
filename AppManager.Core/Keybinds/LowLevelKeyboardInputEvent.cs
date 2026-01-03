@@ -2,7 +2,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Windows.Input;
 
-namespace AppManager.Core.Shortcuts
+namespace AppManager.Core.Keybinds
 {
     [StructLayout(LayoutKind.Sequential)]
     public struct LowLevelKeyboardInputEvent

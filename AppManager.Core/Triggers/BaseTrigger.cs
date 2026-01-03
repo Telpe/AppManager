@@ -73,7 +73,7 @@ namespace AppManager.Core.Triggers
             };
             return model;
         }
-        public abstract Task<bool> StartAsync();
+        public abstract void Start();
         public abstract void Stop();
         protected virtual bool CanStartTrigger() { return true; }
         public bool CanStart() 

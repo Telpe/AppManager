@@ -19,7 +19,7 @@ namespace AppManager.Core.Triggers
         
         event EventHandler? OnTriggerActivated;
         
-        Task<bool> StartAsync();
+        void Start();
         void Stop();
         bool CanStart();
         bool CanExecute();

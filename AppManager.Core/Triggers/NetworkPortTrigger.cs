@@ -38,37 +38,25 @@ namespace AppManager.Core.Triggers
             return null != Port && Port > 0 && Port <= 65535;
         }
 
-        public override Task<bool> StartAsync()
+        public override void Start()
         {
             if (null == IPAddress || null == Port)
             {
-                return Task.FromResult(false);
+                throw new ArgumentNullException("IPAddress and Port must be set before starting the trigger.");
             }
 
-            return Task.Run<bool>(() =>
-            {
-                if (Inactive) { return false; }
+            if (!CanStart()) { return; }
 
-                try
-                {
-                    _cancellationTokenSource = new CancellationTokenSource();
+            _cancellationTokenSource = new CancellationTokenSource();
 
-                    var ipAddress = System.Net.IPAddress.Parse(IPAddress ?? "127.0.0.1");
-                    _tcpListener = new TcpListener(ipAddress, Port.Value);
-                    _tcpListener.Start();
+            var ipAddress = System.Net.IPAddress.Parse(IPAddress ?? "127.0.0.1");
+            _tcpListener = new TcpListener(ipAddress, Port.Value);
+            _tcpListener.Start();
 
-                    // Start listening for connections in background
-                    _ = Task.Run(async () => await ListenForConnectionsAsync(_cancellationTokenSource.Token));
+            // Start listening for connections in background
+            _ = Task.Run(async () => await ListenForConnectionsAsync(_cancellationTokenSource.Token));
 
-                    System.Diagnostics.Debug.WriteLine($"Network port trigger '{Name}' started listening on {ipAddress}:{Port}");
-                    return true;
-                }
-                catch (Exception ex)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Error starting network port trigger '{Name}': {ex.Message}");
-                    return false;
-                }
-            });
+            System.Diagnostics.Debug.WriteLine($"Network port trigger '{Name}' started listening on {ipAddress}:{Port}");
         }
 
         public override void Stop()

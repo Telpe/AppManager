@@ -1,12 +1,13 @@
+using AppManager.Core.Actions;
+using AppManager.Core.Keybinds;
+using AppManager.Core.Models;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
-using System.Windows.Input;
-using AppManager.Core.Actions;
-using System.Collections.Generic;
-using AppManager.Core.Models;
-using AppManager.Core.Keybinds;
 using System.Windows;
+using System.Windows.Input;
+using System.Windows.Interop;
 
 namespace AppManager.Core.Triggers
 {
@@ -14,15 +15,16 @@ namespace AppManager.Core.Triggers
     {
         public override TriggerTypeEnum TriggerType => TriggerTypeEnum.Keybind;
 
-        private GlobalKeyboardHook? GlobalKeyboardHookValue;
-        private Key TargetKeyValue;
-        private ModifierKeys TargetModifiersValue;
+        //private GlobalKeyboardHook? GlobalKeyboardHookValue;
+        protected Key TargetKey { get => Key ?? System.Windows.Input.Key.None; }
+        protected ModifierKeys TargetModifiers { get => Modifiers ?? ModifierKeys.None; }
         private bool KeyPressedValue;
         private bool ModifiersPressedValue;
         private static Thread? MessageListener;
-        private static readonly object MessageListenerLock = new object();
-        private static readonly Dictionary<int, KeybindTrigger> RegisteredHotkeys = new Dictionary<int, KeybindTrigger>();
-        private static int NextHotkeyId = 1;
+        private static object MessageListenerLock = new object();
+        private static HotkeyModel[] RegisteredHotkeysValue = [];
+        public static HotkeyModel[] RegisteredHotkeys { get => RegisteredHotkeysValue; }
+        //private static int NextHotkeyId = 1;
         private int MyHotkeyId;
 
         public Key? Key { get; set; }
@@ -34,18 +36,16 @@ namespace AppManager.Core.Triggers
         {
             Description = "Monitors global keyboard shortcuts with high compatibility using GlobalKeyboardHook";
             
-            //Key = model.Key;
-            //Modifiers = model.Modifiers;
             KeybindCombination = model.KeybindCombination;
             CustomProperties = model.CustomProperties ?? new Dictionary<string, object>();
 
-            TargetKeyValue = model.Key ?? System.Windows.Input.Key.None;
-            TargetModifiersValue = model.Modifiers ?? ModifierKeys.None;
+            Key = model.Key;
+            Modifiers = model.Modifiers;
         }
 
         protected override bool CanStartTrigger()
         {
-            return Key != System.Windows.Input.Key.None || !string.IsNullOrEmpty(KeybindCombination);
+            return TargetKey != System.Windows.Input.Key.None;
         }
 
         public override void Start()
@@ -53,86 +53,103 @@ namespace AppManager.Core.Triggers
             lock (MessageListenerLock)
             {
                 // Ensure MessageListener thread is created and started
-                if (null == MessageListener)
+                if (null != MessageListener)
                 {
-                    MessageListener = new Thread(() =>
-                    {
-                        Thread.CurrentThread.IsBackground = true;
-                        GlobalKeyboardHook.RegisterHotKey(IntPtr.Zero, MyHotkeyId, KeyboardHookConstants.MOD_NOREPEAT, KeyboardHookConstants.F_KEY);
-
-                        Message msg = new();
-                        int msgState = 0;
-
-                        while ((msgState = GlobalKeyboardHook.GetMessage(ref msg, IntPtr.Zero, 0, 0)) != 0)
-                        {
-                            Debug.WriteLine($"Message received: {msg.Msg}, State: {msgState}");
-                            if (msg.Msg == KeyboardHookConstants.WM_HOTKEY)
-                            {
-                                int hotkeyId = msg.WParam.ToInt32();
-                                Debug.WriteLine($"Hotkey pressed with ID: {hotkeyId}");
-                                
-                                lock (MessageListenerLock)
-                                {
-                                    if (RegisteredHotkeys.TryGetValue(hotkeyId, out KeybindTrigger? trigger))
-                                    {
-                                        Debug.WriteLine($"Hotkey pressed: {trigger.TargetModifiersValue} + {trigger.TargetKeyValue}");
-                                        trigger.TriggerActivated();
-                                    }
-                                }
-                            }
-                        }
-
-                        Debug.WriteLine($"MessageListener thread ended.");
-                    });
-
-                    MessageListener.Start();
+                    StopMessageListener();
                 }
 
-                // Register this trigger's hotkey
-                MyHotkeyId = NextHotkeyId++;
-                RegisteredHotkeys[MyHotkeyId] = this;
-                
                 // Convert TargetModifiersValue and TargetKeyValue to appropriate constants
-                uint modifiers = ConvertToHotkeyModifiers(TargetModifiersValue);
-                uint vk = ConvertToVirtualKey(TargetKeyValue);
-                
-                //GlobalKeyboardHook.RegisterHotKey(IntPtr.Zero, MyHotkeyId, modifiers, vk);
+                uint modifiers = ConvertToHotkeyModifiers(TargetModifiers);
+                uint vk = ConvertToVirtualKey(TargetKey);
+                HotkeyModel newHotkey = new HotkeyModel(IntPtr.Zero, MyHotkeyId, modifiers, vk, this);
+
+                if (!RegisteredHotkeys.Contains(newHotkey))
+                {
+                    
+                    RegisteredHotkeysValue = [..RegisteredHotkeys, newHotkey];
+                    MyHotkeyId = RegisteredHotkeys.Length - 1;
+                }
+
+                MessageListener = new Thread(()=>MessageListenerLoop((HotkeyModel[])RegisteredHotkeys.Clone()));
+
+                MessageListener.Start();
+
+
             }
 
-            Debug.WriteLine($"Shortcut trigger '{Name}' started for {TargetModifiersValue} + {TargetKeyValue} with ID {MyHotkeyId}");
+            Debug.WriteLine($"Keybind trigger '{Name}' started for {TargetModifiers} + {TargetKey} with ID {MyHotkeyId}");
+        }
+
+        private void MessageListenerLoop(HotkeyModel[] registeredKeys)
+        {
+            Thread.CurrentThread.IsBackground = true;
+
+            foreach (HotkeyModel hotkey in registeredKeys)
+            {
+                GlobalKeyboardHook.RegisterHotKey(hotkey.HWnd, hotkey.Id, hotkey.Mods, hotkey.Key);
+            }
+
+            Message msg = new();
+            int msgState = 0;
+
+            while ((msgState = GlobalKeyboardHook.GetMessage(ref msg, IntPtr.Zero, 0, 0)) != 0)
+            {
+                Debug.WriteLine($"Message received: {msg.Msg}, State: {msgState}");
+                if (msg.Msg == KeyboardHookConstants.WM_HOTKEY)
+                {
+                    int hotkeyId = msg.WParam.ToInt32();
+                    Debug.WriteLine($"Hotkey pressed with ID: {hotkeyId}");
+
+                    try
+                    {
+                        HotkeyModel hotkey = registeredKeys.Where(a => a.Id == hotkeyId).First();
+
+                        Debug.WriteLine($"Hotkey pressed: {hotkey.Mods} + {hotkey.Key}");
+
+                        _ = System.Windows.Application.Current?.Dispatcher.InvokeAsync(() => hotkey.Trigger.TriggerActivated());
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"Error processing hotkey ID {hotkeyId}: {ex.Message}");
+                    }
+
+                }
+            }
+
+            foreach (HotkeyModel hotkey in registeredKeys)
+            {
+                GlobalKeyboardHook.UnregisterHotKey(hotkey.HWnd, hotkey.Id);
+            } 
+
+            Debug.WriteLine($"MessageListener thread ended.");
         }
 
         public override void Stop()
         {
-            try
+            StopMessageListener();
+        }
+
+        protected static void StopMessageListener()
+        {
+            lock (MessageListenerLock)
             {
-                Cleanup();
-                Debug.WriteLine($"Shortcut trigger '{Name}' stopped");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error stopping shortcut trigger '{Name}': {ex.Message}");
+                if (MessageListener != null && MessageListener.IsAlive)
+                {
+                    GlobalKeyboardHook.PostThreadMessage(MessageListener.ManagedThreadId, KeyboardHookConstants.WM_QUIT, IntPtr.Zero, IntPtr.Zero);
+                    MessageListener.Join(TimeSpan.FromSeconds(3));
+                    MessageListener = null;
+                }
             }
         }
 
         private void Cleanup()
         {
-            if (null != GlobalKeyboardHookValue)
-            {
-                GlobalKeyboardHookValue.KeyboardPressed -= OnKeyboardPressed;
-                GlobalKeyboardHookValue.Dispose();
-                GlobalKeyboardHookValue = null;
-            }
-
-            lock (MessageListenerLock)
-            {
-                if (MyHotkeyId != 0)
-                {
-                    GlobalKeyboardHook.UnregisterHotKey(IntPtr.Zero, MyHotkeyId);
-                    RegisteredHotkeys.Remove(MyHotkeyId);
-                    MyHotkeyId = 0;
-                }
-            }
+            //if (null != GlobalKeyboardHookValue)
+            //{
+            //    GlobalKeyboardHookValue.KeyboardPressed -= OnKeyboardPressed;
+            //    GlobalKeyboardHookValue.Dispose();
+            //    GlobalKeyboardHookValue = null;
+            //}
 
             KeyPressedValue = false;
             ModifiersPressedValue = false;
@@ -166,7 +183,7 @@ namespace AppManager.Core.Triggers
         {
             // You'll need to implement this conversion based on your KeyboardHookConstants
             // For now, returning DSIX as placeholder
-            return KeyboardHookConstants.DSIX;
+            return KeyboardHookConstants.KeyToDixMap[key];
         }
 
         private void OnKeyboardPressed(object? sender, GlobalKeyboardHookEventArgs? e)
@@ -179,7 +196,7 @@ namespace AppManager.Core.Triggers
                 var isKeyUp = e.KeyboardState == KeyboardState.KeyUp;
 
                 // Check if this is our target key
-                if (pressedKey == TargetKeyValue)
+                if (pressedKey == TargetKey)
                 {
                     if (isKeyDown)
                     {
@@ -224,7 +241,7 @@ namespace AppManager.Core.Triggers
             if (shiftPressed) currentModifiers |= ModifierKeys.Shift;
             if (winPressed) currentModifiers |= ModifierKeys.Windows;
 
-            ModifiersPressedValue = currentModifiers == TargetModifiersValue;
+            ModifiersPressedValue = currentModifiers == TargetModifiers;
 
             if (ModifiersPressedValue && KeyPressedValue)
             {

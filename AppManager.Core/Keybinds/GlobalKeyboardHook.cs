@@ -101,6 +101,10 @@ namespace AppManager.Core.Keybinds
         [return: MarshalAs(UnmanagedType.Bool)]
         public static partial bool UnregisterHotKey(IntPtr hWnd, int id);
 
+        [LibraryImport("USER32", EntryPoint = "PostThreadMessage", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static partial bool PostThreadMessage(int idThread, uint Msg, IntPtr wParam, IntPtr lParam);
+
         [LibraryImport("User32.dll", EntryPoint = "GetMessageW", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.I4)]
         public static partial int GetMessage(ref Message msg, IntPtr hWnd, uint wMsgFilterMin, uint wMsgFilterMax);

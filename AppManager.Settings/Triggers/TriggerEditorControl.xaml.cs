@@ -22,15 +22,15 @@ namespace AppManager.Settings.Triggers
 {
     public partial class TriggerEditorControl : UserControl, IInputEditControl
     {
-        private TriggerModel CurrentTriggerValue;
+        private TriggerModel CurrentTriggerModelValue;
         private bool IsCapturingKeybindValue = false;
         private ObservableCollection<ConditionDisplayItem> _conditions = new ObservableCollection<ConditionDisplayItem>();
 
-        public event EventHandler? OnEdit;
+        public event EventHandler? Edited;
 
-        public event EventHandler? OnCancel;
+        public event EventHandler? Cancel;
 
-        public event EventHandler<InputEditEventArgs>? OnSave;
+        public event EventHandler<InputEditEventArgs>? Save;
         //public event EventHandler<TriggerModel>? TriggerSaved;
         //public event EventHandler? TriggerCancelled;
 
@@ -38,17 +38,17 @@ namespace AppManager.Settings.Triggers
 
         public TriggerModel CurrentTrigger
         {
-            get => CurrentTriggerValue;
+            get => CurrentTriggerModelValue;
             set
             {
-                CurrentTriggerValue = value;
+                CurrentTriggerModelValue = value;
                 LoadTriggerData();
             }
         }
 
         public TriggerEditorControl(TriggerModel triggerModel)
         {
-            CurrentTriggerValue = triggerModel;
+            CurrentTriggerModelValue = triggerModel;
 
             InitializeComponent();
 
@@ -69,32 +69,32 @@ namespace AppManager.Settings.Triggers
 
         private void LoadTriggerData()
         {
-            if (CurrentTriggerValue == null) return;
+            if (CurrentTriggerModelValue == null) return;
 
-            TriggerTypeComboBox.SelectedItem = CurrentTriggerValue.TriggerType;
-            TriggerNameTextBox.Text = GenerateTriggerName(CurrentTriggerValue.TriggerType);
+            TriggerTypeComboBox.SelectedItem = CurrentTriggerModelValue.TriggerType;
+            TriggerNameTextBox.Text = GenerateTriggerName(CurrentTriggerModelValue.TriggerType);
             
             // Load shortcut data
-            KeybindTextBox.Text = CurrentTriggerValue.KeybindCombination ?? string.Empty;
-            CtrlModifierCheckBox.IsChecked = CurrentTriggerValue.Modifiers?.HasFlag(ModifierKeys.Control);
-            ShiftModifierCheckBox.IsChecked = CurrentTriggerValue.Modifiers?.HasFlag(ModifierKeys.Shift);
-            AltModifierCheckBox.IsChecked = CurrentTriggerValue.Modifiers?.HasFlag(ModifierKeys.Alt);
-            WinModifierCheckBox.IsChecked = CurrentTriggerValue.Modifiers?.HasFlag(ModifierKeys.Windows);
+            KeybindTextBox.Text = CurrentTriggerModelValue.KeybindCombination ?? string.Empty;
+            CtrlModifierCheckBox.IsChecked = CurrentTriggerModelValue.Modifiers?.HasFlag(ModifierKeys.Control);
+            ShiftModifierCheckBox.IsChecked = CurrentTriggerModelValue.Modifiers?.HasFlag(ModifierKeys.Shift);
+            AltModifierCheckBox.IsChecked = CurrentTriggerModelValue.Modifiers?.HasFlag(ModifierKeys.Alt);
+            WinModifierCheckBox.IsChecked = CurrentTriggerModelValue.Modifiers?.HasFlag(ModifierKeys.Windows);
 
             // Load app monitoring data
-            ProcessNameTextBox.Text = CurrentTriggerValue.ProcessName ?? string.Empty;
-            ExecutablePathMonitorTextBox.Text = CurrentTriggerValue.ExecutablePath ?? string.Empty;
-            MonitorChildProcessesCheckBox.IsChecked = CurrentTriggerValue.MonitorChildProcesses;
+            ProcessNameTextBox.Text = CurrentTriggerModelValue.ProcessName ?? string.Empty;
+            ExecutablePathMonitorTextBox.Text = CurrentTriggerModelValue.ExecutablePath ?? string.Empty;
+            MonitorChildProcessesCheckBox.IsChecked = CurrentTriggerModelValue.MonitorChildProcesses;
 
             // Load network/system data
-            IPAddressTextBox.Text = CurrentTriggerValue.IPAddress ?? "127.0.0.1";
-            PortTextBox.Text = CurrentTriggerValue.Port.ToString();
-            EventNameTextBox.Text = CurrentTriggerValue.EventName ?? string.Empty;
-            EventSourceTextBox.Text = CurrentTriggerValue.EventSource ?? string.Empty;
+            IPAddressTextBox.Text = CurrentTriggerModelValue.IPAddress ?? "127.0.0.1";
+            PortTextBox.Text = CurrentTriggerModelValue.Port.ToString();
+            EventNameTextBox.Text = CurrentTriggerModelValue.EventName ?? string.Empty;
+            EventSourceTextBox.Text = CurrentTriggerModelValue.EventSource ?? string.Empty;
 
             // Load timing data
-            PollingIntervalTextBox.Text = CurrentTriggerValue.PollingIntervalMs.ToString();
-            TriggerTimeoutTextBox.Text = CurrentTriggerValue.TimeoutMs.ToString();
+            PollingIntervalTextBox.Text = CurrentTriggerModelValue.PollingIntervalMs.ToString();
+            TriggerTimeoutTextBox.Text = CurrentTriggerModelValue.TimeoutMs.ToString();
 
             RefreshActionsListBox();
 
@@ -141,37 +141,37 @@ namespace AppManager.Settings.Triggers
             try
             {
                 StringBuilder previewBuilder = new();
-                previewBuilder.AppendLine($"Trigger Type: {CurrentTriggerValue.TriggerType}");
+                previewBuilder.AppendLine($"Trigger Type: {CurrentTriggerModelValue.TriggerType}");
 
-                switch (CurrentTriggerValue.TriggerType)
+                switch (CurrentTriggerModelValue.TriggerType)
                 {
                     case TriggerTypeEnum.Keybind:
-                        previewBuilder.AppendLine($"Keybind: {CurrentTriggerValue.KeybindCombination ?? "Not specified"}");
-                        previewBuilder.AppendLine($"Modifiers: {CurrentTriggerValue.Modifiers}");
-                        previewBuilder.AppendLine($"Key: {CurrentTriggerValue.Key}");
+                        previewBuilder.AppendLine($"Keybind: {CurrentTriggerModelValue.KeybindCombination ?? "Not specified"}");
+                        previewBuilder.AppendLine($"Modifiers: {CurrentTriggerModelValue.Modifiers}");
+                        previewBuilder.AppendLine($"Key: {CurrentTriggerModelValue.Key}");
                         break;
 
                     case TriggerTypeEnum.AppLaunch:
                     case TriggerTypeEnum.AppClose:
-                        previewBuilder.AppendLine($"Process Name: {CurrentTriggerValue.ProcessName ?? "Not specified"}");
-                        previewBuilder.AppendLine($"Executable Path: {CurrentTriggerValue.ExecutablePath ?? "Not specified"}");
-                        previewBuilder.AppendLine($"Monitor Child Processes: {CurrentTriggerValue.MonitorChildProcesses}");
+                        previewBuilder.AppendLine($"Process Name: {CurrentTriggerModelValue.ProcessName ?? "Not specified"}");
+                        previewBuilder.AppendLine($"Executable Path: {CurrentTriggerModelValue.ExecutablePath ?? "Not specified"}");
+                        previewBuilder.AppendLine($"Monitor Child Processes: {CurrentTriggerModelValue.MonitorChildProcesses}");
                         break;
 
                     case TriggerTypeEnum.NetworkPort:
-                        previewBuilder.AppendLine($"IP Address: {CurrentTriggerValue.IPAddress}");
-                        previewBuilder.AppendLine($"Port: {CurrentTriggerValue.Port}");
+                        previewBuilder.AppendLine($"IP Address: {CurrentTriggerModelValue.IPAddress}");
+                        previewBuilder.AppendLine($"Port: {CurrentTriggerModelValue.Port}");
                         break;
 
                     case TriggerTypeEnum.SystemEvent:
-                        previewBuilder.AppendLine($"Event Name: {CurrentTriggerValue.EventName ?? "Not specified"}");
-                        previewBuilder.AppendLine($"Event Source: {CurrentTriggerValue.EventSource ?? "Not specified"}");
+                        previewBuilder.AppendLine($"Event Name: {CurrentTriggerModelValue.EventName ?? "Not specified"}");
+                        previewBuilder.AppendLine($"Event Source: {CurrentTriggerModelValue.EventSource ?? "Not specified"}");
                         break;
                 }
 
                 previewBuilder.AppendLine($"\nTiming Configuration:");
-                previewBuilder.AppendLine($"Polling Interval: {CurrentTriggerValue.PollingIntervalMs}ms");
-                previewBuilder.AppendLine($"Timeout: {CurrentTriggerValue.TimeoutMs}ms");
+                previewBuilder.AppendLine($"Polling Interval: {CurrentTriggerModelValue.PollingIntervalMs}ms");
+                previewBuilder.AppendLine($"Timeout: {CurrentTriggerModelValue.TimeoutMs}ms");
 
                 TriggerPreviewTextBlock.Text = previewBuilder.ToString();
             }
@@ -248,9 +248,9 @@ namespace AppManager.Settings.Triggers
                 KeybindTextBox.Text = keybindText;
 
                 // Update CurrentTriggerValue
-                CurrentTriggerValue.KeybindCombination = keybindText;
-                CurrentTriggerValue.Key = key;
-                CurrentTriggerValue.Modifiers = modifiers;
+                CurrentTriggerModelValue.KeybindCombination = keybindText;
+                CurrentTriggerModelValue.Key = key;
+                CurrentTriggerModelValue.Modifiers = modifiers;
 
                 // Update checkboxes
                 CtrlModifierCheckBox.IsChecked = modifiers.HasFlag(ModifierKeys.Control);
@@ -310,7 +310,7 @@ namespace AppManager.Settings.Triggers
         {
             try
             {
-                var triggerInstance = TriggerManager.CreateTrigger(CurrentTriggerValue);
+                var triggerInstance = TriggerManager.CreateTrigger(CurrentTriggerModelValue);
                 var canStart = triggerInstance.CanStart();
                 
                 var result = canStart ? "✓ Trigger configuration is valid" : "✗ Trigger configuration is invalid";
@@ -325,34 +325,35 @@ namespace AppManager.Settings.Triggers
             }
         }
 
-        private void SaveTriggerButton_Click(object sender, RoutedEventArgs e) => Save(CurrentTriggerValue);
+        private void SaveTriggerButton_Click(object sender, RoutedEventArgs e) => DoSave();
 
-        private void CancelTriggerButton_Click(object sender, RoutedEventArgs e) => Cancel();
+        private void CancelTriggerButton_Click(object sender, RoutedEventArgs e) => DoCancel();
 
-        protected void Edited()
+        protected void AnnounceEdited()
         {
-            OnEdit?.Invoke(this, EventArgs.Empty);
+            Edited?.Invoke(this, EventArgs.Empty);
         }
 
-        protected void Cancel()
+        protected void DoCancel()
         {
-            OnCancel?.Invoke(this, EventArgs.Empty);
+            Cancel?.Invoke(this, EventArgs.Empty);
         }
 
-        protected void Save(TriggerModel model)
+        protected void DoSave()
         {
-            OnSave?.Invoke(this, new InputEditEventArgs(model));
+
+            Save?.Invoke(this, new InputEditEventArgs(CurrentTriggerModelValue));
         }
 
         // Event handlers for text changes to update preview
         private void TextBox_TextChanged(object sender, TextChangedEventArgs e) 
         {
-            Edited();
+            AnnounceEdited();
             UpdatePreview();
         }
         private void CheckBox_Changed(object sender, RoutedEventArgs e)
         {
-            Edited();
+            AnnounceEdited();
             UpdatePreview();
         }
 
@@ -368,7 +369,7 @@ namespace AppManager.Settings.Triggers
                     if (conditionDialog.ShowDialog() == true)
                     {
                         _conditions.Add(new ConditionDisplayItem(conditionDialog.ConditionModel));
-                        Edited();
+                        AnnounceEdited();
                         UpdatePreview();
                     }
                 }
@@ -386,7 +387,7 @@ namespace AppManager.Settings.Triggers
                 if (sender is Button button && button.Tag is ConditionDisplayItem condition)
                 {
                     _conditions.Remove(condition);
-                    Edited();
+                    AnnounceEdited();
                     UpdatePreview();
                 }
             }
@@ -404,51 +405,55 @@ namespace AppManager.Settings.Triggers
                 ActionType = AppActionTypeEnum.Launch // Default action
             };
 
-            CurrentTriggerValue.Actions ??= [];
-            CurrentTriggerValue.Actions = CurrentTriggerValue.Actions.Append(newAction).ToArray();
+            CurrentTriggerModelValue.Actions ??= [];
+            CurrentTriggerModelValue.Actions = CurrentTriggerModelValue.Actions.Append(newAction).ToArray();
 
             RefreshActionsListBox();
-            Edited();
+            AnnounceEdited();
         }
 
         private void EditActionButton_Click(object? sender, RoutedEventArgs e)
         {
-            if (e.OriginalSource is Button button && button.Tag is ModelListItem<ActionModel> viewModel)
+            if (e.OriginalSource is Button button && button.Tag is ModelListItem<ActionModel> actionModelListItem)
             {
-                Debug.WriteLine($"Edit action: {viewModel.DisplayName}");
+                Debug.WriteLine($"Edit action: {actionModelListItem.DisplayName}");
 
                 try
                 {
                     // Create action editor control directly
-                    var actionEditor = new ActionEditorControl(viewModel.Model.Clone());
+                    var actionEditor = new ActionEditorControl(actionModelListItem.Model.Clone());
 
                     // Subscribe to save event
-                    actionEditor.OnSave += (s, updatedAction) =>
+                    actionEditor.Save += (s, updatedAction) =>
                     {
                         if (null == updatedAction.ActionModel) { return; }
 
                         // Update the model in the dictionary
-                        CurrentTriggerValue.Actions?[viewModel.Id] = updatedAction.ActionModel;
+                        if (null != CurrentTriggerModelValue.Actions && actionModelListItem.Id < CurrentTriggerModelValue.Actions.Length)
+                        {
+                            CurrentTriggerModelValue.Actions[actionModelListItem.Id] = updatedAction.ActionModel;
 
-                        // Refresh the UI to show changes
-                        RefreshActionsListBox();
+                            // Refresh the UI to show changes
+                            RefreshActionsListBox();
 
-                        // Mark as edited
-                        //Save(CurrentTriggerValue.Clone());
+                            // Mark as edited
+                            AnnounceEdited();
 
-                        Debug.WriteLine($"Action {viewModel.DisplayName} updated successfully");
-                        ((MainWindow)Application.Current.MainWindow)?.HideOverlay();
+                            Debug.WriteLine($"Action {actionModelListItem.DisplayName} updated successfully");
+                            ((MainWindow)Application.Current.MainWindow)?.HideOverlay();
+                        }
+                        
                     };
 
-                    actionEditor.OnEdit += (s, args) =>
+                    actionEditor.Edited += (s, args) =>
                     {
-                        Debug.WriteLine($"Action edited for {viewModel.DisplayName}");
-                        Edited();
+                        Debug.WriteLine($"Action edited for {actionModelListItem.DisplayName}");
+                        AnnounceEdited();
                     };
 
-                    actionEditor.OnCancel += (s, args) =>
+                    actionEditor.Cancel += (s, args) =>
                     {
-                        Debug.WriteLine($"Action editing cancelled for {viewModel.DisplayName}");
+                        Debug.WriteLine($"Action editing cancelled for {actionModelListItem.DisplayName}");
                         ((MainWindow)Application.Current.MainWindow)?.HideOverlay();
                     };
 
@@ -465,11 +470,11 @@ namespace AppManager.Settings.Triggers
         private void RefreshActionsListBox()
         {
             ClearActions();
-            CurrentTriggerValue.Actions ??= [];
+            CurrentTriggerModelValue.Actions ??= [];
 
-            foreach (ActionModel action in CurrentTriggerValue.Actions)
+            foreach (ActionModel action in CurrentTriggerModelValue.Actions)
             {
-                ActionListItemsValue.Add(new ModelListItem<ActionModel>(CurrentTriggerValue.Actions.IndexOf(action), action));
+                ActionListItemsValue.Add(new ModelListItem<ActionModel>(CurrentTriggerModelValue.Actions.IndexOf(action), action));
             }
         }
 

@@ -26,24 +26,21 @@ namespace AppManager.Core.Actions
 
         protected override bool CanExecuteAction()
         {
-            if (string.IsNullOrEmpty(AppName)) { return false; }
-
-            SetExecutablePath();
-
-            return !string.IsNullOrEmpty(ExecutablePath);
+            return CheckExecutablePath();
         }
 
-        private void SetExecutablePath()
+        private bool CheckExecutablePath()
         {
-            if (File.Exists(ExecutablePath) || null == AppName) { return; }
+            if (File.Exists(ExecutablePath)) { return true; }
 
-            string[] executablePaths = String.IsNullOrEmpty(ExecutablePath) ? FileManager.FindExecutables(AppName) : FileManager.FindExecutables(AppName, [ExecutablePath]);
+            if (String.IsNullOrEmpty(AppName)) { throw new Exception($"{ActionType} require an AppName when the executeable path is not a file"); }
 
+            string[] executablePaths = Directory.Exists(ExecutablePath) ? FileManager.FindExecutables(AppName, [ExecutablePath]) : FileManager.FindExecutables(AppName);
 
             if (executablePaths.Length == 1)
             {
                 ExecutablePath = executablePaths[0];
-                return;
+                return true;
             }
 
             if (executablePaths.Length > 1)
@@ -53,12 +50,14 @@ namespace AppManager.Core.Actions
                 if (0 < newExecutablePaths.Length)
                 {
                     ExecutablePath = newExecutablePaths[0];
-                    return;
+                    return true;
                 }
 
-                ExecutablePath = string.Empty;
-                Debug.WriteLine($"Could not find executable for: {AppName}");
+                
             }
+
+            Debug.WriteLine($"Could not find executable for: {AppName}");
+            return false;
         }
 
         protected override Task<bool> ExecuteActionAsync()

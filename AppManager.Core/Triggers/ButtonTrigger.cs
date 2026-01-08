@@ -62,7 +62,7 @@ namespace AppManager.Core.Triggers
             System.Diagnostics.Debug.WriteLine($"Button trigger '{Name}' activated");
             
             // Trigger the configured action
-            TriggerActivated();
+            ActivateTrigger();
         }
 
         public override TriggerModel ToModel()

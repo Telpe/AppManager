@@ -20,11 +20,11 @@ namespace AppManager.Settings.Actions
         private ActionModel CurrentActionModelValue;
         private ObservableCollection<ConditionDisplayItem> _conditions = new ObservableCollection<ConditionDisplayItem>();
 
-        public event EventHandler? OnEdit;
+        public event EventHandler? Edited;
 
-        public event EventHandler? OnCancel;
+        public event EventHandler? Cancel;
 
-        public event EventHandler<InputEditEventArgs>? OnSave;
+        public event EventHandler<InputEditEventArgs>? Save;
         /*public event EventHandler<ActionModel> ActionSaved;
         public event EventHandler ActionCancelled;*/
 
@@ -456,19 +456,19 @@ namespace AppManager.Settings.Actions
             }
         }
 
-        protected void Edited()
+        protected void AnnounceEdited()
         {
-            OnEdit?.Invoke(this, EventArgs.Empty);
+            Edited?.Invoke(this, EventArgs.Empty);
         }
 
-        protected void Cancel()
+        protected void DoCancel()
         {
-            OnCancel?.Invoke(this, EventArgs.Empty);
+            Cancel?.Invoke(this, EventArgs.Empty);
         }
 
-        protected void Save(ActionModel model)
+        protected void DoSave()
         {
-            OnSave?.Invoke(this, new InputEditEventArgs(model));
+            Save?.Invoke(this, new InputEditEventArgs(CurrentActionModelValue.Clone()));
         }
 
         private void RemoveConditionButton_Click(object sender, RoutedEventArgs e)
@@ -530,16 +530,56 @@ namespace AppManager.Settings.Actions
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            Save(CurrentActionModelValue.Clone());
+            DoSave();
         }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
-            Cancel();
+            DoCancel();
         }
 
-        private void TextBox_TextChanged(object sender, TextChangedEventArgs e) => UpdatePreview();
+        private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (sender is TextBox textBox && !string.IsNullOrEmpty(textBox.Name))
+            {
+                var propertyName = textBox.Name.Replace("TextBox", "");
+                var property = CurrentActionModelValue.GetType().GetProperty(propertyName);
+                
+                if (property != null)
+                {
+                    if (property.PropertyType == typeof(int) || property.PropertyType == typeof(int?))
+                    {
+                        if (int.TryParse(textBox.Text, out int intValue))
+                        {
+                            property.SetValue(CurrentActionModelValue, intValue);
+                        }
+                    }
+                    else if (property.PropertyType == typeof(string))
+                    {
+                        property.SetValue(CurrentActionModelValue, textBox.Text);
+                    }
+                }
+            }
+            
+            AnnounceEdited();
+            UpdatePreview();
+        }
 
-        private void CheckBox_Changed(object sender, RoutedEventArgs e) => UpdatePreview();
+        private void CheckBox_Changed(object sender, RoutedEventArgs e)
+        {
+            if (sender is CheckBox checkBox && !string.IsNullOrEmpty(checkBox.Name))
+            {
+                var propertyName = checkBox.Name.Replace("CheckBox", "");
+                var property = CurrentActionModelValue.GetType().GetProperty(propertyName);
+                
+                if (property != null && property.PropertyType == typeof(bool))
+                {
+                    property.SetValue(CurrentActionModelValue, checkBox.IsChecked == true);
+                }
+            }
+            
+            AnnounceEdited();
+            UpdatePreview();
+        }
     }
 }

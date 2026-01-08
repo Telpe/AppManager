@@ -114,7 +114,7 @@ namespace AppManager.Core.Triggers
                         System.Diagnostics.Debug.WriteLine($"Network port trigger '{Name}' received data: {data}");
                         
                         // Trigger the configured action
-                        TriggerActivated();
+                        ActivateTrigger();
                     }
                 }
             }

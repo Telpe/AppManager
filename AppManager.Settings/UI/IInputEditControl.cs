@@ -7,11 +7,11 @@ namespace AppManager.Settings.UI
 {
     public interface IInputEditControl
     {
-        public event EventHandler? OnEdit;
+        public event EventHandler? Edited;
         
-        public event EventHandler? OnCancel;
+        public event EventHandler? Cancel;
         
-        public event EventHandler<InputEditEventArgs>? OnSave;
+        public event EventHandler<InputEditEventArgs>? Save;
 
     }
 }

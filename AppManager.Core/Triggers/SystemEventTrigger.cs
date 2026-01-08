@@ -94,7 +94,7 @@ namespace AppManager.Core.Triggers
                         Debug.WriteLine($"System event trigger '{Name}' detected event: {eventDescription}");
                         
                         // Trigger the configured action
-                        TriggerActivated();
+                        ActivateTrigger();
                     }
                 }
             }

@@ -61,7 +61,7 @@ namespace AppManager.Core.Triggers
                 // Convert TargetModifiersValue and TargetKeyValue to appropriate constants
                 uint modifiers = ConvertToHotkeyModifiers(TargetModifiers);
                 uint vk = ConvertToVirtualKey(TargetKey);
-                HotkeyModel newHotkey = new HotkeyModel(IntPtr.Zero, MyHotkeyId, modifiers, vk, this);
+                HotkeyModel newHotkey = new HotkeyModel(IntPtr.Zero, MyHotkeyId, modifiers, vk, this, System.Windows.Threading.Dispatcher.CurrentDispatcher);
 
                 if (!RegisteredHotkeys.Contains(newHotkey))
                 {
@@ -106,7 +106,7 @@ namespace AppManager.Core.Triggers
 
                         Debug.WriteLine($"Hotkey pressed: {hotkey.Mods} + {hotkey.Key}");
 
-                        _ = System.Windows.Application.Current?.Dispatcher.InvokeAsync(() => hotkey.Trigger.TriggerActivated());
+                        _ = hotkey.Dispatcher.InvokeAsync(hotkey.Trigger.ActivateTrigger);
                     }
                     catch (Exception ex)
                     {
@@ -181,8 +181,6 @@ namespace AppManager.Core.Triggers
 
         private uint ConvertToVirtualKey(Key key)
         {
-            // You'll need to implement this conversion based on your KeyboardHookConstants
-            // For now, returning DSIX as placeholder
             return KeyboardHookConstants.KeyToDixMap[key];
         }
 
@@ -256,7 +254,7 @@ namespace AppManager.Core.Triggers
                 Debug.WriteLine($"Shortcut trigger '{Name}' activated");
 
                 // Trigger the configured action
-                TriggerActivated();
+                ActivateTrigger();
 
                 // Reset state to prevent multiple activations
                 KeyPressedValue = false;

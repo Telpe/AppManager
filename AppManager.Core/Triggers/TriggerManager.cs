@@ -17,7 +17,7 @@ namespace AppManager.Core.Triggers
 
         public static ITrigger CreateTrigger(TriggerModel model)
         {
-            ITrigger trigger = model.TriggerType switch
+            return model.TriggerType switch
             {
                 TriggerTypeEnum.Keybind => new KeybindTrigger(model),
                 TriggerTypeEnum.Button => new ButtonTrigger(model),
@@ -27,11 +27,6 @@ namespace AppManager.Core.Triggers
                 TriggerTypeEnum.NetworkPort => new NetworkPortTrigger(model),
                 _ => throw new ArgumentException($"Unsupported trigger type: {model.TriggerType}")
             };
-
-            // Subscribe to trigger activation events
-            trigger.OnTriggerActivated += OnTriggerActivated;
-            
-            return trigger;
         }
 
         public static bool RegisterTrigger(ITrigger trigger)
@@ -40,7 +35,7 @@ namespace AppManager.Core.Triggers
 
                 if (trigger.CanStart())
                 {
-                    trigger.OnTriggerActivated += OnTriggerActivated;
+                    trigger.TriggerActivated += OnTriggerActivated;
                     trigger.Start();
                 }
 
@@ -64,7 +59,7 @@ namespace AppManager.Core.Triggers
 
             foreach (ITrigger trigger in triggers)
             {
-                trigger.OnTriggerActivated -= OnTriggerActivated;
+                trigger.TriggerActivated -= OnTriggerActivated;
                 trigger.Dispose();
                 System.Diagnostics.Debug.WriteLine($"Trigger '{triggerName}' unregistered successfully");
             }
@@ -90,6 +85,37 @@ namespace AppManager.Core.Triggers
             if (sender is BaseTrigger trigger)
             {
                 System.Diagnostics.Debug.WriteLine($"Trigger '{trigger.Name}' activated");
+                if (trigger.CanExecute())
+                {
+                    _ = Task.Run(() => { 
+                    foreach (IAction action in trigger.Actions)
+                    {
+                        try
+                        {
+                            Task<bool> exe = action.ExecuteAsync();
+                                exe.Wait();
+                                if (exe.Result)
+                                {
+                                    System.Diagnostics.Debug.WriteLine($"Action '{action.ActionType}' executed successfully for trigger '{trigger.Name}'.");
+                                }
+                                else
+                                {
+
+                                    Debug.WriteLine($"Action {action.ActionType} cannot be executed.");
+                                }
+                                    
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"Error executing action '{action.ActionType}' for trigger '{trigger.Name}': {ex.Message}");
+                        }
+                    }
+                    });
+                }
+                else
+                {
+                    System.Diagnostics.Debug.WriteLine($"Trigger '{trigger.Name}' conditions not met; actions will not be executed");
+                }
             }
         }
 
@@ -97,7 +123,7 @@ namespace AppManager.Core.Triggers
         {
             foreach (ITrigger trigger in TriggersValue)
             {
-                trigger.OnTriggerActivated -= OnTriggerActivated; // In case the trigger is kept alive elsewhere.
+                trigger.TriggerActivated -= OnTriggerActivated; // In case the trigger is kept alive elsewhere.
                 trigger.Dispose();
             }
 

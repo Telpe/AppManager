@@ -83,7 +83,7 @@ namespace AppManager.Core.Triggers
                     Debug.WriteLine($"App close trigger '{Name}' detected close of '{processName}' (PID: {processId})");
                     
                     // Trigger the configured action
-                    TriggerActivated();
+                    ActivateTrigger();
                 }
             }
             catch (Exception ex)

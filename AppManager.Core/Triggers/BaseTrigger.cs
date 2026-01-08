@@ -26,7 +26,7 @@ namespace AppManager.Core.Triggers
             set => ActionsValue = value;
         }
 
-        public event EventHandler? OnTriggerActivated;
+        public event EventHandler? TriggerActivated;
 
         protected BaseTrigger(TriggerModel model)
         {
@@ -121,11 +121,11 @@ namespace AppManager.Core.Triggers
             return true;
         }
 
-        protected void TriggerActivated()
+        protected void ActivateTrigger()
         {
-            if (CanExecute()) { ExecuteActions(); }
+            //if (CanExecute()) { ExecuteActions(); }
 
-            OnTriggerActivated?.Invoke(this, EventArgs.Empty);
+            TriggerActivated?.Invoke(this, EventArgs.Empty);
         }
 
         public virtual void Dispose()

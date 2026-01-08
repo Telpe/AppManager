@@ -198,7 +198,7 @@ namespace AppManager.Settings.Apps
                     var triggerEditor = new TriggerEditorControl(viewModel.Model);
                     
                     // Subscribe to save event
-                    triggerEditor.OnSave += (s, updatedTrigger) =>
+                    triggerEditor.Save += (s, updatedTrigger) =>
                     {
                         if (null == updatedTrigger.TriggerModel) { return; }
 
@@ -215,13 +215,13 @@ namespace AppManager.Settings.Apps
                         ((MainWindow)Application.Current.MainWindow)?.HideOverlay();
                     };
 
-                    triggerEditor.OnEdit += (s, args) =>
+                    triggerEditor.Edited += (s, args) =>
                     {
                         Debug.WriteLine($"Trigger edited for {viewModel.DisplayName}");
                         Edited();
                     };
 
-                    triggerEditor.OnCancel += (s, args) =>
+                    triggerEditor.Cancel += (s, args) =>
                     {
                         Debug.WriteLine($"Trigger editing cancelled for {viewModel.DisplayName}");
                         ((MainWindow)Application.Current.MainWindow)?.HideOverlay();

@@ -82,7 +82,7 @@ namespace AppManager.Core.Triggers
                     Debug.WriteLine($"App launch trigger '{Name}' detected launch of '{processName}' (PID: {processId})");
                     
                     // Trigger the configured action
-                    TriggerActivated();
+                    ActivateTrigger();
                 }
             }
             catch (Exception ex)

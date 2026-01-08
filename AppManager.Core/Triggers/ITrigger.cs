@@ -17,7 +17,7 @@ namespace AppManager.Core.Triggers
 
         IAction[] Actions { get; set; }
         
-        event EventHandler? OnTriggerActivated;
+        event EventHandler? TriggerActivated;
         
         void Start();
         void Stop();

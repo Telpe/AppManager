@@ -1,8 +1,10 @@
-using System;
-using System.Threading.Tasks;
 using AppManager.Core.Actions;
 using AppManager.Core.Conditions;
+using AppManager.Core.Keybinds;
 using AppManager.Core.Models;
+using System;
+using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace AppManager.Core.Triggers
 {
@@ -124,7 +126,7 @@ namespace AppManager.Core.Triggers
         protected void ActivateTrigger()
         {
             //if (CanExecute()) { ExecuteActions(); }
-
+            Debug.WriteLine($"Thread id should be: {GlobalKeyboardHook.CurrentThreadId}");
             TriggerActivated?.Invoke(this, EventArgs.Empty);
         }
 

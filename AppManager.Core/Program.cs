@@ -7,6 +7,8 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
+using AppManager.Core.Keybinds;
+using System.Windows.Threading;
 
 namespace AppManager.Core
 {
@@ -15,25 +17,28 @@ namespace AppManager.Core
         private static TrayApplication? TrayAppValue;
         private static FileSystemWatcher? SettingsFileWatcherValue;
         private static FileSystemWatcher? ProfileFileWatcherValue;
+        private static Dispatcher MainDispatcher = System.Windows.Threading.Dispatcher.CurrentDispatcher;
 
         [STAThread]
         static void Main(string[] args)
         {
             if (ShouldITerminate()) { return; }
-
-            InitializeFileWatchers();
-            LoadTriggers();
+            AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
+            InitializeFileWatchers();
+            LoadTriggers();
+
+            Debug.WriteLine($"Main thread id: {GlobalKeyboardHook.CurrentThreadId}");
 
             // Create and run the tray application
             using (TrayAppValue = new TrayApplication())
             {
                 Application.Run();
             }
+
         }
 
         /// <summary>
@@ -109,28 +114,33 @@ namespace AppManager.Core
         /// </summary>
         private static void OnSettingsFileChanged(object sender, FileSystemEventArgs e)
         {
-            try
+            MainDispatcher.InvokeAsync(() =>
             {
-                // Add a small delay to ensure file writing is complete
-                System.Threading.Thread.Sleep(100);
-
-                string lastProfile = SettingsManager.CurrentSettings.LastUsedProfileName ?? ProfileManager.DefaultProfileFilename;
-                SettingsManager.ClearCache();
-
-                if (SettingsManager.CurrentSettings.LastUsedProfileName != lastProfile)
+                Debug.WriteLine($"Settings file changed thread id: {GlobalKeyboardHook.CurrentThreadId}");
+                try
                 {
-                    // Reinitialize the profile file watcher for the new profile
-                    ProfileFileWatcherValue?.Dispose();
-                    InitializeProfileFileWatcher();
-                    
-                    // Reload profile and triggers
-                    ReloadProfileAndTriggers();
+                    // Add a small delay to ensure file writing is complete
+                    System.Threading.Thread.Sleep(100);
+
+                    string lastProfile = SettingsManager.CurrentSettings.LastUsedProfileName ?? ProfileManager.DefaultProfileFilename;
+                    SettingsManager.ClearCache();
+
+                    if (SettingsManager.CurrentSettings.LastUsedProfileName != lastProfile)
+                    {
+                        // Reinitialize the profile file watcher for the new profile
+                        ProfileFileWatcherValue?.Dispose();
+                        InitializeProfileFileWatcher();
+
+                        // Reload profile and triggers
+                        ReloadProfileAndTriggers();
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error handling settings file change: {ex.Message}");
-            }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error handling settings file change: {ex.Message}");
+                }
+            });
+            
         }
 
         /// <summary>
@@ -138,20 +148,24 @@ namespace AppManager.Core
         /// </summary>
         private static void OnProfileFileChanged(object sender, FileSystemEventArgs e)
         {
-            try
+            MainDispatcher.InvokeAsync(() =>
             {
-                // Add a small delay to ensure file writing is complete
-                System.Threading.Thread.Sleep(100);
+                Debug.WriteLine($"Profile file changed thread id: {GlobalKeyboardHook.CurrentThreadId}");
+                try
+                {
+                    // Add a small delay to ensure file writing is complete
+                    System.Threading.Thread.Sleep(100);
 
-                Debug.WriteLine($"Profile file change detected: {e.FullPath}");
+                    Debug.WriteLine($"Profile file change detected: {e.FullPath}");
                 
-                // Reload profile and triggers
-                ReloadProfileAndTriggers();
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Error handling profile file change: {ex.Message}");
-            }
+                    // Reload profile and triggers
+                    ReloadProfileAndTriggers();
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error handling profile file change: {ex.Message}");
+                }
+            });
         }
 
         /// <summary>

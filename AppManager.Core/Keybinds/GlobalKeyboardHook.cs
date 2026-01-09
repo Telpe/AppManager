@@ -16,6 +16,9 @@ namespace AppManager.Core.Keybinds
     {
         public event EventHandler<GlobalKeyboardHookEventArgs>? KeyboardPressed;
 
+        // EDT: Replaced VkSnapshot(int) with RegisteredKeys(Key[])
+        public static Key[]? RegisteredKeys;
+
         // EDT: Added an optional parameter (registeredKeys) that accepts keys to restict
         // the logging mechanism.
         /// <summary>
@@ -101,7 +104,7 @@ namespace AppManager.Core.Keybinds
         [return: MarshalAs(UnmanagedType.Bool)]
         public static partial bool UnregisterHotKey(IntPtr hWnd, int id);
 
-        [LibraryImport("USER32", EntryPoint = "PostThreadMessage", SetLastError = true)]
+        [LibraryImport("USER32", EntryPoint = "PostThreadMessageW", SetLastError = true)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static partial bool PostThreadMessage(int idThread, uint Msg, IntPtr wParam, IntPtr lParam);
 
@@ -145,8 +148,10 @@ namespace AppManager.Core.Keybinds
         [LibraryImport("USER32", EntryPoint = "CallNextHookExW", SetLastError = true)]
         public static partial IntPtr CallNextHookEx(IntPtr hHook, int code, IntPtr wParam, IntPtr lParam);
 
-        // EDT: Replaced VkSnapshot(int) with RegisteredKeys(Key[])
-        public static Key[]? RegisteredKeys;
+        [LibraryImport("kernel32.dll", EntryPoint = "GetCurrentThreadId", SetLastError = true)]
+        private static partial uint GetCurrentThreadId();
+
+        public static uint CurrentThreadId => GetCurrentThreadId();
 
         public IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam)
         {
@@ -181,5 +186,6 @@ namespace AppManager.Core.Keybinds
 
             return fEatKeyStroke ? (IntPtr)1 : CallNextHookEx(IntPtr.Zero, nCode, wParam, lParam);
         }
+
     }
 }

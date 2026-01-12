@@ -1,0 +1,117 @@
+using AppManager.Core.Actions;
+using AppManager.Core.Models;
+using AppManager.Core.Triggers;
+
+namespace AppManager.Tests.TestUtilities
+{
+    /// <summary>
+    /// Builder class for creating test data objects
+    /// </summary>
+    public static class TestDataBuilder
+    {
+        /// <summary>
+        /// Creates a basic ActionModel for testing
+        /// </summary>
+        public static ActionModel CreateBasicActionModel(
+            AppActionTypeEnum actionType = AppActionTypeEnum.Launch,
+            string appName = "notepad")
+        {
+            return new ActionModel
+            {
+                ActionType = actionType,
+                AppName = appName,
+                ExecutablePath = GetTestExecutablePath(appName),
+                Arguments = string.Empty,
+                WindowTitle = null,
+                ForceOperation = false,
+                IncludeChildProcesses = false,
+                IncludeSimilarNames = false,
+                TimeoutMs = 5000
+            };
+        }
+
+        /// <summary>
+        /// Creates a basic TriggerModel for testing
+        /// </summary>
+        public static TriggerModel CreateBasicTriggerModel(
+            TriggerTypeEnum triggerType = TriggerTypeEnum.Keybind,
+            string name = "TestTrigger")
+        {
+            return new TriggerModel
+            {
+                TriggerType = triggerType,
+                Inactive = false,
+                Key = triggerType == TriggerTypeEnum.Keybind ? "F12" : null,
+                Modifier = triggerType == TriggerTypeEnum.Keybind ? "Ctrl" : null,
+                Actions = new[] { CreateBasicActionModel() },
+                Conditions = Array.Empty<ConditionModel>()
+            };
+        }
+
+        /// <summary>
+        /// Creates test executable paths for common applications
+        /// </summary>
+        public static string GetTestExecutablePath(string appName)
+        {
+            return appName.ToLower() switch
+            {
+                "notepad" => "notepad.exe",
+                "calc" or "calculator" => "calc.exe",
+                "mspaint" or "paint" => "mspaint.exe",
+                "cmd" or "command" => "cmd.exe",
+                _ => $"{appName}.exe"
+            };
+        }
+
+        /// <summary>
+        /// Creates a ProfileModel for testing
+        /// </summary>
+        public static ProfileModel CreateTestProfile(string profileName = "TestProfile")
+        {
+            return new ProfileModel
+            {
+                Name = profileName,
+                Username = "TestUser",
+                ScanInterval = 1000,
+                AutoStart = false,
+                FavoriteApps = new[] { "notepad", "calc" },
+                SelectedNav1Menu = "Apps",
+                SelectedNav1List = "",
+                Triggers = new[] { CreateBasicTriggerModel() }
+            };
+        }
+
+        /// <summary>
+        /// Creates multiple ActionModels for bulk testing
+        /// </summary>
+        public static ActionModel[] CreateMultipleActionModels(int count = 3)
+        {
+            var actions = new List<ActionModel>();
+            var actionTypes = Enum.GetValues<AppActionTypeEnum>();
+            var appNames = new[] { "notepad", "calc", "mspaint", "cmd", "explorer" };
+
+            for (int i = 0; i < count; i++)
+            {
+                actions.Add(CreateBasicActionModel(
+                    actionTypes[i % actionTypes.Length],
+                    appNames[i % appNames.Length]));
+            }
+
+            return actions.ToArray();
+        }
+
+        /// <summary>
+        /// Creates a ConditionModel for testing
+        /// </summary>
+        public static ConditionModel CreateBasicConditionModel()
+        {
+            return new ConditionModel
+            {
+                ConditionType = ConditionTypeEnum.IsRunning,
+                AppName = "notepad",
+                WindowTitle = null,
+                ExpectedResult = true
+            };
+        }
+    }
+}

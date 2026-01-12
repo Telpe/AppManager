@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppManager.Core", "AppManag
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppManager", "AppManager\AppManager.csproj", "{36255CAE-6F01-43A8-95B0-36EF7DE1308E}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AppManager.Tests", "AppManager.Tests\AppManager.Tests.csproj", "{8B5F1A2C-9D3E-4F7B-A8C5-6E2F4D1B9A7E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -26,6 +28,10 @@ Global
 		{36255CAE-6F01-43A8-95B0-36EF7DE1308E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{36255CAE-6F01-43A8-95B0-36EF7DE1308E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{36255CAE-6F01-43A8-95B0-36EF7DE1308E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8B5F1A2C-9D3E-4F7B-A8C5-6E2F4D1B9A7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8B5F1A2C-9D3E-4F7B-A8C5-6E2F4D1B9A7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8B5F1A2C-9D3E-4F7B-A8C5-6E2F4D1B9A7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8B5F1A2C-9D3E-4F7B-A8C5-6E2F4D1B9A7E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

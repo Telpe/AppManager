@@ -99,7 +99,7 @@ namespace AppManager.Core.Actions
                 SetForegroundWindow(mainWindowHandle);
                 
                 // Wait a moment, then remove topmost flag
-                Task.Delay(100).Wait();
+                Task.Delay(CoreConstants.StandardUIDelay).Wait();
                 SetWindowPos(mainWindowHandle, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 
                 Log.WriteLine($"Successfully brought to front: {AppName}");

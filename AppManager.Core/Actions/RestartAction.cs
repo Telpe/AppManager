@@ -1,4 +1,5 @@
 using AppManager.Core.Models;
+using AppManager.Core.Utils;
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -63,7 +64,7 @@ namespace AppManager.Core.Actions
                 }
 
                 // Wait a moment before launching
-                Task.Delay(1000).Wait();
+                Task.Delay(CoreConstants.ProcessRestartDelay).Wait();
             }
             else
             {

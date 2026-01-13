@@ -192,54 +192,66 @@ namespace AppManager.Core.Utils
         /// <param name="timeoutMs">Timeout in milliseconds for graceful close</param>
         /// <param name="forceKill">Whether to force kill if graceful close fails</param>
         /// <returns>True if all processes were closed successfully</returns>
-        public static bool CloseProcesses(Process[] processes, int timeoutMs = 1000, bool forceKill = false)
+        public static bool CloseProcesses(Process[] processes, int timeoutMs = CoreConstants.DefaultActionDelay, bool forceKill = false)
         {
             if (processes == null || processes.Length == 0)
             {
                 return true;
             }
 
-            bool allClosed = true;
+            Task<bool>[] closers = [];
 
             foreach (var process in processes)
             {
-                try
+                closers = [.. closers, Task<bool>.Run(() => 
                 {
-                    if (process.HasExited)
+                    try
                     {
-                        continue;
-                    }
+                        if (process.HasExited)
+                        {
+                            Log.WriteLine($"Process has already exited: {process.ProcessName} (ID: {process.Id})");
+                            return true;
+                        }
 
-                    process.CloseMainWindow();
+                        Log.WriteLine($"Process {process.ProcessName} main window close request: {(process.CloseMainWindow() ? "Accepted" : "Denied")}");
 
-                    if (!process.WaitForExit(timeoutMs))
-                    {
+                        if(process.WaitForExit(CoreConstants.DefaultActionDelay))
+                        {
+                            Log.WriteLine($"Process kindly closed.: {process.ProcessName} (ID: {process.Id})");
+                            return true;
+                        }
+
                         Log.WriteLine($"Process failed to close gracefully: {process.ProcessName} (ID: {process.Id})");
+
                         if (forceKill)
                         {
+                            Log.WriteLine($"Attempting force kill on: {process.ProcessName} (ID: {process.Id})");
                             process.Kill();
-                            Log.WriteLine($"Force killed: {process.ProcessName} (ID: {process.Id})");
+
+                            if (process.HasExited)
+                            {
+                                Log.WriteLine($"Force killed: {process.ProcessName} (ID: {process.Id})");
+                                return true;
+                            }
+
+                            Log.WriteLine($"Failed to kill process {process.ProcessName}: {process.Id}");
+                            return false;
                         }
-                        else
-                        {
-                            allClosed = false;
-                        }
+
+                        return false;
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.WriteLine($"Failed to close process {process.ProcessName}: {ex.Message}");
+                        return false;
                     }
 
-                    if (!process.HasExited)
-                    {
-                        Log.WriteLine($"Failed to close process {process.ProcessName}: {process.Id}");
-                        allClosed = false;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Log.WriteLine($"Failed to close process {process.ProcessName}: {ex.Message}");
-                    allClosed = false;
-                }
+                })];
             }
 
-            return allClosed;
+            Task.WaitAll(closers);
+
+            return !closers.Any(a=> !a.Result);
         }
     }
 }

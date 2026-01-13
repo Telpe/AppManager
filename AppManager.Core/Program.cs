@@ -292,10 +292,7 @@ namespace AppManager.Core
             }
             finally
             {
-                if (StreamLogging)
-                {
-                    Log.Dispose();
-                }
+                Log.Dispose();
             }
         }
 

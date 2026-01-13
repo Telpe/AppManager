@@ -1,8 +1,10 @@
 using AppManager.Core.Actions;
 using AppManager.Core.Models;
+using AppManager.Core.Utils;
 using AppManager.Tests.TestUtilities;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Threading.Tasks;
 
 namespace AppManager.Tests.Unit.Actions
 {
@@ -62,24 +64,21 @@ namespace AppManager.Tests.Unit.Actions
         public async Task ExecuteAsync_WithRunningProcess_ShouldCloseProcess()
         {
             // Arrange - First launch notepad
-            var launchModel = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Launch, "notepad");
-            var launchAction = new LaunchAction(launchModel);
+            var appName = "notepad";
+            var launchAction = new LaunchAction(TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Launch, appName));
             launchAction.Execute();
             
-            // Wait for notepad to start
-            await Task.Delay(1000);
-            
-            var closeModel = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Close, "notepad");
-            var closeAction = new CloseAction(closeModel);
+            var closeAction = new CloseAction(TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Close, appName));
 
+            Task.Delay(CoreConstants.DefaultActionDelay).Wait();
             try
             {
                 // Act
                 closeAction.Execute();
 
                 // Assert
-                await Task.Delay(1000);
-                var notepadProcesses = System.Diagnostics.Process.GetProcessesByName("notepad");
+                Task.Delay(CoreConstants.DefaultActionDelay).Wait();
+                var notepadProcesses = System.Diagnostics.Process.GetProcessesByName(appName);
                 notepadProcesses.Should().BeEmpty();
             }
             catch(Exception e)

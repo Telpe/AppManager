@@ -31,7 +31,7 @@ namespace AppManager
         {
             try
             {
-                Log.WriteLine("Application is shutting down...");
+                Log.WriteLine("AppManager is shutting down.");
                 
                 // Dispose of logging resources
                 Log.Dispose();
@@ -97,9 +97,5 @@ namespace AppManager
             }
         }
 
-        public void Dispose()
-        {
-            Log.Dispose();
-        }
     }
 }

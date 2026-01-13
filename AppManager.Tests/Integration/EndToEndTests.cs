@@ -1,5 +1,5 @@
 using AppManager.Core.Actions;
-using AppManager.Core.Models;
+using AppManager.Core.Utils;
 using AppManager.Core.Triggers;
 using AppManager.Tests.TestUtilities;
 using FluentAssertions;
@@ -83,7 +83,7 @@ namespace AppManager.Tests.Integration
                     action.Execute();
 
                     // Verify calc was launched
-                    Task.Delay(1000).Wait();
+                    Task.Delay(CoreConstants.DefaultActionDelay).Wait();
                     var calcProcesses = Process.GetProcessesByName("calc");
                     calcProcesses.Should().NotBeEmpty();
 

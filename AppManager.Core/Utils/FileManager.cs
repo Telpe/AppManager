@@ -29,6 +29,7 @@ namespace AppManager.Core.Utils
         public static readonly string AppDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "AppManager");
         public static readonly string OSShortcutsPath = Path.Combine(AppDataPath, "Shortcuts");
         public static readonly string ProfilesPath = Path.Combine(AppDataPath, "Profiles");
+        public static readonly string LogsPath = Path.Combine(AppDataPath, "Logs");
 
         // JSON Operations
         public static T LoadJsonFile<T>(string filePath)

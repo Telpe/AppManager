@@ -119,6 +119,7 @@ namespace AppManager.Settings
 
         protected override void OnExit(ExitEventArgs e)
         {
+            Log.WriteLine("Settings exit");
             Log.Dispose();
             base.OnExit(e);
         }

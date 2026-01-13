@@ -1,9 +1,11 @@
 using AppManager.Core.Actions;
 using AppManager.Core.Models;
+using AppManager.Core.Utils;
 using AppManager.Tests.TestUtilities;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace AppManager.Tests.Unit.Actions
 {
@@ -91,7 +93,7 @@ namespace AppManager.Tests.Unit.Actions
             launchAction.Execute();
             
             // Wait for calc to start
-            Task.Delay(1500).Wait();
+            Task.Delay(CoreConstants.DefaultActionDelay).Wait();
 
             var model = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.BringToFront, "calc");
             var action = new BringToFrontAction(model);

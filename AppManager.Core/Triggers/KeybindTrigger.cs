@@ -1,14 +1,15 @@
 using AppManager.Core.Actions;
 using AppManager.Core.Keybinds;
 using AppManager.Core.Models;
+using AppManager.Core.Utils;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Reflection;
+using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Interop;
 using System.Windows.Threading;
 
 namespace AppManager.Core.Triggers
@@ -77,7 +78,7 @@ namespace AppManager.Core.Triggers
 
                 while (null == MessageListenerNativeThreadId)
                 {
-                    Task.Delay(TimeSpan.FromMilliseconds(1)).Wait();
+                    Task.Delay(CoreConstants.MinimalSyncDelay).Wait();
                 }
                 
             }

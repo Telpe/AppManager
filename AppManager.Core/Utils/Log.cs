@@ -18,7 +18,7 @@ namespace AppManager.Core.Utils
         {
             try
             {
-                string logDirectory = FileManager.AppDataPath;
+                string logDirectory = FileManager.LogsPath;
                 string logFilePrefix = $"{AppDomain.CurrentDomain.FriendlyName}_";
                 string logFilePattern = $"{logFilePrefix}*.log";
 
@@ -57,7 +57,9 @@ namespace AppManager.Core.Utils
             {
                 if (IsStraeming) { return; }
 
-                _streamWriter = new StreamWriter(Path.Combine(FileManager.AppDataPath, $"{AppDomain.CurrentDomain.FriendlyName}_{GetTimestamp()}.log"), append: true)
+                Directory.CreateDirectory(FileManager.LogsPath);
+
+                _streamWriter = new StreamWriter(Path.Combine(FileManager.LogsPath, $"{AppDomain.CurrentDomain.FriendlyName}_{GetTimestamp()}.log"), append: true)
                 {
                     AutoFlush = true
                 };

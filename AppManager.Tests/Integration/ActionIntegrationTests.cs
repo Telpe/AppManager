@@ -1,9 +1,11 @@
 using AppManager.Core.Actions;
 using AppManager.Core.Models;
+using AppManager.Core.Utils;
 using AppManager.Tests.TestUtilities;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace AppManager.Tests.Integration
 {
@@ -44,7 +46,7 @@ namespace AppManager.Tests.Integration
         {
             // Arrange
             var launchModel = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Launch, "calc");
-            var closeModel = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Close, "calc");
+            var closeModel = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Close, "CalculatorApp");
 
             var launchAction = new LaunchAction(launchModel);
             var closeAction = new CloseAction(closeModel);
@@ -52,42 +54,29 @@ namespace AppManager.Tests.Integration
             try
             {
                 // Act - Launch
-                var launchResult = false;
-                try
-                {
-                    launchAction.Execute();
-                    launchResult = true;
-                }catch{ }
-
-
-                // Assert - Launch succeeded
-                launchResult.Should().BeTrue();
+                launchAction.Execute();
 
                 // Wait for application to fully start
-                await Task.Delay(1000);
+                Task.Delay(CoreConstants.DefaultActionDelay).Wait();
 
                 // Verify calc is running
-                var calcProcesses = Process.GetProcessesByName("calc");
+                var calcProcesses = Process.GetProcessesByName("CalculatorApp");
                 calcProcesses.Should().NotBeEmpty();
 
                 // Act - Close
-                var closeResult = false;
-                try
-                { 
-                    closeAction.Execute();
-                    closeResult = true;
-                }
-                catch { }
-
-                // Assert - Close succeeded
-                closeResult.Should().BeTrue();
+                closeAction.Execute();
 
                 // Wait for application to fully close
-                await Task.Delay(1000);
+                Task.Delay(CoreConstants.DefaultActionDelay).Wait();
 
                 // Verify calc is no longer running
-                calcProcesses = Process.GetProcessesByName("calc");
+                calcProcesses = Process.GetProcessesByName("CalculatorApp");
                 calcProcesses.Should().BeEmpty();
+            }
+            catch (Exception e)
+            {
+                Debug.WriteLine($"Test encountered an exception: {e.Message}");
+                Assert.Fail($"{e.Message}");
             }
             finally
             {
@@ -127,7 +116,7 @@ namespace AppManager.Tests.Integration
 
                 launchResult.Should().BeTrue();
 
-                await Task.Delay(1000);
+                Task.Delay(CoreConstants.ProcessRestartDelay).Wait();
 
                 // Get initial process ID
                 var initialProcesses = Process.GetProcessesByName("notepad");
@@ -146,7 +135,7 @@ namespace AppManager.Tests.Integration
                 // Assert
                 restartResult.Should().BeTrue();
 
-                await Task.Delay(2000);
+                Task.Delay(CoreConstants.DefaultActionDelay).Wait();
 
                 // Verify notepad is still running but with different PID
                 var newProcesses = Process.GetProcessesByName("notepad");
@@ -213,7 +202,7 @@ namespace AppManager.Tests.Integration
             {
                 // Act
                 ActionManager.ExecuteMultipleActions(actions);
-                Assert.IsTrue(true);
+                Task.Delay(CoreConstants.DefaultActionDelay).Wait();
 
             }
             catch (Exception ex)
@@ -222,14 +211,23 @@ namespace AppManager.Tests.Integration
             }
             finally
             {
-                var closeActions = new[]
-                {
-                    TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Close, "calc"),
-                    TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Close, "notepad")
-                };
-
-                ActionManager.ExecuteMultipleActions(closeActions);
                 
+                Process[] closeActions =
+                [
+                    ..ProcessManager.FindProcesses("CalculatorApp", false, null, false, true, 4),
+                    ..ProcessManager.FindProcesses("notepad", false, null, false, true, 4)
+                ];
+
+                Log.WriteLine($"Cleaning up processes: {string.Join(", ", closeActions.Select(p => p.ProcessName + " (ID: " + p.Id + ")"))}");
+
+                if(ProcessManager.CloseProcesses(closeActions, CoreConstants.DefaultActionDelay, true)) { Log.WriteLine("Processes closed successfully."); }
+                else { Log.WriteLine("Failed to close some processes."); }
+                    
+                Log.WriteLine("Disposing resources.");
+                foreach (Process p in closeActions)
+                {
+                    p.Dispose();
+                }
             }
         }
     }

@@ -29,24 +29,33 @@ namespace AppManager.Core.Actions
 
         protected override void ExecuteAction()
         {
+            Process[]? processes = null;
             try
             {
-                Process[] processes = ProcessManager.FindProcesses(
+                processes = ProcessManager.FindProcesses(
                     AppName, 
                     IncludeSimilarNames ?? false, 
                     windowTitle: null, 
                     requireMainWindow: false, 
-                    IncludeChildProcesses ?? true);
+                    IncludeChildProcesses ?? true,
+                    4);
                 
-                if (!processes.Any())
+                if (null == processes || 0 == processes.Length)
                 {
                     Log.WriteLine($"No processes found for: {AppName}");
                     return;
                 }
 
+                foreach(Process p in processes.Where(a => !String.Equals(a.ProcessName, AppName, StringComparison.CurrentCultureIgnoreCase)))
+                {
+                    p.Dispose();
+                }
+
+                processes = processes.Where(a=> String.Equals(a.ProcessName, AppName, StringComparison.CurrentCultureIgnoreCase)).ToArray();
+
                 Log.WriteLine($"Closing {processes.Length} process{(processes.Length!=1?"es":"")} for: {AppName}");
 
-                if (!ProcessManager.CloseProcesses(processes, TimeoutMs ?? 3000, ForceOperation ?? true))
+                if (!ProcessManager.CloseProcesses(processes, TimeoutMs ?? CoreConstants.DefaultActionDelay, ForceOperation ?? true))
                 {
                     throw new Exception($"Failed to close all processes for: {AppName}");
                 }
@@ -54,6 +63,16 @@ namespace AppManager.Core.Actions
             catch (Exception ex)
             {
                 Log.WriteLine($"Failed to close {AppName}: {ex.Message}");
+            }
+            finally
+            {
+                if (null != processes)
+                {
+                    foreach (Process p in processes)
+                    {
+                        p.Dispose();
+                    }
+                }
             }
         }
 

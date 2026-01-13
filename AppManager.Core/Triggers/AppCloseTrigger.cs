@@ -49,7 +49,7 @@ namespace AppManager.Core.Triggers
                     
             ProcessWatcherValue.Start();
                     
-            Debug.WriteLine($"App close trigger '{Name}' started monitoring for '{ProcessName}'");
+            Log.WriteLine($"App close trigger '{Name}' started monitoring for '{ProcessName}'");
         }
 
         public override void Stop()
@@ -63,11 +63,11 @@ namespace AppManager.Core.Triggers
                     ProcessWatcherValue.Dispose();
                 }
                 
-                Debug.WriteLine($"App close trigger '{Name}' stopped");
+                Log.WriteLine($"App close trigger '{Name}' stopped");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error stopping app close trigger '{Name}': {ex.Message}");
+                Log.WriteLine($"Error stopping app close trigger '{Name}': {ex.Message}");
             }
         }
 
@@ -80,7 +80,7 @@ namespace AppManager.Core.Triggers
 
                 if (IsTargetProcess(processName))
                 {
-                    Debug.WriteLine($"App close trigger '{Name}' detected close of '{processName}' (PID: {processId})");
+                    Log.WriteLine($"App close trigger '{Name}' detected close of '{processName}' (PID: {processId})");
                     
                     // Trigger the configured action
                     ActivateTrigger();
@@ -88,7 +88,7 @@ namespace AppManager.Core.Triggers
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error processing app close event in trigger '{Name}': {ex.Message}");
+                Log.WriteLine($"Error processing app close event in trigger '{Name}': {ex.Message}");
             }
         }
 

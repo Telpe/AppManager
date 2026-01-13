@@ -38,18 +38,18 @@ namespace AppManager
                     if (File.Exists(iconPath))
                     {
                         this.Icon = FileManager.ExtractBitmapSourceFromExecutable(iconPath);
-                        Debug.WriteLine("Using AppManager.exe icon for Settings window");
+                        Log.WriteLine("Using AppManager.exe icon for Settings window");
                     }
                     else
                     {
                         this.Icon = FileManager.GetShellIcon();
-                        Debug.WriteLine("Using shell icon as fallback for Settings");
+                        Log.WriteLine("Using shell icon as fallback for Settings");
                     }
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error setting window icon: {ex.Message}");
+                Log.WriteLine($"Error setting window icon: {ex.Message}");
             }
         }
 
@@ -71,14 +71,14 @@ namespace AppManager
                 ItemCountTextBlock.Text = $"{_shortcuts.Count} items";
                 StatusTextBlock.Text = _shortcuts.Count > 0 ? "Ready" : "No shortcuts found";
 
-                Debug.WriteLine($"Loaded {_shortcuts.Count} browser shortcuts");
+                Log.WriteLine($"Loaded {_shortcuts.Count} browser shortcuts");
             }
             catch (Exception ex)
             {
                 StatusTextBlock.Text = "Error loading shortcuts";
                 MessageBox.Show($"Error loading shortcuts: {ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
-                Debug.WriteLine($"Error loading browser shortcuts: {ex.Message}");
+                Log.WriteLine($"Error loading browser shortcuts: {ex.Message}");
             }
         }
 
@@ -125,7 +125,7 @@ namespace AppManager
                 if (success)
                 {
                     StatusTextBlock.Text = $"Executed {shortcutItem.Name} successfully";
-                    Debug.WriteLine($"Successfully executed: {shortcutItem.Name} ({shortcutItem.ExecutablePath})");
+                    Log.WriteLine($"Successfully executed: {shortcutItem.Name} ({shortcutItem.ExecutablePath})");
                 }
                 else
                 {
@@ -139,7 +139,7 @@ namespace AppManager
                 StatusTextBlock.Text = "Execution failed";
                 MessageBox.Show($"Error executing file: {ex.Message}", "Error",
                     MessageBoxButton.OK, MessageBoxImage.Error);
-                Debug.WriteLine($"Error executing browser shortcut: {ex.Message}");
+                Log.WriteLine($"Error executing browser shortcut: {ex.Message}");
             }
         }
 

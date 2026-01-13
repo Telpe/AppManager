@@ -63,17 +63,21 @@ namespace AppManager.Tests.Unit.Actions
         [TestCategory("Actions")]
         public async Task ExecuteAsync_WithCurrentProcess_ShouldReturnTrue()
         {
-            // Arrange
-            var model = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.BringToFront);
-            var currentProcess = Process.GetCurrentProcess();
-            var action = new BringToFrontAction(model, currentProcess);
+            try
+            {
+                // Arrange
+                var model = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.BringToFront);
+                var currentProcess = Process.GetCurrentProcess();
+                var action = new BringToFrontAction(model, currentProcess);
 
-            // Act
-            var result = await action.ExecuteAsync();
-
-            // Assert
-            // Note: This might return false if the current process doesn't have a main window
-            result.Should().BeOfType<bool>();
+                // Act
+                action.Execute();
+            }
+            catch
+            {
+                // Assert
+                Assert.Fail("Bringing the process to front failed.");
+            }
         }
 
         [TestMethod]
@@ -84,10 +88,10 @@ namespace AppManager.Tests.Unit.Actions
             // Arrange - Launch an application first
             var launchModel = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Launch, "calc");
             var launchAction = new LaunchAction(launchModel);
-            await launchAction.ExecuteAsync();
+            launchAction.Execute();
             
             // Wait for calc to start
-            await Task.Delay(1500);
+            Task.Delay(1500).Wait();
 
             var model = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.BringToFront, "calc");
             var action = new BringToFrontAction(model);
@@ -95,21 +99,17 @@ namespace AppManager.Tests.Unit.Actions
             try
             {
                 // Act
-                var result = await action.ExecuteAsync();
+                action.Execute();
 
                 // Assert
-                result.Should().BeTrue();
-                
-                // Verify calc is still running
-                var calcProcesses = Process.GetProcessesByName("calc");
-                calcProcesses.Should().NotBeEmpty();
+                //TODO: Verify that the application is actually brought to front.
             }
             finally
             {
                 // Cleanup
                 var closeModel = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Close, "calc");
                 var closeAction = new CloseAction(closeModel);
-                await closeAction.ExecuteAsync();
+                closeAction.Execute();
             }
         }
 

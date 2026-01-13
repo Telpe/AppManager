@@ -81,20 +81,23 @@ namespace AppManager.Tests.Unit.Actions
         [TestCategory("Core")]
         public async Task ExecuteActionAsync_WithValidModel_ShouldExecuteSuccessfully()
         {
-            // Arrange
-            var model = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Launch, "calc");
+            try
+            {
+                // Arrange
+                var model = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Launch, "calc");
 
-            // Act
-            var result = await ActionManager.ExecuteActionAsync(model);
-
-            // Assert - Note: Result may be false if calc can't be launched, but method should not throw
-            result.Should().BeOfType<bool>();
-            
-            // Cleanup - try to close calc if it was launched
-            if (result)
+                // Act
+                ActionManager.ExecuteAction(model);
+                Assert.IsTrue(true, "Action executed successfully.");
+            }
+            catch (Exception ex) 
+            {
+                Assert.Fail($"Execution failed with exception: {ex.Message}");
+            }
+            finally
             {
                 var closeModel = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Close, "calc");
-                await ActionManager.ExecuteActionAsync(closeModel);
+                ActionManager.ExecuteAction(closeModel);
             }
         }
 
@@ -103,11 +106,16 @@ namespace AppManager.Tests.Unit.Actions
         [TestCategory("Core")]
         public async Task ExecuteActionAsync_WithNullModel_ShouldReturnFalse()
         {
-            // Act
-            var result = await ActionManager.ExecuteActionAsync((ActionModel)null!);
-
-            // Assert
-            result.Should().BeFalse();
+            try
+            {
+                // Act
+                ActionManager.ExecuteAction((ActionModel)null!);
+                Assert.Fail("Expected exception was not thrown.");
+            }
+            catch (Exception e)
+            {
+                Assert.IsTrue(e is ArgumentNullException, "Expected ArgumentNullException was thrown.");
+            }
         }
 
         [TestMethod]
@@ -115,16 +123,18 @@ namespace AppManager.Tests.Unit.Actions
         [TestCategory("Core")]
         public void ExecuteMultipleActionsAsync_WithMultipleActions_ShouldReturnTaskArray()
         {
-            // Arrange
-            var actions = TestDataBuilder.CreateMultipleActionModels(3);
+            try
+            {
+                // Arrange
+                var actions = TestDataBuilder.CreateMultipleActionModels(3);
 
-            // Act
-            var tasks = ActionManager.ExecuteMultipleActionsAsync(actions);
-
-            // Assert
-            tasks.Should().NotBeNull();
-            tasks.Length.Should().Be(3);
-            tasks.Should().AllSatisfy(task => task.Should().NotBeNull());
+                // Act
+                ActionManager.ExecuteMultipleActions(actions);
+            }
+            catch (Exception ex)
+            {
+                Assert.Fail($"Execution failed with exception: {ex.Message}");
+            }
         }
 
         [TestMethod]
@@ -132,15 +142,21 @@ namespace AppManager.Tests.Unit.Actions
         [TestCategory("Core")]
         public void ExecuteMultipleActionsAsync_WithEmptyArray_ShouldReturnEmptyArray()
         {
-            // Arrange
-            var actions = Array.Empty<ActionModel>();
+            try
+            {
+                // Arrange
+                var actions = Array.Empty<ActionModel>();
 
-            // Act
-            var tasks = ActionManager.ExecuteMultipleActionsAsync(actions);
+                // Act
+                ActionManager.ExecuteMultipleActions(actions);
+                Assert.IsTrue(true, "No actions to execute.");
+            }
+            catch (Exception ex)
+            {
+                Assert.Fail($"Execution failed with exception: {ex.Message}");
 
-            // Assert
-            tasks.Should().NotBeNull();
-            tasks.Should().BeEmpty();
+
+            }
         }
 
         [TestMethod]
@@ -152,7 +168,7 @@ namespace AppManager.Tests.Unit.Actions
             var result = ActionManager.CanExecuteAction(AppActionTypeEnum.Launch, "notepad");
 
             // Assert
-            result.Should().BeOfType<bool>();
+            result.Should().Be(true);
         }
 
         [TestMethod]
@@ -160,16 +176,17 @@ namespace AppManager.Tests.Unit.Actions
         [TestCategory("Core")]
         public async Task ExecuteActionAsync_WithEnumAndAppName_ShouldExecuteAction()
         {
-            // Act
-            var result = await ActionManager.ExecuteActionAsync(AppActionTypeEnum.Launch, "calc");
-
-            // Assert
-            result.Should().BeOfType<bool>();
-            
-            // Cleanup
-            if (result)
+            try
             {
-                await ActionManager.ExecuteActionAsync(AppActionTypeEnum.Close, "calc");
+                ActionManager.ExecuteAction(AppActionTypeEnum.Launch, "calc");
+            }
+            catch(Exception e) 
+            {
+                Assert.Fail($"Execution failed with exception: {e.Message}");
+            } 
+            finally
+            {
+                ActionManager.ExecuteAction(AppActionTypeEnum.Close, "calc");
             }
         }
     }

@@ -87,7 +87,7 @@ namespace AppManager.Core.Utils
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error finding processes for {appName}: {ex.Message}");
+                Log.WriteLine($"Error finding processes for {appName}: {ex.Message}");
                 return Array.Empty<Process>();
             }
         }
@@ -129,7 +129,7 @@ namespace AppManager.Core.Utils
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error checking if process is running for {processName}: {ex.Message}");
+                Log.WriteLine($"Error checking if process is running for {processName}: {ex.Message}");
                 return false;
             }
         }
@@ -149,7 +149,7 @@ namespace AppManager.Core.Utils
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error getting child processes for parent ID {parentId}: {ex.Message}");
+                Log.WriteLine($"Error getting child processes for parent ID {parentId}: {ex.Message}");
                 return Array.Empty<Process>();
             }
         }
@@ -180,7 +180,7 @@ namespace AppManager.Core.Utils
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Failed to get parent process ID for {process.ProcessName}: {ex.Message}");
+                Log.WriteLine($"Failed to get parent process ID for {process.ProcessName}: {ex.Message}");
             }
             return -1;
         }
@@ -214,11 +214,11 @@ namespace AppManager.Core.Utils
 
                     if (!process.WaitForExit(timeoutMs))
                     {
-                        Debug.WriteLine($"Process failed to close gracefully: {process.ProcessName} (ID: {process.Id})");
+                        Log.WriteLine($"Process failed to close gracefully: {process.ProcessName} (ID: {process.Id})");
                         if (forceKill)
                         {
                             process.Kill();
-                            Debug.WriteLine($"Force killed: {process.ProcessName} (ID: {process.Id})");
+                            Log.WriteLine($"Force killed: {process.ProcessName} (ID: {process.Id})");
                         }
                         else
                         {
@@ -228,13 +228,13 @@ namespace AppManager.Core.Utils
 
                     if (!process.HasExited)
                     {
-                        Debug.WriteLine($"Failed to close process {process.ProcessName}: {process.Id}");
+                        Log.WriteLine($"Failed to close process {process.ProcessName}: {process.Id}");
                         allClosed = false;
                     }
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"Failed to close process {process.ProcessName}: {ex.Message}");
+                    Log.WriteLine($"Failed to close process {process.ProcessName}: {ex.Message}");
                     allClosed = false;
                 }
             }

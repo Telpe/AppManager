@@ -64,7 +64,7 @@ namespace AppManager.Tests.Unit.Actions
             // Arrange - First launch notepad
             var launchModel = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Launch, "notepad");
             var launchAction = new LaunchAction(launchModel);
-            await launchAction.ExecuteAsync();
+            launchAction.Execute();
             
             // Wait for notepad to start
             await Task.Delay(1000);
@@ -75,24 +75,16 @@ namespace AppManager.Tests.Unit.Actions
             try
             {
                 // Act
-                var result = await closeAction.ExecuteAsync();
+                closeAction.Execute();
 
                 // Assert
-                result.Should().BeTrue();
-                
-                // Wait a moment and verify notepad is closed
                 await Task.Delay(1000);
                 var notepadProcesses = System.Diagnostics.Process.GetProcessesByName("notepad");
                 notepadProcesses.Should().BeEmpty();
             }
-            finally
+            catch(Exception e)
             {
-                // Cleanup - ensure notepad is closed
-                try
-                {
-                    await closeAction.ExecuteAsync();
-                }
-                catch { /* Ignore cleanup errors */ }
+                Assert.Fail($"{e.Message}");
             }
         }
 
@@ -101,15 +93,21 @@ namespace AppManager.Tests.Unit.Actions
         [TestCategory("Actions")]
         public async Task ExecuteAsync_WithNonExistentProcess_ShouldReturnFalse()
         {
-            // Arrange
-            var model = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Close, "nonexistentapp");
-            var action = new CloseAction(model);
+            try
+            {
+                // Arrange
+                var model = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Close, "nonexistentapp");
+                var action = new CloseAction(model);
 
-            // Act
-            var result = await action.ExecuteAsync();
-
-            // Assert
-            result.Should().BeFalse();
+                // Act
+                action.Execute();
+                Assert.IsTrue(true);
+            }
+            catch(Exception e)
+            {
+                // Assert
+                Assert.Fail($"{e.Message}");
+            }
         }
 
         [TestMethod]

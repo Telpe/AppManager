@@ -45,62 +45,42 @@ namespace AppManager.Core.Actions
             return !string.IsNullOrEmpty(AppName);
         }
 
-        protected override Task<bool> ExecuteActionAsync()
+        protected override void ExecuteAction()
         {
-            return Task<bool>.Run(() =>
+            var process = ProcessManager.FindProcess(
+                AppName, 
+                IncludeSimilarNames ?? false, 
+                WindowTitle, 
+                requireMainWindow: true) ?? throw new Exception($"No process found to focus: {AppName}");
+            
+            IntPtr mainWindowHandle = process.MainWindowHandle;
+                
+            if (mainWindowHandle == IntPtr.Zero)
             {
-                try
-                {
-                    var process = ProcessManager.FindProcess(
-                        AppName, 
-                        IncludeSimilarNames ?? false, 
-                        WindowTitle, 
-                        requireMainWindow: true);
+                throw new Exception($"No main window found for process: {process.ProcessName}");
+            }
+
+            // If window is minimized, restore it first
+            if (IsIconic(mainWindowHandle))
+            {
+                ShowWindow(mainWindowHandle, SW_RESTORE);
+            }
+            else
+            {
+                ShowWindow(mainWindowHandle, SW_SHOW);
+            }
+
+            // Bring window to foreground
+            bool success = SetForegroundWindow(mainWindowHandle);
                 
-                    if (process == null)
-                    {
-                        Debug.WriteLine($"No process found to focus: {AppName}");
-                        return false;
-                    }
-
-                    IntPtr mainWindowHandle = process.MainWindowHandle;
-                
-                    if (mainWindowHandle == IntPtr.Zero)
-                    {
-                        Debug.WriteLine($"No main window found for process: {process.ProcessName}");
-                        return false;
-                    }
-
-                    // If window is minimized, restore it first
-                    if (IsIconic(mainWindowHandle))
-                    {
-                        ShowWindow(mainWindowHandle, SW_RESTORE);
-                    }
-                    else
-                    {
-                        ShowWindow(mainWindowHandle, SW_SHOW);
-                    }
-
-                    // Bring window to foreground
-                    bool success = SetForegroundWindow(mainWindowHandle);
-                
-                    if (success)
-                    {
-                        Debug.WriteLine($"Successfully focused window for: {AppName}");
-                    }
-                    else
-                    {
-                        Debug.WriteLine($"Failed to focus window for: {AppName}");
-                    }
-
-                    return success;
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"Failed to focus {AppName}: {ex.Message}");
-                    return false;
-                }
-            });
+            if (success)
+            {
+                Log.WriteLine($"Successfully focused window for: {AppName}");
+            }
+            else
+            {
+                throw new Exception($"Failed to focus window for: {AppName}");
+            }
         }
 
         public override ActionModel ToModel()

@@ -33,11 +33,11 @@ namespace AppManager.Settings.AppGroups
             if (_currentGroup != null)
             {
                 LoadGroupDetails(_currentGroup);
-                Debug.WriteLine($"Loaded group details for: {pageName}");
+                Log.WriteLine($"Loaded group details for: {pageName}");
             }
             else
             {
-                Debug.WriteLine($"Group not found: {pageName}");
+                Log.WriteLine($"Group not found: {pageName}");
                 ShowNoGroupSelected();
             }
         }

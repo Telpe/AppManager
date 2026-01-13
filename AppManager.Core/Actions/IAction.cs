@@ -8,7 +8,7 @@ namespace AppManager.Core.Actions
     {
         public AppActionTypeEnum ActionType { get; }
         string Description { get; }
-        Task<bool> ExecuteAsync();
+        void Execute();
         bool CanExecute();
         
         // Condition management

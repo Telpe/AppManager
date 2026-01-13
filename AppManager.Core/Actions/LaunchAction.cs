@@ -56,40 +56,28 @@ namespace AppManager.Core.Actions
                 
             }
 
-            Debug.WriteLine($"Could not find executable for: {AppName}");
+            Log.WriteLine($"Could not find executable for: {AppName}");
             return false;
         }
 
-        protected override Task<bool> ExecuteActionAsync()
+        protected override void ExecuteAction()
         {
-            return Task.Run(() =>
+            var startInfo = new ProcessStartInfo
             {
-                try
-                {
-                    var startInfo = new ProcessStartInfo
-                    {
-                        FileName = ExecutablePath,
-                        Arguments = Arguments ?? string.Empty,
-                        UseShellExecute = true
-                    };
+                FileName = ExecutablePath,
+                Arguments = Arguments ?? string.Empty,
+                UseShellExecute = true
+            };
 
-                    var process = Process.Start(startInfo);
+            var process = Process.Start(startInfo);
 
-                    if (process != null)
-                    {
-                        Debug.WriteLine($"Successfully launched: {AppName}");
-                        return true;
-                    }
+            if (process != null)
+            {
+                Log.WriteLine($"Successfully launched: {AppName}");
+                return;
+            }
 
-                    Debug.WriteLine($"Failed to launch {AppName}");
-                    return false;
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"Failed to launch {AppName}: {ex.Message}");
-                    return false;
-                }
-            });
+            throw new Exception($"Failed to launch {AppName}");
         }
 
         public override ActionModel ToModel()

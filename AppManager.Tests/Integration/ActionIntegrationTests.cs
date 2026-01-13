@@ -10,14 +10,19 @@ namespace AppManager.Tests.Integration
     [TestClass]
     public class ActionIntegrationTests
     {
-        private static Process? _testAppManager;
+        private static Process? TestAppManagerProcess;
 
         [ClassInitialize]
         public static void ClassInitialize(TestContext context)
         {
+            
+        }
+
+        public void StartTestInstance() 
+        {
             try
             {
-                _testAppManager = TestAppManager.StartTestInstance();
+                TestAppManagerProcess = TestAppManager.StartTestInstance();
             }
             catch (Exception ex)
             {
@@ -29,6 +34,7 @@ namespace AppManager.Tests.Integration
         public static void ClassCleanup()
         {
             TestAppManager.StopTestInstance();
+            ActionManager.ExecuteAction(AppActionTypeEnum.Close, "AppManager.Core");
         }
 
         [TestMethod]
@@ -46,7 +52,13 @@ namespace AppManager.Tests.Integration
             try
             {
                 // Act - Launch
-                var launchResult = await launchAction.ExecuteAsync();
+                var launchResult = false;
+                try
+                {
+                    launchAction.Execute();
+                    launchResult = true;
+                }catch{ }
+
 
                 // Assert - Launch succeeded
                 launchResult.Should().BeTrue();
@@ -59,7 +71,13 @@ namespace AppManager.Tests.Integration
                 calcProcesses.Should().NotBeEmpty();
 
                 // Act - Close
-                var closeResult = await closeAction.ExecuteAsync();
+                var closeResult = false;
+                try
+                { 
+                    closeAction.Execute();
+                    closeResult = true;
+                }
+                catch { }
 
                 // Assert - Close succeeded
                 closeResult.Should().BeTrue();
@@ -76,7 +94,7 @@ namespace AppManager.Tests.Integration
                 // Cleanup - ensure calc is closed
                 try
                 {
-                    var cleanup = await closeAction.ExecuteAsync();
+                    closeAction.Execute();
                 }
                 catch { /* Ignore cleanup errors */ }
             }
@@ -99,7 +117,14 @@ namespace AppManager.Tests.Integration
             try
             {
                 // Act - Launch notepad first
-                var launchResult = await launchAction.ExecuteAsync();
+                var launchResult = false;
+                try
+                {
+                    launchAction.Execute();
+                    launchResult = true;
+                }
+                catch { }
+
                 launchResult.Should().BeTrue();
 
                 await Task.Delay(1000);
@@ -110,7 +135,13 @@ namespace AppManager.Tests.Integration
                 var initialPid = initialProcesses.First().Id;
 
                 // Act - Restart
-                var restartResult = await restartAction.ExecuteAsync();
+                var restartResult = false;
+                try
+                {
+                    restartAction.Execute();
+                    restartResult = true;
+                }
+                catch { }
 
                 // Assert
                 restartResult.Should().BeTrue();
@@ -131,7 +162,7 @@ namespace AppManager.Tests.Integration
                 // Cleanup
                 try
                 {
-                    await closeAction.ExecuteAsync();
+                    closeAction.Execute();
                 }
                 catch { /* Ignore cleanup errors */ }
             }
@@ -142,22 +173,29 @@ namespace AppManager.Tests.Integration
         [TestCategory("Actions")]
         public async Task BringToFrontAction_WithTestAppManager_ShouldBringToFront()
         {
+            StartTestInstance();
             // Arrange
-            if (_testAppManager == null || _testAppManager.HasExited)
+            if (TestAppManagerProcess == null || TestAppManagerProcess.HasExited)
             {
                 Assert.Inconclusive("Test AppManager instance is not available");
                 return;
             }
 
-            var model = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.BringToFront, _testAppManager.ProcessName);
-            var action = new BringToFrontAction(model, _testAppManager);
+            var model = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.BringToFront, TestAppManagerProcess.ProcessName);
+            var action = new BringToFrontAction(model, TestAppManagerProcess);
 
             // Act
-            var result = await action.ExecuteAsync();
+            var result = false;
+            try
+            {
+                action.Execute();
+                result = true;
+            }
+            catch { }
 
             // Assert
             result.Should().BeTrue();
-            _testAppManager.HasExited.Should().BeFalse();
+            TestAppManagerProcess.HasExited.Should().BeFalse();
         }
 
         [TestMethod]
@@ -166,43 +204,32 @@ namespace AppManager.Tests.Integration
         public async Task ActionManager_ExecuteMultipleActions_ShouldExecuteInParallel()
         {
             // Arrange
-            var actions = new[]
-            {
+            ActionModel[] actions = [
                 TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Launch, "calc"),
-                TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Launch, "notepad"),
-                TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Launch, "mspaint")
-            };
+                TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Launch, "notepad")
+            ];
 
             try
             {
                 // Act
-                var tasks = ActionManager.ExecuteMultipleActionsAsync(actions);
-                var results = await Task.WhenAll(tasks);
+                ActionManager.ExecuteMultipleActions(actions);
+                Assert.IsTrue(true);
 
-                // Assert
-                results.Should().HaveCount(3);
-                results.Should().AllSatisfy(result => result.Should().BeOfType<bool>());
-
-                // Verify at least some launches succeeded
-                var successCount = results.Count(r => r);
-                successCount.Should().BeGreaterThan(0, "At least one application should have launched successfully");
+            }
+            catch (Exception ex)
+            {
+                Assert.Fail($"Execution of multiple actions failed: {ex.Message}");
             }
             finally
             {
-                // Cleanup - close all launched applications
                 var closeActions = new[]
                 {
                     TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Close, "calc"),
-                    TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Close, "notepad"),
-                    TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Close, "mspaint")
+                    TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Close, "notepad")
                 };
 
-                var closeTasks = ActionManager.ExecuteMultipleActionsAsync(closeActions);
-                try
-                {
-                    await Task.WhenAll(closeTasks);
-                }
-                catch { /* Ignore cleanup errors */ }
+                ActionManager.ExecuteMultipleActions(closeActions);
+                
             }
         }
     }

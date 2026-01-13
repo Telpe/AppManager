@@ -86,21 +86,22 @@ namespace AppManager.Tests.Unit.Actions
             try
             {
                 // Act
-                var result = await action.ExecuteAsync();
+                action.Execute();
 
                 // Assert
-                result.Should().BeTrue();
-                
-                // Verify calc is running
                 var calcProcesses = System.Diagnostics.Process.GetProcessesByName("calc");
                 calcProcesses.Should().NotBeEmpty();
+            }
+            catch (Exception ex)
+            {
+                Assert.Fail($"Execution threw an exception: {ex.Message}");
             }
             finally
             {
                 // Cleanup - close calc
                 var closeModel = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Close, "calc");
                 var closeAction = new CloseAction(closeModel);
-                await closeAction.ExecuteAsync();
+                closeAction.Execute();
             }
         }
 
@@ -128,17 +129,23 @@ namespace AppManager.Tests.Unit.Actions
         [TestCategory("Actions")]
         public async Task ExecuteAsync_WhenCannotExecute_ShouldReturnFalse()
         {
-            // Arrange
-            var model = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Launch);
-            model.ExecutablePath = "invalid_path.exe";
-            model.AppName = "invalid";
-            var action = new LaunchAction(model);
+            try
+            {
+                // Arrange
+                var model = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Launch);
+                model.ExecutablePath = "invalid_path.exe";
+                model.AppName = "invalid";
+                var action = new LaunchAction(model);
 
-            // Act
-            var result = await action.ExecuteAsync();
-
-            // Assert
-            result.Should().BeFalse();
+                // Act
+                action.Execute();
+                Assert.Fail("Expected exception was not thrown.");
+            }
+            catch(Exception e)
+            {
+                // Assert
+                Assert.IsInstanceOfType(e, typeof(InvalidOperationException));
+            }
         }
 
         [TestMethod]
@@ -149,7 +156,7 @@ namespace AppManager.Tests.Unit.Actions
             // Arrange
             var model = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Launch, "test");
             model.Arguments = "--test-mode";
-            model.WorkingDirectory = @"C:\Test";
+            model.ExecutablePath = @"C:\Test";
 
             // Act
             var action = new LaunchAction(model);
@@ -157,7 +164,7 @@ namespace AppManager.Tests.Unit.Actions
             // Assert
             action.AppName.Should().Be("test");
             action.Arguments.Should().Be("--test-mode");
-            action.WorkingDirectory.Should().Be(@"C:\Test");
+            action.ExecutablePath.Should().Be(@"C:\Test");
         }
     }
 }

@@ -13,7 +13,7 @@ using System.Windows.Threading;
 
 namespace AppManager.Core.Triggers
 {
-    internal class KeybindTrigger : BaseTrigger, IKeybindTrigger
+    public class KeybindTrigger : BaseTrigger, IKeybindTrigger
     {
         public override TriggerTypeEnum TriggerType => TriggerTypeEnum.Keybind;
 
@@ -82,7 +82,7 @@ namespace AppManager.Core.Triggers
                 
             }
 
-            Debug.WriteLine($"Keybind trigger '{Name}' started for {TargetModifiers} + {TargetKey} with ID {MyHotkeyId}");
+            Log.WriteLine($"Keybind trigger '{Name}' started for {TargetModifiers} + {TargetKey} with ID {MyHotkeyId}");
         }
 
         private void MessageListenerLoop(HotkeyModel[] registeredKeys)
@@ -102,23 +102,23 @@ namespace AppManager.Core.Triggers
 
             while ((msgState = GlobalKeyboardHook.GetMessage(ref msg, IntPtr.Zero, 0, 0)) != 0)
             {
-                Debug.WriteLine($"Message received: {msg.Msg}, State: {msgState}");
+                Log.WriteLine($"Message received: {msg.Msg}, State: {msgState}");
                 if (msg.Msg == KeyboardHookConstants.WM_HOTKEY)
                 {
                     int hotkeyId = msg.WParam.ToInt32();
-                    Debug.WriteLine($"Hotkey pressed with ID: {hotkeyId}");
+                    Log.WriteLine($"Hotkey pressed with ID: {hotkeyId}");
 
                     try
                     {
                         HotkeyModel hotkey = registeredKeys.Where(a => a.Id == hotkeyId).First();
 
-                        Debug.WriteLine($"Hotkey pressed: {hotkey.Mods} + {hotkey.Key}");
+                        Log.WriteLine($"Hotkey pressed: {hotkey.Mods} + {hotkey.Key}");
                         
                         _ = hotkey.Dispatcher.InvokeAsync(hotkey.Trigger.ActivateTrigger);
                     }
                     catch (Exception ex)
                     {
-                        Debug.WriteLine($"Error processing hotkey ID {hotkeyId}: {ex.Message}");
+                        Log.WriteLine($"Error processing hotkey ID {hotkeyId}: {ex.Message}");
                     }
 
                 }
@@ -129,7 +129,7 @@ namespace AppManager.Core.Triggers
                 GlobalKeyboardHook.UnregisterHotKey(hotkey.HWnd, hotkey.Id);
             } 
 
-            Debug.WriteLine($"MessageListener thread ended.");
+            Log.WriteLine($"MessageListener thread ended.");
         }
 
         public override void Stop()
@@ -151,7 +151,7 @@ namespace AppManager.Core.Triggers
                     
                     if (MessageListener.IsAlive)
                     {
-                        Debug.WriteLine("Warning: MessageListener thread did not terminate in a timely manner.\nTrying interrupt");
+                        Log.WriteLine("Warning: MessageListener thread did not terminate in a timely manner.\nTrying interrupt");
                         MessageListener.Interrupt();
                     }
 
@@ -240,7 +240,7 @@ namespace AppManager.Core.Triggers
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error handling keyboard event in keybind trigger '{Name}': {ex.Message}");
+                Log.WriteLine($"Error handling keyboard event in keybind trigger '{Name}': {ex.Message}");
             }
         }
 
@@ -270,7 +270,7 @@ namespace AppManager.Core.Triggers
         {
             if (KeyPressedValue && ModifiersPressedValue)
             {
-                Debug.WriteLine($"Shortcut trigger '{Name}' activated");
+                Log.WriteLine($"Shortcut trigger '{Name}' activated");
 
                 // Trigger the configured action
                 ActivateTrigger();

@@ -43,7 +43,7 @@ namespace AppManager.Settings
         {
             InitializeComponent();
 
-            Debug.WriteLine("MainWindow initialized");
+            Log.WriteLine("MainWindow initialized");
 
             this.Closing += Window_Closing;
 
@@ -75,11 +75,11 @@ namespace AppManager.Settings
                 // Set the current profile as selected
                 ProfileSelector.SelectedItem = SettingsManager.CurrentSettings.LastUsedProfileName;
                 
-                Debug.WriteLine($"Profile selector initialized with {allProfiles.Length} profiles. Current: {ProfileSelector.SelectedItem}");
+                Log.WriteLine($"Profile selector initialized with {allProfiles.Length} profiles. Current: {ProfileSelector.SelectedItem}");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error initializing profile selector: {ex.Message}");
+                Log.WriteLine($"Error initializing profile selector: {ex.Message}");
                 
                 // Fallback: just show the current profile
                 ProfileSelector.ItemsSource = new[] { ProfileManager.DefaultProfileFilename };
@@ -99,7 +99,7 @@ namespace AppManager.Settings
                     // Only update if the profile actually changed
                     if (SettingsManager.CurrentSettings.LastUsedProfileName != selectedProfile)
                     {
-                        Debug.WriteLine($"Profile changed from '{SettingsManager.CurrentSettings.LastUsedProfileName}' to '{selectedProfile}'");
+                        Log.WriteLine($"Profile changed from '{SettingsManager.CurrentSettings.LastUsedProfileName}' to '{selectedProfile}'");
                         
                         // Update settings
                         SettingsManager.CurrentSettings.LastUsedProfileName = selectedProfile;
@@ -111,13 +111,13 @@ namespace AppManager.Settings
                         // Reload the navigation and page content
                         LoadNav1List(ProfileManager.CurrentProfile.SelectedNav1Menu);
                         
-                        Debug.WriteLine($"Profile switched to: {selectedProfile}");
+                        Log.WriteLine($"Profile switched to: {selectedProfile}");
                     }
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error handling profile selection change: {ex.Message}");
+                Log.WriteLine($"Error handling profile selection change: {ex.Message}");
                 MessageBox.Show($"Error switching profile: {ex.Message}", "Profile Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
@@ -146,11 +146,11 @@ namespace AppManager.Settings
                     ProfileSelector.SelectedItem = currentProfile;
                 }
                 
-                Debug.WriteLine($"Profile selector refreshed with {allProfiles.Length} profiles");
+                Log.WriteLine($"Profile selector refreshed with {allProfiles.Length} profiles");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error refreshing profile selector: {ex.Message}")
+                Log.WriteLine($"Error refreshing profile selector: {ex.Message}")
 ;            }
         }
 
@@ -171,18 +171,18 @@ namespace AppManager.Settings
                     if (File.Exists(iconPath))
                     {
                         this.Icon = FileManager.ExtractBitmapSourceFromExecutable(iconPath);
-                        Debug.WriteLine("Using AppManager.exe icon for Settings window");
+                        Log.WriteLine("Using AppManager.exe icon for Settings window");
                     }
                     else
                     {
                         this.Icon = FileManager.GetShellIcon();
-                        Debug.WriteLine("Using shell icon as fallback for Settings");
+                        Log.WriteLine("Using shell icon as fallback for Settings");
                     }
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error setting window icon: {ex.Message}");
+                Log.WriteLine($"Error setting window icon: {ex.Message}");
             }
         }
 
@@ -230,13 +230,13 @@ namespace AppManager.Settings
                 // Open the folder in Windows Explorer
                 Process.Start("explorer.exe", dataPath);
                 
-                Debug.WriteLine($"Opened data folder: {dataPath}");
+                Log.WriteLine($"Opened data folder: {dataPath}");
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error opening data folder: {ex.Message}", "Error", 
                     MessageBoxButton.OK, MessageBoxImage.Error);
-                Debug.WriteLine($"Error opening data folder: {ex.Message}");
+                Log.WriteLine($"Error opening data folder: {ex.Message}");
             }
         }
 
@@ -259,7 +259,7 @@ namespace AppManager.Settings
                 // Apply theme if you have themes implemented
                 // ApplyTheme(settings.Theme);
                 
-                Debug.WriteLine($"Applied window settings");
+                Log.WriteLine($"Applied window settings");
             }
         }
 
@@ -319,7 +319,7 @@ namespace AppManager.Settings
                         // Reload the navigation list
                         LoadNav1List("apps");
 
-                        Debug.WriteLine($"Added new app: {newApp.AppName}");
+                        Log.WriteLine($"Added new app: {newApp.AppName}");
 
                         break;
                     }
@@ -337,7 +337,7 @@ namespace AppManager.Settings
                         // Reload the navigation list
                         LoadNav1List("groups");
 
-                        Debug.WriteLine($"Added new group: {newGroup.GroupName}");
+                        Log.WriteLine($"Added new group: {newGroup.GroupName}");
 
                         break;
                     }
@@ -381,7 +381,7 @@ namespace AppManager.Settings
                     // {
                     //     // Add shortcut logic here
                     //     LoadNav1List("shortcuts");
-                    //     Debug.WriteLine($"Added new shortcut: {shortcutName}");
+                    //     Log.WriteLine($"Added new shortcut: {shortcutName}");
                     // });
                     // Nav1List.Children.Add(newShortcutTextBox);
                     break;
@@ -416,10 +416,10 @@ namespace AppManager.Settings
         {
             if(sender is Button fromSender)
             {
-                Debug.WriteLine($"Nav1MenuButton_Click: {fromSender.Content}\nGetting Nav1List");
+                Log.WriteLine($"Nav1MenuButton_Click: {fromSender.Content}\nGetting Nav1List");
                 ProfileManager.CurrentProfile.SelectedNav1Menu = fromSender.Content.ToString() ?? "";
                 LoadNav1List(ProfileManager.CurrentProfile.SelectedNav1Menu);
-                Debug.WriteLine($"Update profile with selected page");
+                Log.WriteLine($"Update profile with selected page");
                 // Update profile with selected page
                 
             }
@@ -440,62 +440,62 @@ namespace AppManager.Settings
         private void ShowAllApps()
         {
             // Implementation to show all apps in the Apps page
-            Debug.WriteLine("Showing all apps");
+            Log.WriteLine("Showing all apps");
         }
 
         private void ShowRunningApps()
         {
             // Implementation to show only running apps
-            Debug.WriteLine("Showing running apps");
+            Log.WriteLine("Showing running apps");
         }
 
         private void ShowFavorites()
         {
             // Implementation to show favorite apps from profile
-            Debug.WriteLine($"Showing favorite apps: {string.Join(", ", ProfileManager.CurrentProfile.FavoriteApps)}");
+            Log.WriteLine($"Showing favorite apps: {string.Join(", ", ProfileManager.CurrentProfile.FavoriteApps)}");
         }
 
         private void ShowRecentlyUsed()
         {
             // Implementation to show recently used apps
-            Debug.WriteLine("Showing recently used apps");
+            Log.WriteLine("Showing recently used apps");
         }
 
         // Navigation action methods for AppGroups page
         private void ShowGamingGroup()
         {
-            Debug.WriteLine("Showing gaming group");
+            Log.WriteLine("Showing gaming group");
         }
 
         private void ShowDevelopmentGroup()
         {
-            Debug.WriteLine("Showing development group");
+            Log.WriteLine("Showing development group");
         }
 
         private void ShowProductivityGroup()
         {
-            Debug.WriteLine("Showing productivity group");
+            Log.WriteLine("Showing productivity group");
         }
 
         private void ShowMediaGroup()
         {
-            Debug.WriteLine("Showing media group");
+            Log.WriteLine("Showing media group");
         }
 
         // Navigation action methods for Shortcuts page
         private void ShowSystemShortcuts()
         {
-            Debug.WriteLine("Showing system shortcuts");
+            Log.WriteLine("Showing system shortcuts");
         }
 
         private void ShowCustomShortcuts()
         {
-            Debug.WriteLine("Showing custom shortcuts");
+            Log.WriteLine("Showing custom shortcuts");
         }
 
         private void ShowQuickActions()
         {
-            Debug.WriteLine("Showing quick actions");
+            Log.WriteLine("Showing quick actions");
         }
 
         private void Window_Closing(object? sender, CancelEventArgs e)

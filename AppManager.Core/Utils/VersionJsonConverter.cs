@@ -21,7 +21,7 @@ namespace AppManager.Core.Utils
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error parsing version '{versionString}': {ex.Message}");
+                Log.WriteLine($"Error parsing version '{versionString}': {ex.Message}");
                 return new Version { Exspansion = 0, Patch = 0, Hotfix = 0, Work = 0 };
             }
         }

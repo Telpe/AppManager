@@ -1,6 +1,9 @@
 using AppManager.Core.Actions;
+using AppManager.Core.Conditions;
 using AppManager.Core.Models;
 using AppManager.Core.Triggers;
+using System.IO;
+using System.Printing;
 
 namespace AppManager.Tests.TestUtilities
 {
@@ -41,10 +44,9 @@ namespace AppManager.Tests.TestUtilities
             {
                 TriggerType = triggerType,
                 Inactive = false,
-                Key = triggerType == TriggerTypeEnum.Keybind ? "F12" : null,
-                Modifier = triggerType == TriggerTypeEnum.Keybind ? "Ctrl" : null,
-                Actions = new[] { CreateBasicActionModel() },
-                Conditions = Array.Empty<ConditionModel>()
+                Key = triggerType == TriggerTypeEnum.Keybind ? System.Windows.Input.Key.F12 : null,
+                Modifiers = triggerType == TriggerTypeEnum.Keybind ? System.Windows.Input.ModifierKeys.Control : null,
+                Actions = [CreateBasicActionModel()]
             };
         }
 
@@ -55,10 +57,10 @@ namespace AppManager.Tests.TestUtilities
         {
             return appName.ToLower() switch
             {
-                "notepad" => "notepad.exe",
-                "calc" or "calculator" => "calc.exe",
-                "mspaint" or "paint" => "mspaint.exe",
-                "cmd" or "command" => "cmd.exe",
+                "notepad" => "C:\\Windows\\System32\\notepad.exe",
+                "calc" or "calculator" => "C:\\Windows\\System32\\calc.exe",
+                "mspaint" or "paint" => "start mspaint",
+                "cmd" or "command" => "C:\\Windows\\System32\\cmd.exe",
                 _ => $"{appName}.exe"
             };
         }
@@ -77,7 +79,7 @@ namespace AppManager.Tests.TestUtilities
                 FavoriteApps = new[] { "notepad", "calc" },
                 SelectedNav1Menu = "Apps",
                 SelectedNav1List = "",
-                Triggers = new[] { CreateBasicTriggerModel() }
+                Triggers = [CreateBasicTriggerModel()]
             };
         }
 
@@ -107,10 +109,9 @@ namespace AppManager.Tests.TestUtilities
         {
             return new ConditionModel
             {
-                ConditionType = ConditionTypeEnum.IsRunning,
-                AppName = "notepad",
-                WindowTitle = null,
-                ExpectedResult = true
+                ConditionType = ConditionTypeEnum.ProcessRunning,
+                ProcessName = "notepad",
+                WindowTitle = null
             };
         }
     }

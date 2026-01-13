@@ -41,7 +41,7 @@ namespace AppManager.Core.Triggers
                 MonitoredButtonValue = button;
                 MonitoredButtonValue.Click += OnButtonClicked;
 
-                System.Diagnostics.Debug.WriteLine($"Button trigger '{Name}' started monitoring button '{button.Name}'");
+                Log.WriteLine($"Button trigger '{Name}' started monitoring button '{button.Name}'");
             }
             else
             {
@@ -59,7 +59,7 @@ namespace AppManager.Core.Triggers
 
         private void OnButtonClicked(object sender, System.Windows.RoutedEventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine($"Button trigger '{Name}' activated");
+            Log.WriteLine($"Button trigger '{Name}' activated");
             
             // Trigger the configured action
             ActivateTrigger();

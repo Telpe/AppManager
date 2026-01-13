@@ -1,6 +1,6 @@
-﻿using AppManager.Core.Actions;
+﻿global using AppManager.Core.Utils;
+using AppManager.Core.Actions;
 using AppManager.Core.Models;
-using AppManager.Core.Utils;
 using System.Configuration;
 using System.Data;
 using System.Diagnostics;
@@ -25,7 +25,27 @@ namespace AppManager
             InitializeComponent();
 
             SetCoreRunning();
+        }
 
+        protected override void OnExit(ExitEventArgs e)
+        {
+            try
+            {
+                Log.WriteLine("Application is shutting down...");
+                
+                // Dispose of logging resources
+                Log.Dispose();
+            }
+            catch (Exception ex)
+            {
+                // Log any cleanup errors, but don't prevent shutdown
+                System.Diagnostics.Debug.WriteLine($"Error during application shutdown: {ex.Message}");
+            }
+            finally
+            {
+                // Always call the base OnExit to ensure proper WPF cleanup
+                base.OnExit(e);
+            }
         }
 
         protected bool ShouldITerminate()
@@ -38,9 +58,9 @@ namespace AppManager
                     AppName = notSelf.ProcessName
                 }, notSelf);
 
-                if (bringToFrontAction.CanExecute()) { bringToFrontAction.ExecuteAsync(); }
+                if (bringToFrontAction.CanExecute()) { bringToFrontAction.Execute(); }
 
-                Debug.WriteLine($"{notSelf.ProcessName} is already running, bringing existing instance to front");
+                Log.WriteLine($"{notSelf.ProcessName} is already running, bringing existing instance to front");
 
                 return true;
             }
@@ -67,15 +87,19 @@ namespace AppManager
         {
             if (!ProcessManager.IsProcessRunning("AppManager.Core"))
             {
-                // Execute asynchronously without waiting
-                ActionManager.ExecuteActionAsync(new ActionModel
+                Log.WriteLine("AppManager.Core not running, launching it");
+                
+                ActionManager.ExecuteAction(new ActionModel
                 {
                     ActionType = AppActionTypeEnum.Launch,
                     AppName = "AppManager.Core"
-                }).Wait();
-                Debug.WriteLine("AppManager.Core not running, launching it");
+                });
             }
         }
-    }
 
+        public void Dispose()
+        {
+            Log.Dispose();
+        }
+    }
 }

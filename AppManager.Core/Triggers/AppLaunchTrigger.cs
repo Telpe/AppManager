@@ -50,7 +50,7 @@ namespace AppManager.Core.Triggers
                     
             ProcessWatcherValue.Start();
                     
-            Debug.WriteLine($"App launch trigger '{Name}' started monitoring for '{ProcessName}'");
+            Log.WriteLine($"App launch trigger '{Name}' started monitoring for '{ProcessName}'");
         }
 
         public override void Stop()
@@ -62,11 +62,11 @@ namespace AppManager.Core.Triggers
                 ProcessWatcherValue.Stop();
                 ProcessWatcherValue.Dispose();
                 
-                Debug.WriteLine($"App launch trigger '{Name}' stopped");
+                Log.WriteLine($"App launch trigger '{Name}' stopped");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error stopping app launch trigger '{Name}': {ex.Message}");
+                Log.WriteLine($"Error stopping app launch trigger '{Name}': {ex.Message}");
             }
         }
 
@@ -79,7 +79,7 @@ namespace AppManager.Core.Triggers
 
                 if (IsTargetProcess(processName))
                 {
-                    Debug.WriteLine($"App launch trigger '{Name}' detected launch of '{processName}' (PID: {processId})");
+                    Log.WriteLine($"App launch trigger '{Name}' detected launch of '{processName}' (PID: {processId})");
                     
                     // Trigger the configured action
                     ActivateTrigger();
@@ -87,7 +87,7 @@ namespace AppManager.Core.Triggers
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error processing app launch event in trigger '{Name}': {ex.Message}");
+                Log.WriteLine($"Error processing app launch event in trigger '{Name}': {ex.Message}");
             }
         }
 

@@ -55,7 +55,7 @@ namespace AppManager.Core.Actions
 
         public abstract ActionModel ToModel();
 
-        protected abstract Task<bool> ExecuteActionAsync();
+        protected abstract void ExecuteAction();
 
         protected virtual bool CanExecuteAction() { return true; }
 
@@ -65,7 +65,7 @@ namespace AppManager.Core.Actions
             {
                 if (!condition.Execute())
                 {
-                    System.Diagnostics.Debug.WriteLine($"Condition {condition.ConditionType} failed for action {GetType().Name}");
+                    Log.WriteLine($"Condition {condition.ConditionType} failed for action {GetType().Name}");
                     return false;
                 }
             }
@@ -73,15 +73,15 @@ namespace AppManager.Core.Actions
             return true;
         }
 
-        public Task<bool> ExecuteAsync()
+        public void Execute()
         {
             if (!CanExecute())
             {
-                return Task.FromResult(false);
+                Log.WriteLine($"Action {ActionType} cannot be executed due to failing conditions or action constraints.");
             }
             else
             {
-                return ExecuteActionAsync();
+                ExecuteAction();
             }
         }
 

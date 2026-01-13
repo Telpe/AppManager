@@ -22,18 +22,18 @@ namespace AppManager.Core.Utils
                 // Check if file was actually loaded (has non-default values)
                 if (!string.IsNullOrEmpty(settings.Theme))
                 {
-                    Debug.WriteLine("Settings loaded successfully");
+                    Log.WriteLine("Settings loaded successfully");
                 }
                 else
                 {
                     settings = new SettingsModel();
                     _CurrentSettings = settings;
-                    Debug.WriteLine("Default settings created");
+                    Log.WriteLine("Default settings created");
                 }
             }
             catch (System.Exception ex)
             {
-                Debug.WriteLine($"Error loading settings: {ex.Message}");
+                Log.WriteLine($"Error loading settings: {ex.Message}");
                 settings = new SettingsModel();
             }
 
@@ -50,11 +50,11 @@ namespace AppManager.Core.Utils
             
             if (success)
             {
-                Debug.WriteLine("Settings saved successfully");
+                Log.WriteLine("Settings saved successfully");
             }
             else
             {
-                Debug.WriteLine("Failed to save settings");
+                Log.WriteLine("Failed to save settings");
             }
         }
 

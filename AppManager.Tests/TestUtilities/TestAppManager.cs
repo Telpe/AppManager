@@ -1,3 +1,5 @@
+using AppManager.Core.Utils;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Diagnostics;
 using System.IO;
 
@@ -45,6 +47,12 @@ namespace AppManager.Tests.TestUtilities
             Thread.Sleep(2000);
             
             return _appManagerProcess;
+        }
+
+        [ClassCleanup]
+        public static void ClassCleanup()
+        {
+            TestAppManager.StopTestInstance();
         }
 
         /// <summary>

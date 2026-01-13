@@ -41,13 +41,13 @@ namespace AppManager.Core.Triggers
 
                 TriggersValue = TriggersValue.Append(trigger).ToArray();
 
-                Debug.WriteLine($"Trigger '{trigger.Name}' registered successfully");
+                Log.WriteLine($"Trigger '{trigger.Name}' registered successfully");
 
                 return true;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error registering trigger '{trigger.Name}': {ex.Message}");
+                Log.WriteLine($"Error registering trigger '{trigger.Name}': {ex.Message}");
                 return false;
             }
         }
@@ -61,7 +61,7 @@ namespace AppManager.Core.Triggers
             {
                 trigger.TriggerActivated -= OnTriggerActivated;
                 trigger.Dispose();
-                System.Diagnostics.Debug.WriteLine($"Trigger '{triggerName}' unregistered successfully");
+                Log.WriteLine($"Trigger '{triggerName}' unregistered successfully");
             }
         }
 
@@ -84,7 +84,7 @@ namespace AppManager.Core.Triggers
         {
             if (sender is BaseTrigger trigger)
             {
-                System.Diagnostics.Debug.WriteLine($"Trigger '{trigger.Name}' activated");
+                Log.WriteLine($"Trigger '{trigger.Name}' activated");
                 if (trigger.CanExecute())
                 {
                     _ = Task.Run(() => { 
@@ -92,29 +92,19 @@ namespace AppManager.Core.Triggers
                     {
                         try
                         {
-                            Task<bool> exe = action.ExecuteAsync();
-                                exe.Wait();
-                                if (exe.Result)
-                                {
-                                    System.Diagnostics.Debug.WriteLine($"Action '{action.ActionType}' executed successfully for trigger '{trigger.Name}'.");
-                                }
-                                else
-                                {
-
-                                    Debug.WriteLine($"Action {action.ActionType} cannot be executed.");
-                                }
-                                    
+                            action.Execute();
+                            Log.WriteLine($"Action '{action.ActionType}' executed successfully for trigger '{trigger.Name}'.");  
                         }
                         catch (Exception ex)
                         {
-                            System.Diagnostics.Debug.WriteLine($"Error executing action '{action.ActionType}' for trigger '{trigger.Name}': {ex.Message}");
+                            Log.WriteLine($"Error executing action '{action.ActionType}' for trigger '{trigger.Name}': {ex.Message}");
                         }
                     }
                     });
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine($"Trigger '{trigger.Name}' conditions not met; actions will not be executed");
+                    Log.WriteLine($"Trigger '{trigger.Name}' conditions not met; actions will not be executed");
                 }
             }
         }

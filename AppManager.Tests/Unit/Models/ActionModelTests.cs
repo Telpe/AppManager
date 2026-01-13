@@ -40,14 +40,13 @@ namespace AppManager.Tests.Unit.Models
             {
                 ActionType = AppActionTypeEnum.Launch,
                 AppName = "TestApp",
-                ExecutablePath = @"C:\Test\app.exe",
                 Arguments = "--test",
                 WindowTitle = "Test Window",
                 ForceOperation = true,
                 IncludeChildProcesses = false,
                 IncludeSimilarNames = true,
                 TimeoutMs = 5000,
-                WorkingDirectory = @"C:\Test"
+                ExecutablePath = @"C:\Test"
             };
 
             // Assert
@@ -60,7 +59,6 @@ namespace AppManager.Tests.Unit.Models
             model.IncludeChildProcesses.Should().BeFalse();
             model.IncludeSimilarNames.Should().BeTrue();
             model.TimeoutMs.Should().Be(5000);
-            model.WorkingDirectory.Should().Be(@"C:\Test");
         }
 
         [TestMethod]

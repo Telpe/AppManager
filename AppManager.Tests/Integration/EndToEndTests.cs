@@ -58,7 +58,7 @@ namespace AppManager.Tests.Integration
             // Arrange - Create a button trigger (safer for testing than keybind)
             var actionModel = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Launch, "calc");
             var triggerModel = TestDataBuilder.CreateBasicTriggerModel(TriggerTypeEnum.Button, "TestButtonTrigger");
-            triggerModel.Actions = new[] { actionModel };
+            triggerModel.Actions =  [actionModel];
 
             var trigger = TriggerManager.CreateTrigger(triggerModel);
 
@@ -80,19 +80,22 @@ namespace AppManager.Tests.Integration
                 if (trigger.Actions.Length > 0)
                 {
                     var action = trigger.Actions[0];
-                    var executeResult = await action.ExecuteAsync();
-                    executeResult.Should().BeTrue();
+                    action.Execute();
 
                     // Verify calc was launched
-                    await Task.Delay(1000);
+                    Task.Delay(1000).Wait();
                     var calcProcesses = Process.GetProcessesByName("calc");
                     calcProcesses.Should().NotBeEmpty();
 
                     // Clean up - close calc
                     var closeModel = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Close, "calc");
                     var closeAction = new CloseAction(closeModel);
-                    await closeAction.ExecuteAsync();
+                    closeAction.Execute();
                 }
+            }
+            catch (Exception ex)
+            {
+                Assert.Fail($"Exception during test execution: {ex.Message}");
             }
             finally
             {
@@ -166,15 +169,17 @@ namespace AppManager.Tests.Integration
             try
             {
                 // Act
-                var tasks = ActionManager.ExecuteMultipleActionsAsync(actions);
-                var results = await Task.WhenAll(tasks);
+                ActionManager.ExecuteMultipleActions(actions);
+                Assert.IsTrue(true, "Actions executed without exceptions.");
 
                 stopwatch.Stop();
 
                 // Assert
                 stopwatch.ElapsedMilliseconds.Should().BeLessThan(30000); // 30 seconds max
-                results.Should().HaveCount(actionCount);
-                results.Should().AllSatisfy(result => result.Should().BeOfType<bool>());
+            }
+            catch (Exception ex)
+            {
+                Assert.Fail($"Exception during action execution: {ex.Message}");
             }
             finally
             {
@@ -185,7 +190,7 @@ namespace AppManager.Tests.Integration
                     try
                     {
                         var closeModel = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Close, appName);
-                        await ActionManager.ExecuteActionAsync(closeModel);
+                        ActionManager.ExecuteAction(closeModel);
                     }
                     catch { /* Ignore cleanup errors */ }
                 }

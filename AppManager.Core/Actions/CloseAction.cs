@@ -27,33 +27,34 @@ namespace AppManager.Core.Actions
             ForceOperation = model.ForceOperation;
         }
 
-        protected override Task<bool> ExecuteActionAsync()
+        protected override void ExecuteAction()
         {
-            return Task<bool>.Run(() =>
+            try
             {
-                try
-                {
-                    var processes = ProcessManager.FindProcesses(
-                        AppName, 
-                        IncludeSimilarNames ?? false, 
-                        windowTitle: null, 
-                        requireMainWindow: false, 
-                        IncludeChildProcesses ?? false);
+                Process[] processes = ProcessManager.FindProcesses(
+                    AppName, 
+                    IncludeSimilarNames ?? false, 
+                    windowTitle: null, 
+                    requireMainWindow: false, 
+                    IncludeChildProcesses ?? true);
                 
-                    if (!processes.Any())
-                    {
-                        Debug.WriteLine($"No processes found for: {AppName}");
-                        return false;
-                    }
-
-                    return ProcessManager.CloseProcesses(processes, TimeoutMs ?? 1000, ForceOperation ?? false);
-                }
-                catch (Exception ex)
+                if (!processes.Any())
                 {
-                    Debug.WriteLine($"Failed to close {AppName}: {ex.Message}");
-                    return false;
+                    Log.WriteLine($"No processes found for: {AppName}");
+                    return;
                 }
-            });
+
+                Log.WriteLine($"Closing {processes.Length} process{(processes.Length!=1?"es":"")} for: {AppName}");
+
+                if (!ProcessManager.CloseProcesses(processes, TimeoutMs ?? 3000, ForceOperation ?? true))
+                {
+                    throw new Exception($"Failed to close all processes for: {AppName}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.WriteLine($"Failed to close {AppName}: {ex.Message}");
+            }
         }
 
         public override ActionModel ToModel()

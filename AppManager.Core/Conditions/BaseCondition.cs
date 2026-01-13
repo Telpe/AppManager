@@ -31,7 +31,7 @@ namespace AppManager.Core.Conditions
                 message += $" - {details}";
             }
             
-            System.Diagnostics.Debug.WriteLine(message);
+            Log.WriteLine(message);
         }
 
     }

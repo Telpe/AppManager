@@ -71,49 +71,43 @@ namespace AppManager.Core.Actions
             return !(_TargetProcess?.HasExited ?? true);
         }
 
-        protected override Task<bool> ExecuteActionAsync()
+        protected override void ExecuteAction()
         {
-            return Task<bool>.Run(() =>
+            try
             {
-                try
+                IntPtr mainWindowHandle = _TargetProcess?.MainWindowHandle ?? IntPtr.Zero;
+                
+                if (mainWindowHandle == IntPtr.Zero)
                 {
-                    IntPtr mainWindowHandle = _TargetProcess?.MainWindowHandle ?? IntPtr.Zero;
-                
-                    if (mainWindowHandle == IntPtr.Zero)
-                    {
-                        Debug.WriteLine($"No main window found for process: {_TargetProcess?.ProcessName}");
-                        return false;
-                    }
-
-                    // If window is minimized, restore it first
-                    if (IsIconic(mainWindowHandle))
-                    {
-                        ShowWindow(mainWindowHandle, SW_RESTORE);
-                    }
-                    else
-                    {
-                        ShowWindow(mainWindowHandle, SW_SHOW);
-                    }
-
-                    // Make window topmost temporarily
-                    SetWindowPos(mainWindowHandle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-                
-                    // Bring to foreground
-                    SetForegroundWindow(mainWindowHandle);
-                
-                    // Wait a moment, then remove topmost flag
-                    Task.Delay(100).Wait();
-                    SetWindowPos(mainWindowHandle, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-
-                    Debug.WriteLine($"Successfully brought to front: {AppName}");
-                    return true;
+                    throw new Exception($"No main window found for process: {_TargetProcess?.ProcessName}");
                 }
-                catch (Exception ex)
+
+                // If window is minimized, restore it first
+                if (IsIconic(mainWindowHandle))
                 {
-                    Debug.WriteLine($"Failed to bring to front {AppName}: {ex.Message}");
-                    return false;
+                    ShowWindow(mainWindowHandle, SW_RESTORE);
                 }
-            });
+                else
+                {
+                    ShowWindow(mainWindowHandle, SW_SHOW);
+                }
+
+                // Make window topmost temporarily
+                SetWindowPos(mainWindowHandle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+                
+                // Bring to foreground
+                SetForegroundWindow(mainWindowHandle);
+                
+                // Wait a moment, then remove topmost flag
+                Task.Delay(100).Wait();
+                SetWindowPos(mainWindowHandle, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+
+                Log.WriteLine($"Successfully brought to front: {AppName}");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Failed to bring to front {AppName}", ex);
+            }
         }
 
         public override ActionModel ToModel()

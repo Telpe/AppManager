@@ -12,7 +12,7 @@ using System.Windows.Interop;
 
 namespace AppManager.Core.Keybinds
 {
-    public partial class GlobalKeyboardHook : IDisposable
+    public partial class GlobalKeyboardHook
     {
         public event EventHandler<GlobalKeyboardHookEventArgs>? KeyboardPressed;
 
@@ -43,12 +43,12 @@ namespace AppManager.Core.Keybinds
             if (WindowsHookHandleValue == IntPtr.Zero)
             {
                 int errorCode = Marshal.GetLastWin32Error();
-                System.Diagnostics.Debug.WriteLine($"SetWindowsHookEx failed with error: {errorCode}");
+                Log.WriteLine($"SetWindowsHookEx failed with error: {errorCode}");
                 throw new Win32Exception(errorCode, $"Failed to adjust keyboard hooks for '{Process.GetCurrentProcess().ProcessName}'. Error {errorCode}: {new Win32Exception(errorCode).Message}.");
             }
             else
             {
-                System.Diagnostics.Debug.WriteLine("GlobalKeyboardHook installed successfully");
+                Log.WriteLine("GlobalKeyboardHook installed successfully");
             }
         }
 
@@ -155,7 +155,7 @@ namespace AppManager.Core.Keybinds
 
         public IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam)
         {
-            System.Diagnostics.Debug.WriteLine($"Hook called: nCode={nCode}, wParam={wParam}, lParam={lParam}");
+            Log.WriteLine($"Hook called: nCode={nCode}, wParam={wParam}, lParam={lParam}");
             
             bool fEatKeyStroke = false;
 
@@ -163,7 +163,7 @@ namespace AppManager.Core.Keybinds
             if (nCode >= 0)
             {
                 var wparamTyped = wParam.ToInt32();
-                System.Diagnostics.Debug.WriteLine($"Key event: {wparamTyped}");
+                Log.WriteLine($"Key event: {wparamTyped}");
                 
                 if (Enum.IsDefined(typeof(KeyboardState), wparamTyped))
                 {
@@ -174,7 +174,7 @@ namespace AppManager.Core.Keybinds
                     var eventArguments = new GlobalKeyboardHookEventArgs(p, (KeyboardState)wparamTyped);
                     var key = (Key)p.VirtualCode;
                     
-                    System.Diagnostics.Debug.WriteLine($"Key pressed: {key}, State: {(KeyboardState)wparamTyped}");
+                    Log.WriteLine($"Key pressed: {key}, State: {(KeyboardState)wparamTyped}");
 
                     if (RegisteredKeys == null || RegisteredKeys.Contains(key))
                     {

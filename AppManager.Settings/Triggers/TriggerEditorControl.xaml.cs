@@ -393,7 +393,7 @@ namespace AppManager.Settings.Triggers
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"RemoveConditionButton_Click error: {ex.Message}");
+                Log.WriteLine($"RemoveConditionButton_Click error: {ex.Message}");
             }
         }
 
@@ -416,7 +416,7 @@ namespace AppManager.Settings.Triggers
         {
             if (e.OriginalSource is Button button && button.Tag is ModelListItem<ActionModel> actionModelListItem)
             {
-                Debug.WriteLine($"Edit action: {actionModelListItem.DisplayName}");
+                Log.WriteLine($"Edit action: {actionModelListItem.DisplayName}");
 
                 try
                 {
@@ -439,7 +439,7 @@ namespace AppManager.Settings.Triggers
                             // Mark as edited
                             AnnounceEdited();
 
-                            Debug.WriteLine($"Action {actionModelListItem.DisplayName} updated successfully");
+                            Log.WriteLine($"Action {actionModelListItem.DisplayName} updated successfully");
                             ((MainWindow)Application.Current.MainWindow)?.HideOverlay();
                         }
                         
@@ -447,13 +447,13 @@ namespace AppManager.Settings.Triggers
 
                     actionEditor.Edited += (s, args) =>
                     {
-                        Debug.WriteLine($"Action edited for {actionModelListItem.DisplayName}");
+                        Log.WriteLine($"Action edited for {actionModelListItem.DisplayName}");
                         AnnounceEdited();
                     };
 
                     actionEditor.Cancel += (s, args) =>
                     {
-                        Debug.WriteLine($"Action editing cancelled for {actionModelListItem.DisplayName}");
+                        Log.WriteLine($"Action editing cancelled for {actionModelListItem.DisplayName}");
                         ((MainWindow)Application.Current.MainWindow)?.HideOverlay();
                     };
 
@@ -461,7 +461,7 @@ namespace AppManager.Settings.Triggers
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"Error opening action editor: {ex.Message}");
+                    Log.WriteLine($"Error opening action editor: {ex.Message}");
                     MessageBox.Show($"Error opening action editor: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }

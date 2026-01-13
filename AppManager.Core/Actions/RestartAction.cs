@@ -47,49 +47,33 @@ namespace AppManager.Core.Actions
             return _Launch.CanExecute();
         }
 
-        protected override Task<bool> ExecuteActionAsync()
+        protected override void ExecuteAction()
         {
-            return Task<bool>.Run(() =>
+
+
+            if (_Close?.CanExecute() ?? false)
             {
                 try
                 {
-                    if (_Close?.CanExecute()??false)
-                    {
-                        // First close the application
-                        var closed = _Close.ExecuteAsync();
-                        closed.Wait();
-
-                        if (!(closed?.Result ?? false))
-                        {
-                            Debug.WriteLine($"Failed to close {AppName} for restart");
-                        }
-
-                        // Wait a moment before launching
-                        Task.Delay(1000).Wait();
-                    }
-                    else
-                    {
-                        Debug.WriteLine($"Close action can not be executed for {AppName}, proceeding to launch.");
-                    }
-
-                    var launched = _Launch?.ExecuteAsync();
-                    launched?.Wait();
-
-                    if (!(launched?.Result ?? false))
-                    {
-                        Debug.WriteLine($"Failed to launch {AppName} after close");
-                        return false;
-                    }
-
-                    Debug.WriteLine($"Successfully restarted: {AppName}");
-                    return true;
+                    _Close.Execute();
                 }
-                catch (Exception ex)
+                catch
                 {
-                    Debug.WriteLine($"Failed to restart {AppName}: {ex.Message}");
-                    return false;
+                    Log.WriteLine($"Failed to close {AppName} for restart");
                 }
-            });
+
+                // Wait a moment before launching
+                Task.Delay(1000).Wait();
+            }
+            else
+            {
+                Log.WriteLine($"Close action can not be executed for {AppName}, proceeding to launch.");
+            }
+
+            _Launch!.Execute();
+
+            Log.WriteLine($"Successfully restarted: {AppName}");
+
         }
 
         public override ActionModel ToModel()

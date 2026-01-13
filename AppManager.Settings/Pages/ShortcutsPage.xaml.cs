@@ -23,7 +23,7 @@ namespace AppManager.Settings.Pages
             // Use the pageName parameter as needed
             // For example, you can set it to a label or use it for navigation logic
             // This is just a placeholder implementation
-            Debug.WriteLine($"Page name set to: {pageName}");
+            Log.WriteLine($"Page name set to: {pageName}");
         }
 
         public bool HasUnsavedChanges()

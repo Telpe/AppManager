@@ -31,7 +31,7 @@ namespace AppManager.Core.Utils
         public static readonly string ProfilesPath = Path.Combine(AppDataPath, "Profiles");
 
         // JSON Operations
-        public static T LoadJsonFile<T>(string filePath) //where T : new()
+        public static T LoadJsonFile<T>(string filePath)
         {
             return JsonSerializer.Deserialize<T>(File.ReadAllText(filePath), JsonOptions) ?? throw new Exception($"Error reading content of file '{filePath}'.");
         }
@@ -98,7 +98,7 @@ namespace AppManager.Core.Utils
                 }
                 catch (Exception ex)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Error searching in {basePath}: {ex.Message}");
+                    Log.WriteLine($"Error searching in {basePath}: {ex.Message}");
                 }
             }
 
@@ -152,7 +152,7 @@ namespace AppManager.Core.Utils
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error getting OS shortcuts: {ex.Message}");
+                Log.WriteLine($"Error getting OS shortcuts: {ex.Message}");
             }
 
             return shortcuts.OrderBy(s => s.Name).ToList();
@@ -184,7 +184,7 @@ namespace AppManager.Core.Utils
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error converting BitmapSource to Icon: {ex.Message}");
+                Log.WriteLine($"Error converting BitmapSource to Icon: {ex.Message}");
                 return SystemIcons.Application;
             }
         }
@@ -205,7 +205,7 @@ namespace AppManager.Core.Utils
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error extracting icon for {executablePath}: {ex.Message}");
+                Log.WriteLine($"Error extracting icon for {executablePath}: {ex.Message}");
             }
 
             return null;
@@ -241,7 +241,7 @@ namespace AppManager.Core.Utils
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error creating ImageSource from bytes: {ex.Message}");
+                Log.WriteLine($"Error creating ImageSource from bytes: {ex.Message}");
                 throw new InvalidOperationException("Failed to create ImageSource from bytes", ex);
             }
         }
@@ -267,7 +267,7 @@ namespace AppManager.Core.Utils
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error creating ImageSource from file {filePath}: {ex.Message}");
+                Log.WriteLine($"Error creating ImageSource from file {filePath}: {ex.Message}");
                 throw new InvalidOperationException($"Failed to create ImageSource from file: {filePath}", ex);
             }
         }
@@ -298,7 +298,7 @@ namespace AppManager.Core.Utils
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error extracting icon from executable {executablePath}: {ex.Message}");
+                Log.WriteLine($"Error extracting icon from executable {executablePath}: {ex.Message}");
                 throw new InvalidOperationException($"Failed to extract icon from executable: {executablePath}", ex);
             }
         }
@@ -322,7 +322,7 @@ namespace AppManager.Core.Utils
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error extracting icon from shortcut {shortcutPath}: {ex.Message}");
+                Log.WriteLine($"Error extracting icon from shortcut {shortcutPath}: {ex.Message}");
                 throw new InvalidOperationException($"Failed to extract icon from shortcut: {shortcutPath}", ex);
             }
         }
@@ -343,7 +343,7 @@ namespace AppManager.Core.Utils
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error resolving shortcut target for {shortcutPath}: {ex.Message}");
+                Log.WriteLine($"Error resolving shortcut target for {shortcutPath}: {ex.Message}");
                 throw new InvalidOperationException($"Failed to resolve shortcut target: {shortcutPath}", ex);
             }
         }
@@ -354,7 +354,7 @@ namespace AppManager.Core.Utils
             {
                 if (!File.Exists(filePath))
                 {
-                    System.Diagnostics.Debug.WriteLine($"File not found: {filePath}");
+                    Log.WriteLine($"File not found: {filePath}");
                     return false;
                 }
 
@@ -366,12 +366,12 @@ namespace AppManager.Core.Utils
                 };
 
                 System.Diagnostics.Process.Start(processStartInfo);
-                System.Diagnostics.Debug.WriteLine($"Successfully executed: {filePath}");
+                Log.WriteLine($"Successfully executed: {filePath}");
                 return true;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error executing file {filePath}: {ex.Message}");
+                Log.WriteLine($"Error executing file {filePath}: {ex.Message}");
                 return false;
             }
         }
@@ -449,7 +449,7 @@ namespace AppManager.Core.Utils
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error extracting shell icon {iconIndex}: {ex.Message}");
+                Log.WriteLine($"Error extracting shell icon {iconIndex}: {ex.Message}");
                 throw new InvalidOperationException($"Failed to extract shell icon with index {iconIndex}", ex);
             }
         }
@@ -472,7 +472,7 @@ namespace AppManager.Core.Utils
                 
                 if (!File.Exists(versionFilePath))
                 {
-                    System.Diagnostics.Debug.WriteLine($"version.json not found at {versionFilePath}, using default version");
+                    Log.WriteLine($"version.json not found at {versionFilePath}, using default version");
                     return new Version { Exspansion = 0, Patch = 0, Hotfix = 0, Work = 1 };
                 }
 
@@ -480,7 +480,7 @@ namespace AppManager.Core.Utils
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error loading version: {ex.Message}");
+                Log.WriteLine($"Error loading version: {ex.Message}");
                 return new Version { Exspansion = 0, Patch = 0, Hotfix = 0, Work = 1 };
             }
         }
@@ -537,7 +537,7 @@ namespace AppManager.Core.Utils
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error converting ImageSource to BitmapSource: {ex.Message}");
+                Log.WriteLine($"Error converting ImageSource to BitmapSource: {ex.Message}");
                 throw new InvalidOperationException("Failed to convert ImageSource to BitmapSource", ex);
             }
         }
@@ -562,12 +562,12 @@ namespace AppManager.Core.Utils
                 }
 
                 // Fallback to system icon
-                Debug.WriteLine("Failed to load icon, using system fallback");
+                Log.WriteLine("Failed to load icon, using system fallback");
                 return SystemIcons.Application;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error loading tray icon: {ex.Message}");
+                Log.WriteLine($"Error loading tray icon: {ex.Message}");
                 return SystemIcons.Application;
             }
         }
@@ -633,12 +633,12 @@ namespace AppManager.Core.Utils
                     .OrderBy(a => a)
                     .ToArray();
 
-                Debug.WriteLine($"Found {profileNames.Length} profiles.");
+                Log.WriteLine($"Found {profileNames.Length} profiles.");
                 return profileNames;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error getting profiles from {ProfilesPath}: {ex.Message}");
+                Log.WriteLine($"Error getting profiles from {ProfilesPath}: {ex.Message}");
                 return [];
             }
         }

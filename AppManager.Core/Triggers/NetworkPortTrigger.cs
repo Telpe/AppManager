@@ -56,7 +56,7 @@ namespace AppManager.Core.Triggers
             // Start listening for connections in background
             _ = Task.Run(async () => await ListenForConnectionsAsync(_cancellationTokenSource.Token));
 
-            System.Diagnostics.Debug.WriteLine($"Network port trigger '{Name}' started listening on {ipAddress}:{Port}");
+            Log.WriteLine($"Network port trigger '{Name}' started listening on {ipAddress}:{Port}");
         }
 
         public override void Stop()
@@ -66,11 +66,11 @@ namespace AppManager.Core.Triggers
                 _cancellationTokenSource?.Cancel();
                 _tcpListener?.Stop();
                 
-                System.Diagnostics.Debug.WriteLine($"Network port trigger '{Name}' stopped");
+                Log.WriteLine($"Network port trigger '{Name}' stopped");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error stopping network port trigger '{Name}': {ex.Message}");
+                Log.WriteLine($"Error stopping network port trigger '{Name}': {ex.Message}");
             }
         }
 
@@ -92,7 +92,7 @@ namespace AppManager.Core.Triggers
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error in network port trigger '{Name}' listener: {ex.Message}");
+                Log.WriteLine($"Error in network port trigger '{Name}' listener: {ex.Message}");
             }
         }
 
@@ -111,7 +111,7 @@ namespace AppManager.Core.Triggers
                     {
                         string data = Encoding.UTF8.GetString(buffer, 0, bytesRead);
                         
-                        System.Diagnostics.Debug.WriteLine($"Network port trigger '{Name}' received data: {data}");
+                        Log.WriteLine($"Network port trigger '{Name}' received data: {data}");
                         
                         // Trigger the configured action
                         ActivateTrigger();
@@ -120,7 +120,7 @@ namespace AppManager.Core.Triggers
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Error handling client in network port trigger '{Name}': {ex.Message}");
+                Log.WriteLine($"Error handling client in network port trigger '{Name}': {ex.Message}");
             }
         }
 

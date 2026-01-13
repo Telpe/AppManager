@@ -98,12 +98,12 @@ namespace AppManager.Core.Triggers
             {
                 if (action.CanExecute())
                 {
-                    System.Diagnostics.Debug.WriteLine($"Executing action {action.ActionType} for trigger {GetType().Name}");
-                    _ = action.ExecuteAsync();
+                    Log.WriteLine($"Executing action {action.ActionType} for trigger {GetType().Name}");
+                    action.Execute();
                 }
                 else
                 {
-                    System.Diagnostics.Debug.WriteLine($"Action {action.ActionType} cannot be executed for trigger {GetType().Name}");
+                    Log.WriteLine($"Action {action.ActionType} cannot be executed for trigger {GetType().Name}");
                 }
             }
 
@@ -115,7 +115,7 @@ namespace AppManager.Core.Triggers
             {
                 if (!condition.Execute())
                 {
-                    System.Diagnostics.Debug.WriteLine($"Condition {condition.ConditionType} failed for trigger {GetType().Name}");
+                    Log.WriteLine($"Condition {condition.ConditionType} failed for trigger {GetType().Name}");
                     return false;
                 }
             }
@@ -126,7 +126,7 @@ namespace AppManager.Core.Triggers
         protected void ActivateTrigger()
         {
             //if (CanExecute()) { ExecuteActions(); }
-            Debug.WriteLine($"Thread id should be: {GlobalKeyboardHook.CurrentThreadId}");
+            Log.WriteLine($"Thread id should be: {GlobalKeyboardHook.CurrentThreadId}");
             TriggerActivated?.Invoke(this, EventArgs.Empty);
         }
 

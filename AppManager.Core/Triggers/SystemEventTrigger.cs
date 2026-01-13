@@ -58,7 +58,7 @@ namespace AppManager.Core.Triggers
                     
             EventWatcherValue.Enabled = true;
 
-            System.Diagnostics.Debug.WriteLine($"System event trigger '{Name}' started.");
+            Log.WriteLine($"System event trigger '{Name}' started.");
         }
 
         public override void Stop()
@@ -72,11 +72,11 @@ namespace AppManager.Core.Triggers
                     EventWatcherValue.Dispose();
                 }
                 
-                Debug.WriteLine($"System event trigger '{Name}' stopped");
+                Log.WriteLine($"System event trigger '{Name}' stopped");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error stopping system event trigger '{Name}': {ex.Message}");
+                Log.WriteLine($"Error stopping system event trigger '{Name}': {ex.Message}");
             }
         }
 
@@ -91,7 +91,7 @@ namespace AppManager.Core.Triggers
 
                     if (IsTargetEvent(eventDescription))
                     {
-                        Debug.WriteLine($"System event trigger '{Name}' detected event: {eventDescription}");
+                        Log.WriteLine($"System event trigger '{Name}' detected event: {eventDescription}");
                         
                         // Trigger the configured action
                         ActivateTrigger();
@@ -100,7 +100,7 @@ namespace AppManager.Core.Triggers
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error processing system event in trigger '{Name}': {ex.Message}");
+                Log.WriteLine($"Error processing system event in trigger '{Name}': {ex.Message}");
             }
         }
 

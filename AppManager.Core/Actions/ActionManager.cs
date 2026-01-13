@@ -51,28 +51,20 @@ namespace AppManager.Core.Actions
             return CanExecuteAction(model);
         }
 
-        public static Task<bool> ExecuteActionAsync(ActionModel model)
+        public static void ExecuteAction(ActionModel model)
         {
-            if (model == null)
-            {
-                System.Diagnostics.Debug.WriteLine("ActionModel is null");
-                return Task.FromResult(false);
-            }
-
             try
             {
-                var action = CreateAction(model);
-                return action.ExecuteAsync();
+                CreateAction(model).Execute();
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                System.Diagnostics.Debug.WriteLine($"Error executing action {model.ActionType} on {model.AppName}: {ex.Message}");
-                return Task.FromResult(false);
+                throw new Exception($"Error executing action {model.ActionType} on {model.AppName}.", e);
             }
             
         }
 
-        public static Task<bool> ExecuteActionAsync(AppActionTypeEnum actionName, string appName)
+        public static void ExecuteAction(AppActionTypeEnum actionName, string appName)
         {
             ActionModel model = new()
             {
@@ -80,23 +72,15 @@ namespace AppManager.Core.Actions
                 AppName = appName
             };
 
-            return ExecuteActionAsync(model);
+            ExecuteAction(model);
         }
 
-        public static Task<bool>[] ExecuteMultipleActionsAsync(IEnumerable<ActionModel> actions)
+        public static void ExecuteMultipleActions(IEnumerable<ActionModel> actions)
         {
-            int n = actions.Count();
-            if (n == 0) { return Array.Empty<Task<bool>>(); }
-            var results = new Task<bool>[n];
-
-            int i = 0;
             foreach (ActionModel model in actions)
             {
-                results[i] = ExecuteActionAsync(model);
-                i++;
+                ExecuteAction(model);
             }
-
-            return results;
         }
     }
 }

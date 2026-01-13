@@ -6,7 +6,7 @@ using System.Windows.Threading;
 
 namespace AppManager.Core.Keybinds
 {
-    internal struct HotkeyModel
+    public struct HotkeyModel
     {
         public IntPtr HWnd;
         public int Id;

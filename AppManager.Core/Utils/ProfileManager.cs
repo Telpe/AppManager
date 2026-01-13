@@ -40,21 +40,21 @@ namespace AppManager.Core.Utils
                 string profileFile = FileManager.GetProfilePath(profileName);
                 profile = FileManager.LoadJsonFile<ProfileModel>(profileFile);
 
-                Debug.WriteLine($"Profile '{profile.Name}' loaded successfully");
+                Log.WriteLine($"Profile '{profile.Name}' loaded successfully");
 
                 return profile;
             }
             catch(Exception e)
             {
-                Debug.WriteLine($"Profile '{profileName}' may be broken. Loading caused error:\n{e.Message}\n{e.StackTrace}");
+                Log.WriteLine($"Profile '{profileName}' may be broken. Loading caused error:\n{e.Message}\n{e.StackTrace}");
 
                 if (DefaultProfileFilename == profileName) 
                 {
-                    Debug.WriteLine($"Creating new default profile instead. Not saved.");
+                    Log.WriteLine($"Creating new default profile instead. Not saved.");
                     return NewDefaultProfile;
                 }
 
-                Debug.WriteLine($"Loading default profile instead");
+                Log.WriteLine($"Loading default profile instead");
                 return LoadProfile(DefaultProfileFilename);
             }
         }
@@ -72,7 +72,7 @@ namespace AppManager.Core.Utils
                 if (null == profile)
                 {
                     profile = CreateNewProfile(profileName);
-                    Debug.WriteLine($"Default profile '{profile.Name}' created");
+                    Log.WriteLine($"Default profile '{profile.Name}' created");
                     return false;
                 }
 
@@ -81,12 +81,12 @@ namespace AppManager.Core.Utils
                 // Update the settings with the new profile name
                 UpdateLastUsedProfileInSettings(CurrentProfileValue.Name);
 
-                Debug.WriteLine($"Successfully switched to profile: {CurrentProfileValue.Name}");
+                Log.WriteLine($"Successfully switched to profile: {CurrentProfileValue.Name}");
                 return true;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error loading and setting profile '{profileName}': {ex.Message}");
+                Log.WriteLine($"Error loading and setting profile '{profileName}': {ex.Message}");
             }
             
             return false;
@@ -101,11 +101,11 @@ namespace AppManager.Core.Utils
             try
             {
                 SettingsManager.CurrentSettings.LastUsedProfileName = profileName ?? DefaultProfileFilename;
-                Debug.WriteLine($"Updated LastUsedProfileName to: {SettingsManager.CurrentSettings.LastUsedProfileName}");
+                Log.WriteLine($"Updated LastUsedProfileName to: {SettingsManager.CurrentSettings.LastUsedProfileName}");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error updating LastUsedProfileName in settings: {ex.Message}");
+                Log.WriteLine($"Error updating LastUsedProfileName in settings: {ex.Message}");
             }
         }
 
@@ -115,7 +115,7 @@ namespace AppManager.Core.Utils
 
             if (null == profile)
             {
-                Debug.WriteLine("No profile to save");
+                Log.WriteLine("No profile to save");
                 return;
             }
 
@@ -127,11 +127,11 @@ namespace AppManager.Core.Utils
 
                 FileManager.SaveJsonFile(profile, profileFile);
 
-                Debug.WriteLine($"Profile {profile.Name} saved successfully");
+                Log.WriteLine($"Profile {profile.Name} saved successfully");
             }
             catch(Exception ex)
             {
-                Debug.WriteLine($"Error saving profile '{profile.Name}': {ex.Message}");
+                Log.WriteLine($"Error saving profile '{profile.Name}': {ex.Message}");
                 return;
             }
         }
@@ -145,7 +145,7 @@ namespace AppManager.Core.Utils
                 Version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version ?? new Core.Version() { Exspansion = 0, Patch = 0, Hotfix = 0, Work = 1 }
             };
             
-            Debug.WriteLine($"New profile {profile.Name} created for user: {profile.Username}");
+            Log.WriteLine($"New profile {profile.Name} created for user: {profile.Username}");
 
             return profile;
         }
@@ -160,7 +160,7 @@ namespace AppManager.Core.Utils
         public static void ResetDefaultProfile()
         {
             SaveProfile(NewDefaultProfile);
-            Debug.WriteLine("Profile default resat");
+            Log.WriteLine("Profile default resat");
         }
     }
 }

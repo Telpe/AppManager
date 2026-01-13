@@ -77,9 +77,9 @@ namespace AppManager.Settings.Apps
             }
             catch (Exception ex)
             {
-                Debug.WriteLine("AppPage initialization error");
-                Debug.WriteLine(ex.Message.ToString());
-                Debug.WriteLine(ex.StackTrace?.ToString()??"No stack");
+                Log.WriteLine("AppPage initialization error");
+                Log.WriteLine(ex.Message.ToString());
+                Log.WriteLine(ex.StackTrace?.ToString()??"No stack");
             }
 
         }
@@ -190,7 +190,7 @@ namespace AppManager.Settings.Apps
         {
             if (e.OriginalSource is Button button && button.Tag is ModelListItem<TriggerModel> viewModel)
             {
-                Debug.WriteLine($"Edit trigger: {viewModel.DisplayName}");
+                Log.WriteLine($"Edit trigger: {viewModel.DisplayName}");
                 
                 try
                 {
@@ -211,19 +211,19 @@ namespace AppManager.Settings.Apps
                         // Mark as edited
                         Edited();
                         
-                        Debug.WriteLine($"Trigger {viewModel.DisplayName} updated successfully");
+                        Log.WriteLine($"Trigger {viewModel.DisplayName} updated successfully");
                         ((MainWindow)Application.Current.MainWindow)?.HideOverlay();
                     };
 
                     triggerEditor.Edited += (s, args) =>
                     {
-                        Debug.WriteLine($"Trigger edited for {viewModel.DisplayName}");
+                        Log.WriteLine($"Trigger edited for {viewModel.DisplayName}");
                         Edited();
                     };
 
                     triggerEditor.Cancel += (s, args) =>
                     {
-                        Debug.WriteLine($"Trigger editing cancelled for {viewModel.DisplayName}");
+                        Log.WriteLine($"Trigger editing cancelled for {viewModel.DisplayName}");
                         ((MainWindow)Application.Current.MainWindow)?.HideOverlay();
                     };
                     
@@ -231,7 +231,7 @@ namespace AppManager.Settings.Apps
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"Error opening trigger editor: {ex.Message}");
+                    Log.WriteLine($"Error opening trigger editor: {ex.Message}");
                     MessageBox.Show($"Error opening trigger editor: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
@@ -245,7 +245,7 @@ namespace AppManager.Settings.Apps
             SetBackupModel();
 
             Unedited();
-
+            
             Debug.WriteLine($"App {CurrentModelValue.AppName} saved successfully.", "Save Complete", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 

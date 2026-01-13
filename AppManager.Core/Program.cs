@@ -1,6 +1,6 @@
-﻿using AppManager.Core.Actions;
+﻿global using AppManager.Core.Utils;
+using AppManager.Core.Actions;
 using AppManager.Core.Models;
-using AppManager.Core.Utils;
 using AppManager.Core.Triggers;
 using System;
 using System.Diagnostics;
@@ -18,11 +18,17 @@ namespace AppManager.Core
         private static FileSystemWatcher? SettingsFileWatcherValue;
         private static FileSystemWatcher? ProfileFileWatcherValue;
         private static Dispatcher MainDispatcher = System.Windows.Threading.Dispatcher.CurrentDispatcher;
+        private static bool StreamLogging = true;
 
         [STAThread]
         static void Main(string[] args)
         {
             if (ShouldITerminate()) { return; }
+            if (StreamLogging)
+            {
+                Log.OpenStream();
+            }
+            
             AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
 
             Application.EnableVisualStyles();
@@ -31,7 +37,7 @@ namespace AppManager.Core
             InitializeFileWatchers();
             LoadTriggers();
 
-            Debug.WriteLine($"Main thread id: {GlobalKeyboardHook.CurrentThreadId}");
+            Log.WriteLine($"Main thread id: {GlobalKeyboardHook.CurrentThreadId}");
 
             // Create and run the tray application
             using (TrayAppValue = new TrayApplication())
@@ -51,11 +57,11 @@ namespace AppManager.Core
                 InitializeSettingsFileWatcher();
                 InitializeProfileFileWatcher();
 
-                Debug.WriteLine("File watchers initialized successfully");
+                Log.WriteLine("File watchers initialized successfully");
             }
             catch (Exception e)
             {
-                Debug.WriteLine($"Error initializing file watchers: {e.Message}");
+                Log.WriteLine($"Error initializing file watchers: {e.Message}");
             }
         }
 
@@ -75,11 +81,11 @@ namespace AppManager.Core
                 SettingsFileWatcherValue.Changed += OnSettingsFileChanged;
                 SettingsFileWatcherValue.Error += OnSettingsFileWatcherError;
 
-                Debug.WriteLine("Settings file watcher initialized");
+                Log.WriteLine("Settings file watcher initialized");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error initializing settings file watcher: {ex.Message}");
+                Log.WriteLine($"Error initializing settings file watcher: {ex.Message}");
             }
         }
 
@@ -101,11 +107,11 @@ namespace AppManager.Core
                 ProfileFileWatcherValue.Changed += OnProfileFileChanged;
                 ProfileFileWatcherValue.Error += OnProfileFileWatcherError;
 
-                Debug.WriteLine($"Profile file watcher initialized for: {currentProfileName}");
+                Log.WriteLine($"Profile file watcher initialized for: {currentProfileName}");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error initializing profile file watcher: {ex.Message}");
+                Log.WriteLine($"Error initializing profile file watcher: {ex.Message}");
             }
         }
 
@@ -116,7 +122,7 @@ namespace AppManager.Core
         {
             MainDispatcher.InvokeAsync(() =>
             {
-                Debug.WriteLine($"Settings file changed thread id: {GlobalKeyboardHook.CurrentThreadId}");
+                Log.WriteLine($"Settings file changed thread id: {GlobalKeyboardHook.CurrentThreadId}");
                 try
                 {
                     // Add a small delay to ensure file writing is complete
@@ -137,7 +143,7 @@ namespace AppManager.Core
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"Error handling settings file change: {ex.Message}");
+                    Log.WriteLine($"Error handling settings file change: {ex.Message}");
                 }
             });
             
@@ -150,20 +156,20 @@ namespace AppManager.Core
         {
             MainDispatcher.InvokeAsync(() =>
             {
-                Debug.WriteLine($"Profile file changed thread id: {GlobalKeyboardHook.CurrentThreadId}");
+                Log.WriteLine($"Profile file changed thread id: {GlobalKeyboardHook.CurrentThreadId}");
                 try
                 {
                     // Add a small delay to ensure file writing is complete
                     System.Threading.Thread.Sleep(100);
 
-                    Debug.WriteLine($"Profile file change detected: {e.FullPath}");
+                    Log.WriteLine($"Profile file change detected: {e.FullPath}");
                 
                     // Reload profile and triggers
                     ReloadProfileAndTriggers();
                 }
                 catch (Exception ex)
                 {
-                    Debug.WriteLine($"Error handling profile file change: {ex.Message}");
+                    Log.WriteLine($"Error handling profile file change: {ex.Message}");
                 }
             });
         }
@@ -173,7 +179,7 @@ namespace AppManager.Core
         /// </summary>
         private static void OnSettingsFileWatcherError(object sender, ErrorEventArgs e)
         {
-            Debug.WriteLine($"Settings file watcher error: {e.GetException().Message}");
+            Log.WriteLine($"Settings file watcher error: {e.GetException().Message}");
             
             // Try to restart the file watcher
             try
@@ -183,7 +189,7 @@ namespace AppManager.Core
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error restarting settings file watcher: {ex.Message}");
+                Log.WriteLine($"Error restarting settings file watcher: {ex.Message}");
             }
         }
 
@@ -192,7 +198,7 @@ namespace AppManager.Core
         /// </summary>
         private static void OnProfileFileWatcherError(object sender, ErrorEventArgs e)
         {
-            Debug.WriteLine($"Profile file watcher error: {e.GetException().Message}");
+            Log.WriteLine($"Profile file watcher error: {e.GetException().Message}");
             
             // Try to restart the profile file watcher
             try
@@ -202,7 +208,7 @@ namespace AppManager.Core
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error restarting profile file watcher: {ex.Message}");
+                Log.WriteLine($"Error restarting profile file watcher: {ex.Message}");
             }
         }
 
@@ -213,7 +219,7 @@ namespace AppManager.Core
         {
             try
             {
-                Debug.WriteLine("Reloading profile and triggers...");
+                Log.WriteLine("Reloading profile and triggers...");
 
                 // Dispose existing triggers
                 TriggerManager.Dispose();
@@ -224,11 +230,11 @@ namespace AppManager.Core
                 // Load triggers from the reloaded profile
                 LoadTriggers();
 
-                Debug.WriteLine("Profile and triggers reloaded successfully");
+                Log.WriteLine("Profile and triggers reloaded successfully");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error reloading profile and triggers: {ex.Message}");
+                Log.WriteLine($"Error reloading profile and triggers: {ex.Message}");
             }
         }
 
@@ -241,11 +247,11 @@ namespace AppManager.Core
             {
                 // Save current profile or settings if needed
                 // This method can be expanded based on your requirements
-                Debug.WriteLine("AppManager.Core: Application state saved");
+                Log.WriteLine("AppManager.Core: Application state saved");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"AppManager.Core: Error saving application state: {ex.Message}");
+                Log.WriteLine($"AppManager.Core: Error saving application state: {ex.Message}");
             }
         }
 
@@ -256,33 +262,40 @@ namespace AppManager.Core
         {
             try
             {
-                Debug.WriteLine("AppManager.Core: Starting exit cleanup...");
+                Log.WriteLine("AppManager.Core: Starting exit cleanup...");
 
-                ActionManager.ExecuteActionAsync(AppActionTypeEnum.Close, "AppManager").Wait();
-                ActionManager.ExecuteActionAsync(AppActionTypeEnum.Close, "AppManager.Settings").Wait();
+                ActionManager.ExecuteAction(AppActionTypeEnum.Close, "AppManager");
+                ActionManager.ExecuteAction(AppActionTypeEnum.Close, "AppManager.Settings");
 
                 // Dispose file watchers
                 SettingsFileWatcherValue?.Dispose();
                 ProfileFileWatcherValue?.Dispose();
-                Debug.WriteLine("AppManager.Core: File watchers disposed");
+                Log.WriteLine("AppManager.Core: File watchers disposed");
 
                 // Stop all triggers and dispose resources
                 TriggerManager.Dispose();
-                Debug.WriteLine("AppManager.Core: Triggers disposed");
+                Log.WriteLine("AppManager.Core: Triggers disposed");
 
                 // Clean up any running actions
                 //ActionManager.Dispose();
-                //Debug.WriteLine("AppManager.Core: Actions disposed");
+                //Log.WriteLine("AppManager.Core: Actions disposed");
 
                 // Save any pending data or settings
                 SaveApplicationState();
 
                 // Additional cleanup can be added here
-                Debug.WriteLine("AppManager.Core: Exit cleanup completed");
+                Log.WriteLine("AppManager.Core: Exit cleanup completed");
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"AppManager.Core: Error during exit cleanup: {ex.Message}");
+                Log.WriteLine($"AppManager.Core: Error during exit cleanup: {ex.Message}");
+            }
+            finally
+            {
+                if (StreamLogging)
+                {
+                    Log.Dispose();
+                }
             }
         }
 
@@ -294,7 +307,7 @@ namespace AppManager.Core
         {
             try
             {
-                TriggerModel[] triggers = ProfileManager.CurrentProfile.Apps.Where(a => null != a.Triggers).SelectMany(a => a.Triggers.Select(a => a.Value)).ToArray();
+                TriggerModel[] triggers = ProfileManager.CurrentProfile.Apps.Where(a => null != a.Triggers).SelectMany(a => a.Triggers!.Select(a => a.Value)).ToArray();
                 int count = 0;
 
                 foreach (TriggerModel model in triggers) // ProfileManager.CurrentProfile.Triggers
@@ -303,13 +316,13 @@ namespace AppManager.Core
                     count++;
                 }
 
-                Debug.WriteLine($"Loaded {count} triggers from profile: {ProfileManager.CurrentProfile.Name}");
+                Log.WriteLine($"Loaded {count} triggers from profile: {ProfileManager.CurrentProfile.Name}");
 
                 ProfileManager.ClearCache();
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Error loading triggers: {ex.Message}");
+                Log.WriteLine($"Error loading triggers: {ex.Message}");
             }
         }
 

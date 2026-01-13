@@ -50,7 +50,7 @@ namespace AppManager.Settings.Actions
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"ActionEditorControl initialization error: {ex.Message}");
+                Log.WriteLine($"ActionEditorControl initialization error: {ex.Message}");
                 InitializeManually();
             }
 
@@ -106,7 +106,7 @@ namespace AppManager.Settings.Actions
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"InitializeComboBoxes error: {ex.Message}");
+                Log.WriteLine($"InitializeComboBoxes error: {ex.Message}");
             }
         }
 
@@ -152,7 +152,7 @@ namespace AppManager.Settings.Actions
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"LoadActionData error: {ex.Message}");
+                Log.WriteLine($"LoadActionData error: {ex.Message}");
             }
         }
 
@@ -232,7 +232,7 @@ namespace AppManager.Settings.Actions
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"ActionTypeComboBox_SelectionChanged error: {ex.Message}");
+                Log.WriteLine($"ActionTypeComboBox_SelectionChanged error: {ex.Message}");
             }
         }
 
@@ -483,7 +483,7 @@ namespace AppManager.Settings.Actions
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"RemoveConditionButton_Click error: {ex.Message}");
+                Log.WriteLine($"RemoveConditionButton_Click error: {ex.Message}");
             }
         }
 

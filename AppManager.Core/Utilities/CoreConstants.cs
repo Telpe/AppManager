@@ -1,4 +1,4 @@
-namespace AppManager.Core.Utils
+namespace AppManager.Core.Utilities
 {
     /// <summary>
     /// Common constants used across the Core project

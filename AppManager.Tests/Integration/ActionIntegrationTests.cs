@@ -1,6 +1,6 @@
 using AppManager.Core.Actions;
 using AppManager.Core.Models;
-using AppManager.Core.Utils;
+using AppManager.Core.Utilities;
 using AppManager.Tests.TestUtilities;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

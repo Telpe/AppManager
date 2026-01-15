@@ -1,7 +1,7 @@
 using AppManager.Core.Models;
 using System.Diagnostics;
 
-namespace AppManager.Core.Utils
+namespace AppManager.Core.Utilities
 {
     public static class SettingsManager
     {

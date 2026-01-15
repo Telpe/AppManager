@@ -1,11 +1,11 @@
 using AppManager.Core.Models;
-using AppManager.Core.Utils;
+using AppManager.Core.Utilities;
 using AppManager;
 using System;
 using System.Diagnostics;
 using System.Linq.Expressions;
 
-namespace AppManager.Core.Utils 
+namespace AppManager.Core.Utilities 
 { 
     public static class ProfileManager
     {

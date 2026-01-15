@@ -1,5 +1,5 @@
 using System.Text.Json.Serialization;
-using AppManager.Core.Utils;
+using AppManager.Core.Utilities;
 
 namespace AppManager.Core.Models
 {

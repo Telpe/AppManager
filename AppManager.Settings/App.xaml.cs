@@ -1,5 +1,5 @@
-﻿global using AppManager.Core.Utils;
-using AppManager.Settings.Utils;
+﻿global using AppManager.Core.Utilities;
+using AppManager.Settings.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

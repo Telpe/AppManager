@@ -13,7 +13,7 @@ using System.Windows.Forms;
 using System.Windows.Interop;
 using System.Windows.Media.Imaging;
 
-namespace AppManager.Core.Utils
+namespace AppManager.Core.Utilities
 {
     public class TrayApplication : IDisposable
     {

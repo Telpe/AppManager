@@ -1,4 +1,4 @@
-﻿global using AppManager.Core.Utils;
+﻿global using AppManager.Core.Utilities;
 using AppManager.Core.Actions;
 using AppManager.Core.Models;
 using System.Configuration;

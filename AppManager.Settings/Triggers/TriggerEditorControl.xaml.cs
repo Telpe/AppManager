@@ -2,11 +2,11 @@
 using AppManager.Core.Conditions;
 using AppManager.Core.Models;
 using AppManager.Core.Triggers;
-using AppManager.Core.Utils;
+using AppManager.Core.Utilities;
 using AppManager.Settings.Actions;
 using AppManager.Settings.Conditions;
 using AppManager.Settings.UI;
-using AppManager.Settings.Utils;
+using AppManager.Settings.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;

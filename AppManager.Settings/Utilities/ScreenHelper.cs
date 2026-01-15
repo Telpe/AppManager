@@ -1,7 +1,7 @@
 using System;
 using System.Windows;
 
-namespace AppManager.Settings.Utils
+namespace AppManager.Settings.Utilities
 {
     public static class ScreenHelper
     {

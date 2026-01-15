@@ -1,11 +1,11 @@
 ﻿using AppManager.Core.Actions;
 using AppManager.Core.Models;
-using AppManager.Core.Utils;
+using AppManager.Core.Utilities;
 using AppManager.Settings.AppGroups;
 using AppManager.Settings.Apps;
 using AppManager.Settings.Pages;
 using AppManager.Settings.UI;
-using AppManager.Settings.Utils;
+using AppManager.Settings.Utilities;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;

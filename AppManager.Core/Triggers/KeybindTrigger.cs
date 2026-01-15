@@ -1,7 +1,7 @@
 using AppManager.Core.Actions;
 using AppManager.Core.Keybinds;
 using AppManager.Core.Models;
-using AppManager.Core.Utils;
+using AppManager.Core.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

@@ -1,5 +1,5 @@
 using AppManager.Core.Models;
-using AppManager.Core.Utils;
+using AppManager.Core.Utilities;
 
 namespace AppManager.Core.Conditions
 {

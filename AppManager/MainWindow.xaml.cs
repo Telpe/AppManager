@@ -1,4 +1,4 @@
-﻿using AppManager.Core.Utils;
+﻿using AppManager.Core.Utilities;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;

@@ -1,5 +1,5 @@
 using AppManager.Core.Models;
-using AppManager.Core.Utils;
+using AppManager.Core.Utilities;
 using System;
 using System.IO;
 

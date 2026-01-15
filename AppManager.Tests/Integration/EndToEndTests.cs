@@ -1,5 +1,5 @@
 using AppManager.Core.Actions;
-using AppManager.Core.Utils;
+using AppManager.Core.Utilities;
 using AppManager.Core.Triggers;
 using AppManager.Tests.TestUtilities;
 using FluentAssertions;

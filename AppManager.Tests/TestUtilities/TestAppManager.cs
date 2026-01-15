@@ -1,4 +1,4 @@
-using AppManager.Core.Utils;
+using AppManager.Core.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Diagnostics;
 using System.IO;

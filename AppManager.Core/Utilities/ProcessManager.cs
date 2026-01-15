@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Management;
 
-namespace AppManager.Core.Utils
+namespace AppManager.Core.Utilities
 {
     /// <summary>
     /// Utility class for process management operations including finding, filtering, and managing processes
@@ -23,23 +23,24 @@ namespace AppManager.Core.Utils
             string appName, 
             bool includeSimilarNames = false, 
             string? windowTitle = null, 
-            bool requireMainWindow = true,
+            bool requireMainWindow = false,
             bool includeChildProcesses = false,
             int excludeId = -1)
         {
             ValidateProcessName(appName, nameof(appName));
 
             IEnumerable<Process> processes = Enumerable.Empty<Process>();
+            IEnumerable<Process> processesTemp = [];
 
             try
             {
                 if (includeSimilarNames)
                 {
-                    Process[] processes1 = Process.GetProcesses();
-                    IEnumerable<Process> processes2 = Enumerable.Empty<Process>();
+                    processesTemp = Process.GetProcesses();
+
                     try
                     {
-                        foreach (var p in processes1)
+                        foreach (var p in processesTemp)
                         {
                             if (-1 < p.ProcessName.IndexOf(appName, StringComparison.OrdinalIgnoreCase))
                             {
@@ -47,91 +48,94 @@ namespace AppManager.Core.Utils
                             }
                             else
                             {
-                                processes2 = processes2.Append(p);
+                                p.Dispose();
                             }
                         }
                     }
                     catch
                     {
-                        foreach (var p in processes1)
+                        foreach (var p in processesTemp)
                         {
                             p.Dispose();
                         }
                         throw;
                     }
-                    finally
-                    {
-                        foreach (var p in processes2)
-                        {
-                            p.Dispose();
-                        }
-                    }
+
+                    processesTemp = [];
                 }
                 else
                 {
                     processes = Process.GetProcessesByName(appName);
                 }
 
+                
+                processesTemp = processes;
+                processes = Enumerable.Empty<Process>();
+
+                foreach (var p in processesTemp)
                 {
-                    IEnumerable<Process> processes1 = processes;
-                    processes = Enumerable.Empty<Process>();
-                    IEnumerable<Process> processes2 = Enumerable.Empty<Process>();
-
-                    try
+                    if (p.Id == excludeId)
                     {
-                        foreach (var p in processes1)
+                        p.Dispose();
+                        continue;
+                    }
+
+                    if (!requireMainWindow
+                        || ( !p.HasExited
+                        && IntPtr.Zero != p.MainWindowHandle 
+                        && (string.IsNullOrEmpty(windowTitle)
+                            || -1 < p.MainWindowTitle.IndexOf(windowTitle, StringComparison.OrdinalIgnoreCase))))
+                    {
+                        processes = processes.Append(p);
+                    }
+                    else
+                    {
+                        p.Dispose();
+                    }
+
+                    if (includeChildProcesses)
+                    {
+                        IEnumerable<Process> children = GetChildProcesses(p.Id);
+                        try
                         {
-                            if (p.Id == excludeId)
+                            foreach (var child in children)
                             {
-                                processes2 = processes2.Append(p);
-                                continue;
-                            }
-
-                            if (requireMainWindow
-                                && !p.HasExited
-                                && IntPtr.Zero != p.MainWindowHandle
-                                && (string.IsNullOrEmpty(windowTitle)
-                                    || -1 < p.MainWindowTitle.IndexOf(windowTitle, StringComparison.OrdinalIgnoreCase)))
-                            {
-                                processes = processes.Append(p);
-                            }
-                            else
-                            {
-                                processes2 = processes2.Append(p);
-                            }
-
-                            if (includeChildProcesses)
-                            {
-                                IEnumerable<Process> children = GetChildProcesses(p.Id).Where(a => !processes.Any(b => b.Id == a.Id) && excludeId != a.Id);
-                                processes = [.. processes, .. children];
+                                if (!processes.Any(b => b.Id == child.Id) && excludeId != child.Id)
+                                {
+                                    processes = processes.Append(child);
+                                }
+                                else
+                                {
+                                    child.Dispose();
+                                }
                             }
                         }
-                    }
-                    catch
-                    {
-                        foreach (var p in processes1)
+                        catch
                         {
-                            p.Dispose();
-                        }
-                        throw;
-                    }
-                    finally
-                    {
-                        foreach (var p in processes2)
-                        {
-                            p.Dispose();
+                            foreach (var child in children)
+                            {
+                                child.Dispose();
+                            }
+                            throw;
                         }
                     }
                 }
-            
             }
             catch (Exception ex)
             {
-                foreach (var p in processes)
+                try
                 {
-                    p.Dispose();
+                    foreach (var p in processes)
+                    {
+                        p.Dispose();
+                    }
+                    foreach (var p in processesTemp)
+                    {
+                        p.Dispose();
+                    }
                 }
-                Log.WriteLine($"Error finding processes for {appName}: {ex.Message}");
+                catch { }
+                Log.WriteLine($"Error in finding processes for {appName}: {ex.Message}");
                 return Array.Empty<Process>();
             }
 
@@ -237,8 +241,27 @@ namespace AppManager.Core.Utils
         /// <returns>Array of child processes</returns>
         public static Process[] GetChildProcesses(int parentId)
         {
+            IEnumerable<Process> processes = Enumerable.Empty<Process>();
             try
             {
+                /*processes = Process.GetProcesses();
+                foreach (var p in processes)
+                {
+                    p.
+                    if (GetParentProcessId(p) == parentId)
+                    {
+                        processes = processes.Append(p);
+                    }
+                    else
+                    {
+                        p.Dispose();
+                    }
+                }
+                if ()
+                {
+
+                }*/
+
                 return Process.GetProcesses()
                     .Where(p => GetParentProcessId(p) == parentId)
                     .ToArray();

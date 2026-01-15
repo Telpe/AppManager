@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 
-namespace AppManager.Core.Utils
+namespace AppManager.Core.Utilities
 {
     public static class Log
     {

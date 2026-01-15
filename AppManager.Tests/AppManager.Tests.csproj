@@ -32,7 +32,6 @@
     <Folder Include="Unit\Conditions\" />
     <Folder Include="Unit\Models\" />
     <Folder Include="Unit\Triggers\" />
-    <Folder Include="Unit\Utils\" />
     <Folder Include="TestUtilities\" />
   </ItemGroup>
 

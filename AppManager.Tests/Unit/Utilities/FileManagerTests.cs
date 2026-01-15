@@ -1,9 +1,9 @@
-using AppManager.Core.Utils;
+using AppManager.Core.Utilities;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.IO;
 
-namespace AppManager.Tests.Unit.Utils
+namespace AppManager.Tests.Unit.Utilities
 {
     [TestClass]
     public class FileManagerTests

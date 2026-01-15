@@ -7,7 +7,7 @@ using System.Windows.Controls;
 using AppManager.Core.Actions;
 using AppManager.Core.Conditions;
 using AppManager.Core.Models;
-using AppManager.Core.Utils;
+using AppManager.Core.Utilities;
 using AppManager.Settings.Actions;
 using AppManager.Settings.Conditions;
 using AppManager.Settings.UI;

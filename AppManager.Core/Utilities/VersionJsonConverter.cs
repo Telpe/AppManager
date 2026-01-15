@@ -2,7 +2,7 @@ using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace AppManager.Core.Utils
+namespace AppManager.Core.Utilities
 {
     public class VersionJsonConverter : JsonConverter<Version>
     {

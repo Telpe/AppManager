@@ -80,7 +80,7 @@ namespace AppManager.Tests.Unit.Actions
         public async Task ExecuteAsync_WithValidApplication_ShouldLaunchApplication()
         {
             // Arrange
-            var model = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Launch, "calc");
+            var model = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Launch, "CalculatorApp");
             var action = new LaunchAction(model);
 
             try
@@ -89,8 +89,8 @@ namespace AppManager.Tests.Unit.Actions
                 action.Execute();
 
                 // Assert
-                var calcProcesses = System.Diagnostics.Process.GetProcessesByName("calc");
-                calcProcesses.Should().NotBeEmpty();
+                var CalculatorAppProcesses = System.Diagnostics.Process.GetProcessesByName("CalculatorApp");
+                CalculatorAppProcesses.Should().NotBeEmpty();
             }
             catch (Exception ex)
             {
@@ -98,8 +98,8 @@ namespace AppManager.Tests.Unit.Actions
             }
             finally
             {
-                // Cleanup - close calc
-                var closeModel = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Close, "calc");
+                // Cleanup - close CalculatorApp
+                var closeModel = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Close, "CalculatorApp");
                 var closeAction = new CloseAction(closeModel);
                 closeAction.Execute();
             }

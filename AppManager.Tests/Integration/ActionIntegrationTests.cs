@@ -6,6 +6,7 @@ using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
 namespace AppManager.Tests.Integration
 {
@@ -13,11 +14,25 @@ namespace AppManager.Tests.Integration
     public class ActionIntegrationTests
     {
         private static Process? TestAppManagerProcess;
+        private Stopwatch? testStopwatch;
 
         [ClassInitialize]
         public static void ClassInitialize(TestContext context)
         {
             
+        }
+
+        [TestInitialize]
+        public void TestInitialize()
+        {
+            testStopwatch = Stopwatch.StartNew();
+        }
+
+        [TestCleanup]
+        public void TestCleanup()
+        {
+            testStopwatch?.Stop();
+            testStopwatch = null;
         }
 
         public void StartTestInstance() 
@@ -35,8 +50,8 @@ namespace AppManager.Tests.Integration
         [ClassCleanup]
         public static void ClassCleanup()
         {
+            TestAppManagerProcess = null;
             TestAppManager.StopTestInstance();
-            ActionManager.ExecuteAction(AppActionTypeEnum.Close, "AppManager.Core");
         }
 
         [TestMethod]
@@ -45,48 +60,19 @@ namespace AppManager.Tests.Integration
         public async Task LaunchAndCloseAction_Integration_ShouldWorkTogether()
         {
             // Arrange
-            var launchModel = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Launch, "calc");
-            var closeModel = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Close, "CalculatorApp");
+            var launchModel = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Launch, "CalculatorApp");
+            var closeModel = new ActionModel() { 
+                ActionType = AppActionTypeEnum.Close
+                , AppName = "CalculatorApp"
+                , ForceOperation = true
+            };
 
             var launchAction = new LaunchAction(launchModel);
             var closeAction = new CloseAction(closeModel);
 
-            try
-            {
-                // Act - Launch
-                launchAction.Execute();
+            LaunchAction(launchAction, "CalculatorApp", CoreConstants.DefaultActionDelay);
 
-                // Wait for application to fully start
-                Task.Delay(CoreConstants.DefaultActionDelay).Wait();
-
-                // Verify calc is running
-                var calcProcesses = Process.GetProcessesByName("CalculatorApp");
-                calcProcesses.Should().NotBeEmpty();
-
-                // Act - Close
-                closeAction.Execute();
-
-                // Wait for application to fully close
-                Task.Delay(CoreConstants.DefaultActionDelay).Wait();
-
-                // Verify calc is no longer running
-                calcProcesses = Process.GetProcessesByName("CalculatorApp");
-                calcProcesses.Should().BeEmpty();
-            }
-            catch (Exception e)
-            {
-                Debug.WriteLine($"Test encountered an exception: {e.Message}");
-                Assert.Fail($"{e.Message}");
-            }
-            finally
-            {
-                // Cleanup - ensure calc is closed
-                try
-                {
-                    closeAction.Execute();
-                }
-                catch { /* Ignore cleanup errors */ }
-            }
+            CloseAction(closeAction, "CalculatorApp", CoreConstants.DefaultActionDelay);
         }
 
         [TestMethod]
@@ -102,59 +88,12 @@ namespace AppManager.Tests.Integration
             var launchAction = new LaunchAction(launchModel);
             var restartAction = new RestartAction(restartModel);
             var closeAction = new CloseAction(closeModel);
+            
+            LaunchAction(launchAction, "notepad", CoreConstants.DefaultActionDelay);
 
-            try
-            {
-                // Act - Launch notepad first
-                var launchResult = false;
-                try
-                {
-                    launchAction.Execute();
-                    launchResult = true;
-                }
-                catch { }
+            RestartAction(restartAction, "notepad", CoreConstants.DefaultActionDelay);
 
-                launchResult.Should().BeTrue();
-
-                Task.Delay(CoreConstants.ProcessRestartDelay).Wait();
-
-                // Get initial process ID
-                var initialProcesses = Process.GetProcessesByName("notepad");
-                initialProcesses.Should().NotBeEmpty();
-                var initialPid = initialProcesses.First().Id;
-
-                // Act - Restart
-                var restartResult = false;
-                try
-                {
-                    restartAction.Execute();
-                    restartResult = true;
-                }
-                catch { }
-
-                // Assert
-                restartResult.Should().BeTrue();
-
-                Task.Delay(CoreConstants.DefaultActionDelay).Wait();
-
-                // Verify notepad is still running but with different PID
-                var newProcesses = Process.GetProcessesByName("notepad");
-                newProcesses.Should().NotBeEmpty();
-                
-                // The process should be restarted (different PID or at least still running)
-                var newPid = newProcesses.First().Id;
-                // Note: PID might be same if restart was very quick, so we just verify it's running
-                newProcesses.Should().NotBeEmpty();
-            }
-            finally
-            {
-                // Cleanup
-                try
-                {
-                    closeAction.Execute();
-                }
-                catch { /* Ignore cleanup errors */ }
-            }
+            CloseAction(closeAction, "notepad", CoreConstants.DefaultActionDelay);
         }
 
         [TestMethod]
@@ -179,12 +118,14 @@ namespace AppManager.Tests.Integration
             {
                 action.Execute();
                 result = true;
+                Log.WriteLine($"Test duration: {testStopwatch?.Elapsed.TotalMilliseconds:F4} ms");
             }
             catch { }
 
             // Assert
             result.Should().BeTrue();
             TestAppManagerProcess.HasExited.Should().BeFalse();
+            Log.WriteLine($"Test duration: {testStopwatch?.Elapsed.TotalMilliseconds:F4} ms");
         }
 
         [TestMethod]
@@ -194,15 +135,19 @@ namespace AppManager.Tests.Integration
         {
             // Arrange
             ActionModel[] actions = [
-                TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Launch, "calc"),
+                TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Launch, "CalculatorApp"),
                 TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Launch, "notepad")
             ];
 
             try
             {
-                // Act
+                Log.WriteLine("Execute multiple ActionModels.");
+                Log.WriteLine($"Test duration: {testStopwatch?.Elapsed.TotalMilliseconds:F4} ms");
+                Task executeWaitTime = Task.Delay(CoreConstants.DefaultActionDelay);
                 ActionManager.ExecuteMultipleActions(actions);
-                Task.Delay(CoreConstants.DefaultActionDelay).Wait();
+                Log.WriteLine("Executed..");
+                Log.WriteLine($"Test duration: {testStopwatch?.Elapsed.TotalMilliseconds:F4} ms");
+                await executeWaitTime;
 
             }
             catch (Exception ex)
@@ -211,24 +156,156 @@ namespace AppManager.Tests.Integration
             }
             finally
             {
-                
+                Log.WriteLine("Finally.");
+                Log.WriteLine($"Test duration: {testStopwatch?.Elapsed.TotalMilliseconds:F4} ms");
                 Process[] closeActions =
                 [
-                    ..ProcessManager.FindProcesses("CalculatorApp", false, null, false, true, 4),
-                    ..ProcessManager.FindProcesses("notepad", false, null, false, true, 4)
+                    //..ProcessManager.FindProcesses("CalculatorApp", false, null, false, true, 4),
+                    //..ProcessManager.FindProcesses("notepad", false, null, false, true, 4)
+                    ..Process.GetProcessesByName("CalculatorApp"),
+                    ..Process.GetProcessesByName("notepad")
                 ];
-
+                
                 Log.WriteLine($"Cleaning up processes: {string.Join(", ", closeActions.Select(p => p.ProcessName + " (ID: " + p.Id + ")"))}");
+                Log.WriteLine($"Test duration: {testStopwatch?.Elapsed.TotalMilliseconds:F4} ms");
 
-                if(ProcessManager.CloseProcesses(closeActions, CoreConstants.DefaultActionDelay, true)) { Log.WriteLine("Processes closed successfully."); }
-                else { Log.WriteLine("Failed to close some processes."); }
+                if(ProcessManager.CloseProcesses(closeActions, CoreConstants.DefaultActionDelay, true)) { 
+                    Log.WriteLine("Processes closed successfully.");
+                    Log.WriteLine($"Test duration: {testStopwatch?.Elapsed.TotalMilliseconds:F4} ms");
+                }
+                else { 
+                    Log.WriteLine("Failed to close some processes.");
+                    Log.WriteLine($"Test duration: {testStopwatch?.Elapsed.TotalMilliseconds:F4} ms");
+                }
                     
                 Log.WriteLine("Disposing resources.");
                 foreach (Process p in closeActions)
                 {
                     p.Dispose();
                 }
+                Log.WriteLine($"Test duration: {testStopwatch?.Elapsed.TotalMilliseconds:F4} ms");
             }
+        }
+
+        private bool LaunchAction(LaunchAction action, string name, int waitMilliseconds)
+        {
+            Log.WriteLine($"launching {name}");
+            Log.WriteLine($"Test duration: {testStopwatch?.Elapsed.TotalMilliseconds:F4} ms");
+
+            Task executionWaitTime = Task.Delay(waitMilliseconds);
+            bool result = false;
+            try
+            {
+                action.Execute();
+                result = true;
+                Log.WriteLine($"{name} launched");
+                Log.WriteLine($"Test duration: {testStopwatch?.Elapsed.TotalMilliseconds:F4} ms");
+                Log.WriteLine($"{name} is {(ProcessManager.IsProcessRunning(name) ? "running" : "not running")}.");
+            }
+            finally 
+            {
+                executionWaitTime.Wait();
+
+                result.Should().BeTrue();
+
+                Log.WriteLine($"{name} is {(ProcessManager.IsProcessRunning(name) ? "running" : "not running")} after wait.");
+                Log.WriteLine($"Test duration: {testStopwatch?.Elapsed.TotalMilliseconds:F4} ms");
+                Process[] ps = Process.GetProcessesByName(name);
+                try
+                {
+                    ps.Should().NotBeEmpty($"at least 1 {name} process should be running");
+                }
+                finally
+                {
+                    foreach (Process p in ps)
+                    {
+                        p.Dispose();
+                    }
+                }
+                    
+            }
+            
+            return result;
+        }
+
+        private bool RestartAction(RestartAction action, string name, int waitMilliseconds)
+        {
+            Log.WriteLine("Get initial process ID");
+            var initialProcesses = Process.GetProcessesByName(name);
+            initialProcesses.Should().NotBeEmpty();
+            var initialPid = initialProcesses.First().Id;
+            Array.ForEach(initialProcesses, process => process.Dispose());
+
+            Log.WriteLine("initial process ID grabbed.");
+            Log.WriteLine($"Test duration: {testStopwatch?.Elapsed.TotalMilliseconds:F4} ms");
+
+            Log.WriteLine($"restarting {name}");
+            Task restartWaitTime = Task.Delay(waitMilliseconds);
+            var result = false;
+            try
+            {
+                action.Execute();
+                result = true;
+                Log.WriteLine($"{name} restarted");
+                Log.WriteLine($"Test duration: {testStopwatch?.Elapsed.TotalMilliseconds:F4} ms");
+            }
+            finally
+            {
+                restartWaitTime.Wait();
+                result.Should().BeTrue();
+                Log.WriteLine($"{name} is {(ProcessManager.IsProcessRunning(name) ? "running" : "not running")} after wait.");
+                Log.WriteLine($"Test duration: {testStopwatch?.Elapsed.TotalMilliseconds:F4} ms");
+            }
+
+            Log.WriteLine("Get new process ID and compare with old.");
+            var newProcesses = Process.GetProcessesByName(name);
+            newProcesses.Should().NotBeEmpty();
+            var newPid = newProcesses.First().Id;
+            // Note: PID might be same if restart was very quick, so we just verify it's running
+            Log.WriteLine($"new ID: {newPid}\nold ID: {initialPid}");
+            Log.WriteLine($"Test duration: {testStopwatch?.Elapsed.TotalMilliseconds:F4} ms");
+
+            return result;
+        }
+
+        private bool CloseAction(CloseAction action, string name, int waitMilliseconds)
+        {
+            Log.WriteLine($"closing {name}");
+            Log.WriteLine($"Test duration: {testStopwatch?.Elapsed.TotalMilliseconds:F4} ms");
+
+            Task executionWaitTime = Task.Delay(waitMilliseconds);
+            bool result = false;
+            try
+            {
+                action.Execute();
+                result = true;
+                Log.WriteLine($"{name} closed");
+                Log.WriteLine($"Test duration: {testStopwatch?.Elapsed.TotalMilliseconds:F4} ms");
+                Log.WriteLine($"{name} is {(ProcessManager.IsProcessRunning(name) ? "running" : "not running")}.");
+                var stillOpenProcesses = Process.GetProcessesByName(name);
+                foreach(Process process in stillOpenProcesses)
+                {
+                    Log.WriteLine($"{process.ProcessName}({process.Id}) has {(process.HasExited ? "exited" : "not exited")}.");
+                    process.Dispose();
+                }
+
+                bool isRunning = ProcessManager.IsProcessRunning(name);
+                isRunning.Should().BeFalse("process should be closed by now");
+            }
+            finally
+            {
+                executionWaitTime.Wait();
+                Log.WriteLine($"{name} is {(ProcessManager.IsProcessRunning(name) ? "running" : "not running")} after wait.");
+                Log.WriteLine($"Test duration: {testStopwatch?.Elapsed.TotalMilliseconds:F4} ms");
+
+                
+            }
+
+            result.Should().BeTrue();
+            var newProcesses = Process.GetProcessesByName(name);
+            newProcesses.Should().BeEmpty();
+
+            return result;
         }
     }
 }

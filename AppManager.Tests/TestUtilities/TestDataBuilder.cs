@@ -58,7 +58,7 @@ namespace AppManager.Tests.TestUtilities
             return appName.ToLower() switch
             {
                 "notepad" => "C:\\Windows\\System32\\notepad.exe",
-                "calc" or "calculator" => "C:\\Windows\\System32\\calc.exe",
+                "CalculatorApp" or "CalculatorAppulator" => "C:\\Windows\\System32\\CalculatorApp.exe",
                 "mspaint" or "paint" => "start mspaint",
                 "cmd" or "command" => "C:\\Windows\\System32\\cmd.exe",
                 _ => $"{appName}.exe"
@@ -76,7 +76,7 @@ namespace AppManager.Tests.TestUtilities
                 Username = "TestUser",
                 ScanInterval = 1000,
                 AutoStart = false,
-                FavoriteApps = new[] { "notepad", "calc" },
+                FavoriteApps = new[] { "notepad", "CalculatorApp" },
                 SelectedNav1Menu = "Apps",
                 SelectedNav1List = "",
                 Triggers = [CreateBasicTriggerModel()]
@@ -90,7 +90,7 @@ namespace AppManager.Tests.TestUtilities
         {
             var actions = new List<ActionModel>();
             var actionTypes = Enum.GetValues<AppActionTypeEnum>();
-            var appNames = new[] { "notepad", "calc", "mspaint", "cmd", "explorer" };
+            var appNames = new[] { "notepad", "CalculatorApp", "mspaint", "cmd", "explorer" };
 
             for (int i = 0; i < count; i++)
             {

@@ -44,7 +44,7 @@ namespace AppManager.Tests.TestUtilities
             }
 
             // Wait a moment for the process to initialize
-            Thread.Sleep(2000);
+            //Thread.Sleep(2000);
             
             return _appManagerProcess;
         }
@@ -67,7 +67,7 @@ namespace AppManager.Tests.TestUtilities
                     _appManagerProcess.CloseMainWindow();
                     
                     // Give it time to close gracefully
-                    if (!_appManagerProcess.WaitForExit(5000))
+                    if (!_appManagerProcess.WaitForExit(3000))
                     {
                         _appManagerProcess.Kill();
                     }

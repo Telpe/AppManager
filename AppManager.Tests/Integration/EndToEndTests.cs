@@ -56,7 +56,7 @@ namespace AppManager.Tests.Integration
         public async Task CompleteWorkflow_CreateTriggerWithAction_ShouldExecuteSuccessfully()
         {
             // Arrange - Create a button trigger (safer for testing than keybind)
-            var actionModel = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Launch, "calc");
+            var actionModel = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Launch, "CalculatorApp");
             var triggerModel = TestDataBuilder.CreateBasicTriggerModel(TriggerTypeEnum.Button, "TestButtonTrigger");
             triggerModel.Actions =  [actionModel];
 
@@ -82,13 +82,13 @@ namespace AppManager.Tests.Integration
                     var action = trigger.Actions[0];
                     action.Execute();
 
-                    // Verify calc was launched
+                    // Verify CalculatorApp was launched
                     Task.Delay(CoreConstants.DefaultActionDelay).Wait();
-                    var calcProcesses = Process.GetProcessesByName("calc");
-                    calcProcesses.Should().NotBeEmpty();
+                    var CalculatorAppProcesses = Process.GetProcessesByName("CalculatorApp");
+                    CalculatorAppProcesses.Should().NotBeEmpty();
 
-                    // Clean up - close calc
-                    var closeModel = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Close, "calc");
+                    // Clean up - close CalculatorApp
+                    var closeModel = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Close, "CalculatorApp");
                     var closeAction = new CloseAction(closeModel);
                     closeAction.Execute();
                 }
@@ -184,7 +184,7 @@ namespace AppManager.Tests.Integration
             finally
             {
                 // Cleanup - attempt to close any launched applications
-                var appNames = new[] { "notepad", "calc", "mspaint", "cmd", "explorer" };
+                var appNames = new[] { "notepad", "CalculatorApp", "mspaint", "cmd", "explorer" };
                 foreach (var appName in appNames)
                 {
                     try

@@ -20,76 +20,122 @@ namespace AppManager.Core.Utils
         /// <param name="includeChildProcesses">Include child processes of found processes</param>
         /// <returns>Array of processes matching the criteria</returns>
         public static Process[] FindProcesses(
-            string? appName, 
+            string appName, 
             bool includeSimilarNames = false, 
             string? windowTitle = null, 
             bool requireMainWindow = true,
             bool includeChildProcesses = false,
             int excludeId = -1)
         {
-            if (string.IsNullOrEmpty(appName))
-            {
-                return Array.Empty<Process>();
-            }
+            ValidateProcessName(appName, nameof(appName));
+
+            IEnumerable<Process> processes = Enumerable.Empty<Process>();
 
             try
             {
-                Process[] processes;
-                
                 if (includeSimilarNames)
                 {
-                    processes = Process.GetProcesses()
-                        .Where(p => p.ProcessName.IndexOf(appName, StringComparison.OrdinalIgnoreCase) >= 0)
-                        .ToArray();
+                    Process[] processes1 = Process.GetProcesses();
+                    IEnumerable<Process> processes2 = Enumerable.Empty<Process>();
+                    try
+                    {
+                        foreach (var p in processes1)
+                        {
+                            if (-1 < p.ProcessName.IndexOf(appName, StringComparison.OrdinalIgnoreCase))
+                            {
+                                processes = processes.Append(p);
+                            }
+                            else
+                            {
+                                processes2 = processes2.Append(p);
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        foreach (var p in processes1)
+                        {
+                            p.Dispose();
+                        }
+                        throw;
+                    }
+                    finally
+                    {
+                        foreach (var p in processes2)
+                        {
+                            p.Dispose();
+                        }
+                    }
                 }
                 else
                 {
                     processes = Process.GetProcessesByName(appName);
                 }
 
-                // Filter by main window if required
-                if (requireMainWindow)
                 {
-                    processes = processes
-                        .Where(p => p.MainWindowHandle != IntPtr.Zero)
-                        .ToArray();
-                }
+                    IEnumerable<Process> processes1 = processes;
+                    processes = Enumerable.Empty<Process>();
+                    IEnumerable<Process> processes2 = Enumerable.Empty<Process>();
 
-                // Filter by window title if specified
-                if (!string.IsNullOrEmpty(windowTitle))
-                {
-                    processes = processes
-                        .Where(p => p.MainWindowTitle.IndexOf(windowTitle, StringComparison.OrdinalIgnoreCase) >= 0)
-                        .ToArray();
-                }
-
-                // Include child processes if requested
-                if (includeChildProcesses)
-                {
-                    var allProcesses = processes.ToList();
-                    foreach (var parent in processes)
+                    try
                     {
-                        var children = GetChildProcesses(parent.Id);
-                        allProcesses.AddRange(children);
+                        foreach (var p in processes1)
+                        {
+                            if (p.Id == excludeId)
+                            {
+                                processes2 = processes2.Append(p);
+                                continue;
+                            }
+
+                            if (requireMainWindow
+                                && !p.HasExited
+                                && IntPtr.Zero != p.MainWindowHandle
+                                && (string.IsNullOrEmpty(windowTitle)
+                                    || -1 < p.MainWindowTitle.IndexOf(windowTitle, StringComparison.OrdinalIgnoreCase)))
+                            {
+                                processes = processes.Append(p);
+                            }
+                            else
+                            {
+                                processes2 = processes2.Append(p);
+                            }
+
+                            if (includeChildProcesses)
+                            {
+                                IEnumerable<Process> children = GetChildProcesses(p.Id).Where(a => !processes.Any(b => b.Id == a.Id) && excludeId != a.Id);
+                                processes = [.. processes, .. children];
+                            }
+                        }
                     }
-                    processes = allProcesses.Distinct().ToArray();
+                    catch
+                    {
+                        foreach (var p in processes1)
+                        {
+                            p.Dispose();
+                        }
+                        throw;
+                    }
+                    finally
+                    {
+                        foreach (var p in processes2)
+                        {
+                            p.Dispose();
+                        }
+                    }
                 }
-
-                // Exclude specific process ID if provided
-                if (-1 < excludeId)
-                {
-                    processes = processes
-                        .Where(p => p.Id != excludeId)
-                        .ToArray();
-                }
-
-                return processes;
+            
             }
             catch (Exception ex)
             {
+                foreach (var p in processes)
+                {
+                    p.Dispose();
+                }
                 Log.WriteLine($"Error finding processes for {appName}: {ex.Message}");
                 return Array.Empty<Process>();
             }
+
+            return processes.ToArray();
         }
 
         /// <summary>
@@ -101,13 +147,56 @@ namespace AppManager.Core.Utils
         /// <param name="requireMainWindow">Only include processes with main windows</param>
         /// <returns>First matching process or null if none found</returns>
         public static Process? FindProcess(
-            string? appName, 
+            string appName, 
             bool includeSimilarNames = false, 
             string? windowTitle = null, 
             bool requireMainWindow = true)
         {
             var processes = FindProcesses(appName, includeSimilarNames, windowTitle, requireMainWindow, false);
-            return processes.FirstOrDefault();
+            try
+            {
+                return processes.FirstOrDefault();
+            }
+            finally
+            {
+                if (1 < processes.Length)
+                {
+                    for(int i = 1; i < processes.Length; i++)
+                    {
+                        processes[i].Dispose();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Validates a process name parameter
+        /// </summary>
+        /// <param name="processName">The process name to validate</param>
+        /// <param name="parameterName">The name of the parameter for exception messages.</param>
+        /// <exception cref="ArgumentException">Thrown when the process name is invalid</exception>
+        public static void ValidateProcessName(string? processName, string parameterName = "processName")
+        {
+            if (null == processName)
+            {
+                throw new ArgumentException($"Argument '{parameterName}' cannot be null");
+            }
+
+            if (String.Empty == processName)
+            {
+                throw new ArgumentException($"Argument '{parameterName}' cannot be empty.");
+            }
+
+            if (string.IsNullOrWhiteSpace(processName))
+            {
+                throw new ArgumentException($"Argument '{parameterName}' cannot be whitespace only.");
+            }
+
+            char[] invalidChars = System.IO.Path.GetInvalidFileNameChars();
+            if (-1 < processName.IndexOfAny(invalidChars))
+            {
+                throw new ArgumentException($"Argument '{parameterName}' contains invalid characters.");
+            }
         }
 
         /// <summary>
@@ -115,17 +204,24 @@ namespace AppManager.Core.Utils
         /// </summary>
         /// <param name="processName">The process name to check</param>
         /// <returns>True if the process is running, false otherwise</returns>
-        public static bool IsProcessRunning(string? processName)
+        public static bool IsProcessRunning(string processName)
         {
-            if (string.IsNullOrEmpty(processName))
-            {
-                return false;
-            }
+            ValidateProcessName(processName, nameof(processName));
 
             try
             {
-                var processes = Process.GetProcessesByName(processName);
-                return processes.Any();
+                Process[] processes = Process.GetProcessesByName(processName);
+                try
+                {
+                    return processes.Any();
+                }
+                finally
+                {
+                    foreach (var process in processes)
+                    {
+                        process.Dispose();
+                    }
+                }
             }
             catch (Exception ex)
             {

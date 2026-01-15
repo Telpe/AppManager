@@ -88,14 +88,14 @@ namespace AppManager.Tests.Unit.Actions
         public async Task ExecuteAsync_WithRunningApplication_ShouldBringToFront()
         {
             // Arrange - Launch an application first
-            var launchModel = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Launch, "calc");
+            var launchModel = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Launch, "CalculatorApp");
             var launchAction = new LaunchAction(launchModel);
             launchAction.Execute();
             
-            // Wait for calc to start
+            // Wait for CalculatorApp to start
             Task.Delay(CoreConstants.DefaultActionDelay).Wait();
 
-            var model = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.BringToFront, "calc");
+            var model = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.BringToFront, "CalculatorApp");
             var action = new BringToFrontAction(model);
 
             try
@@ -109,7 +109,7 @@ namespace AppManager.Tests.Unit.Actions
             finally
             {
                 // Cleanup
-                var closeModel = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Close, "calc");
+                var closeModel = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Close, "CalculatorApp");
                 var closeAction = new CloseAction(closeModel);
                 closeAction.Execute();
             }

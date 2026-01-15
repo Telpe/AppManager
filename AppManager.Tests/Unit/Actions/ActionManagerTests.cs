@@ -84,7 +84,7 @@ namespace AppManager.Tests.Unit.Actions
             try
             {
                 // Arrange
-                var model = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Launch, "calc");
+                var model = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Launch, "CalculatorApp");
 
                 // Act
                 ActionManager.ExecuteAction(model);
@@ -96,7 +96,7 @@ namespace AppManager.Tests.Unit.Actions
             }
             finally
             {
-                var closeModel = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Close, "calc");
+                var closeModel = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Close, "CalculatorApp");
                 ActionManager.ExecuteAction(closeModel);
             }
         }
@@ -178,7 +178,7 @@ namespace AppManager.Tests.Unit.Actions
         {
             try
             {
-                ActionManager.ExecuteAction(AppActionTypeEnum.Launch, "calc");
+                ActionManager.ExecuteAction(AppActionTypeEnum.Launch, "CalculatorApp");
             }
             catch(Exception e) 
             {
@@ -186,7 +186,7 @@ namespace AppManager.Tests.Unit.Actions
             } 
             finally
             {
-                ActionManager.ExecuteAction(AppActionTypeEnum.Close, "calc");
+                ActionManager.ExecuteAction(AppActionTypeEnum.Close, "CalculatorApp");
             }
         }
     }

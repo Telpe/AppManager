@@ -1,10 +1,13 @@
 using AppManager.Core.Models;
 using AppManager.Core.Utils;
+using Microsoft.Win32;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Xml.Linq;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace AppManager.Core.Actions
 {
@@ -56,28 +59,81 @@ namespace AppManager.Core.Actions
                 
             }
 
+            var key64 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64).OpenSubKey(@"SOFTWARE\MICROSOFT\WINDOWS\CURRENTVERSION\APPMODEL\STATEREPOSITORY\CACHE\APPLICATION\DATA");
+            var possibleNames = FileManager.ExecuteableExtensions.Select(ext => AppName + ext);
+            
+            RegistryKey? fileInfo = null;
+            {
+                if (null == key64)
+                {
+                    Log.WriteLine($"Could not open registry key for finding UWP apps: SOFTWARE\\MICROSOFT\\WINDOWS\\CURRENTVERSION\\APPMODEL\\STATEREPOSITORY\\CACHE\\APPLICATION\\DATA");
+                    return false;
+                }
+
+                foreach (string keyName in key64!.GetSubKeyNames())
+                {
+                    RegistryKey? key = key64.OpenSubKey(keyName);
+                    if (null == key) { continue; }
+                    string executable = key.GetValue("Executable") as string ?? throw new Exception("no value for Executable");
+
+                    if (possibleNames.Any(executable.EndsWith))
+                    {
+                        fileInfo = key;
+                        break;
+                    }
+                }
+            }
+
+            if (null != fileInfo)
+            {
+                ExecutablePath = $"explorer.exe";
+                Arguments = @"shell:AppsFolder\" + (fileInfo.GetValue("ApplicationUserModelId") as string);
+
+                key64.Dispose();
+                return true;
+            }
+
+            key64.Dispose();
             Log.WriteLine($"Could not find executable for: {AppName}");
             return false;
         }
 
         protected override void ExecuteAction()
         {
-            var startInfo = new ProcessStartInfo
-            {
-                FileName = ExecutablePath,
-                Arguments = Arguments ?? string.Empty,
-                UseShellExecute = true
-            };
+            Process? process = null;
 
-            var process = Process.Start(startInfo);
-
-            if (process != null)
+            try
             {
-                Log.WriteLine($"Successfully launched: {AppName}");
-                return;
+                var startInfo = new ProcessStartInfo
+                {
+                    FileName = ExecutablePath,
+                    Arguments = Arguments ?? string.Empty,
+                    UseShellExecute = true
+                };
+
+                process = Process.Start(startInfo);
+
+
+                if (null != process)
+                {
+                    Log.WriteLine($"Successfully launched: {AppName}");
+
+                    if (process.HasExited)
+                    {
+                        Log.WriteLine($"{AppName} exited immediately.");
+                    }
+                }
+                else
+                {
+
+                    throw new Exception($"Failed to launch {AppName}");
+                }
+            }
+            finally
+            {
+                process?.Dispose();
             }
 
-            throw new Exception($"Failed to launch {AppName}");
         }
 
         public override ActionModel ToModel()

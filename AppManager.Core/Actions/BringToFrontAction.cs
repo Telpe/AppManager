@@ -60,10 +60,10 @@ namespace AppManager.Core.Actions
             if (!_SpecificProcess)
             {
                 _TargetProcess = ProcessManager.FindProcess(
-                                AppName,
+                                AppName!,
                                 includeSimilarNames: false,
-                                WindowTitle,
-                                requireMainWindow: true);
+                                requireMainWindow: true,
+                                WindowTitle);
 
                 return !string.IsNullOrEmpty(AppName) && !(_TargetProcess?.HasExited ?? true);
             }

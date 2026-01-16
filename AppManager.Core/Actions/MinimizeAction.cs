@@ -34,10 +34,10 @@ namespace AppManager.Core.Actions
         protected override bool CanExecuteAction()
         {
             TargetProcessesValue = ProcessManager.FindProcesses(
-                AppName, 
+                AppName!, 
                 IncludeSimilarNames ?? false, 
-                WindowTitle, 
-                requireMainWindow: true);
+                requireMainWindow: true,
+                WindowTitle);
 
             return !string.IsNullOrEmpty(AppName) && !TargetProcessesValue.Any(p => p.HasExited);
         }
@@ -45,10 +45,10 @@ namespace AppManager.Core.Actions
         protected override void ExecuteAction()
         {
             var processes = ProcessManager.FindProcesses(
-                AppName, 
+                AppName!, 
                 IncludeSimilarNames ?? false, 
-                WindowTitle, 
-                requireMainWindow: true);
+                requireMainWindow: true,
+                WindowTitle);
                     
             if (0 == processes.Length)
             {

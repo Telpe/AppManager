@@ -16,7 +16,7 @@ namespace AppManager
     {
         public App()
         {
-            if (ShouldITerminate())
+            if (Shared.ShouldITerminateBringingOtherToFront())
             {
                 Application.Current.Shutdown();
                 return;
@@ -46,41 +46,6 @@ namespace AppManager
                 // Always call the base OnExit to ensure proper WPF cleanup
                 base.OnExit(e);
             }
-        }
-
-        protected bool ShouldITerminate()
-        {
-            if (CheckSelfRunning(out Process? notSelf) && null != notSelf)
-            {
-                var bringToFrontAction = ActionManager.CreateAction(new ActionModel
-                {
-                    ActionType = AppActionTypeEnum.BringToFront,
-                    AppName = notSelf.ProcessName
-                }, notSelf);
-
-                if (bringToFrontAction.CanExecute()) { bringToFrontAction.Execute(); }
-
-                Log.WriteLine($"{notSelf.ProcessName} is already running, bringing existing instance to front");
-
-                return true;
-            }
-
-            return false;
-        }
-
-        protected bool CheckSelfRunning(out Process? notSelf)
-        {
-            var currentProcess = Process.GetCurrentProcess();
-            var processes = ProcessManager.FindProcesses(currentProcess.ProcessName, false, null, true, false, currentProcess.Id);
-
-            if (processes.Length > 0)
-            {
-                notSelf = processes[0];
-                return true;
-            }
-
-            notSelf = null;
-            return false;
         }
 
         protected void SetCoreRunning()

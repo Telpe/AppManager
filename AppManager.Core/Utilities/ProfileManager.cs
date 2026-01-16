@@ -46,7 +46,7 @@ namespace AppManager.Core.Utilities
             }
             catch(Exception e)
             {
-                Log.WriteLine($"Profile '{profileName}' may be broken. Loading caused error:\n{e.Message}\n{e.StackTrace}");
+                Log.WriteLine($"Profile '{profileName}' may be broken. Loading caused error:\n{e.Message}\n{e.StackTrace}\n");
 
                 if (DefaultProfileFilename == profileName) 
                 {

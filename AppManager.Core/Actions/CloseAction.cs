@@ -33,10 +33,10 @@ namespace AppManager.Core.Actions
             try
             {
                 processes = ProcessManager.FindProcesses(
-                    AppName, 
+                    AppName!, 
                     IncludeSimilarNames ?? false, 
+                    requireMainWindow: false,
                     windowTitle: null, 
-                    requireMainWindow: false, 
                     IncludeChildProcesses ?? true,
                     4);
                 

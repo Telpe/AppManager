@@ -23,7 +23,7 @@ namespace AppManager.Core
         [STAThread]
         static void Main(string[] args)
         {
-            if (ShouldITerminate()) { return; }
+            if (Shared.ShouldITerminate()) { return; }
             if (StreamLogging)
             {
                 Log.OpenStream();
@@ -98,8 +98,7 @@ namespace AppManager.Core
             {
                 // Create and configure the file watcher
                 SettingsManager.CurrentSettings.LastUsedProfileName ??= ProfileManager.DefaultProfileFilename;
-                string currentProfileName = SettingsManager.CurrentSettings.LastUsedProfileName;
-                ProfileFileWatcherValue = FileManager.BuildFileWatcher(FileManager.GetProfilePath(currentProfileName));
+                ProfileFileWatcherValue = FileManager.BuildFileWatcher(FileManager.GetProfilePath(SettingsManager.CurrentSettings.LastUsedProfileName));
                 ProfileFileWatcherValue.NotifyFilter = NotifyFilters.LastWrite;
                 ProfileFileWatcherValue.EnableRaisingEvents = true;
 
@@ -107,7 +106,7 @@ namespace AppManager.Core
                 ProfileFileWatcherValue.Changed += OnProfileFileChanged;
                 ProfileFileWatcherValue.Error += OnProfileFileWatcherError;
 
-                Log.WriteLine($"Profile file watcher initialized for: {currentProfileName}");
+                Log.WriteLine($"Profile file watcher initialized for: {SettingsManager.CurrentSettings.LastUsedProfileName}");
             }
             catch (Exception ex)
             {
@@ -120,14 +119,15 @@ namespace AppManager.Core
         /// </summary>
         private static void OnSettingsFileChanged(object sender, FileSystemEventArgs e)
         {
+            // Add a small delay to ensure file writing is complete
+            // System.Threading.Thread.Sleep(100);
+            //SettingsFileWatcherValue?.EnableRaisingEvents = false;
+
             MainDispatcher.InvokeAsync(() =>
             {
                 Log.WriteLine($"Settings file changed thread id: {GlobalKeyboardHook.CurrentThreadId}");
                 try
                 {
-                    // Add a small delay to ensure file writing is complete
-                    System.Threading.Thread.Sleep(100);
-
                     string lastProfile = SettingsManager.CurrentSettings.LastUsedProfileName ?? ProfileManager.DefaultProfileFilename;
                     SettingsManager.ClearCache();
 
@@ -136,7 +136,7 @@ namespace AppManager.Core
                         // Reinitialize the profile file watcher for the new profile
                         ProfileFileWatcherValue?.Dispose();
                         InitializeProfileFileWatcher();
-
+                        
                         // Reload profile and triggers
                         ReloadProfileAndTriggers();
                     }
@@ -145,6 +145,8 @@ namespace AppManager.Core
                 {
                     Log.WriteLine($"Error handling settings file change: {ex.Message}");
                 }
+
+                //SettingsFileWatcherValue?.EnableRaisingEvents = true;
             });
             
         }
@@ -154,14 +156,13 @@ namespace AppManager.Core
         /// </summary>
         private static void OnProfileFileChanged(object sender, FileSystemEventArgs e)
         {
+            //ProfileFileWatcherValue?.EnableRaisingEvents = false;
+
             MainDispatcher.InvokeAsync(() =>
             {
                 Log.WriteLine($"Profile file changed thread id: {GlobalKeyboardHook.CurrentThreadId}");
                 try
                 {
-                    // Add a small delay to ensure file writing is complete
-                    System.Threading.Thread.Sleep(100);
-
                     Log.WriteLine($"Profile file change detected: {e.FullPath}");
                 
                     // Reload profile and triggers
@@ -171,6 +172,8 @@ namespace AppManager.Core
                 {
                     Log.WriteLine($"Error handling profile file change: {ex.Message}");
                 }
+
+                //ProfileFileWatcherValue?.EnableRaisingEvents = true;
             });
         }
 
@@ -305,15 +308,13 @@ namespace AppManager.Core
             try
             {
                 TriggerModel[] triggers = ProfileManager.CurrentProfile.Apps.Where(a => null != a.Triggers).SelectMany(a => a.Triggers!.Select(a => a.Value)).ToArray();
-                int count = 0;
 
                 foreach (TriggerModel model in triggers) // ProfileManager.CurrentProfile.Triggers
                 {
                     TriggerManager.RegisterTrigger(TriggerManager.CreateTrigger(model));
-                    count++;
                 }
 
-                Log.WriteLine($"Loaded {count} triggers from profile: {ProfileManager.CurrentProfile.Name}");
+                Log.WriteLine($"Loaded {triggers.Length} triggers from profile: {ProfileManager.CurrentProfile.Name}");
 
                 ProfileManager.ClearCache();
             }
@@ -323,26 +324,5 @@ namespace AppManager.Core
             }
         }
 
-        // reload profile on last profile changed. also settings.
-
-        protected static bool ShouldITerminate()
-        {
-            return CheckSelfRunning(out Process? notSelf);
-        }
-
-        protected static bool CheckSelfRunning(out Process? notSelf)
-        {
-            var currentProcess = Process.GetCurrentProcess();
-            var processes = ProcessManager.FindProcesses(currentProcess.ProcessName, false, null, false, false, currentProcess.Id);
-
-            if (processes.Length > 0)
-            {
-                notSelf = processes[0];
-                return true;
-            }
-
-            notSelf = null;
-            return false;
-        }
     }
 }

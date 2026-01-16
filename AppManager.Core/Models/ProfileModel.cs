@@ -43,7 +43,7 @@ namespace AppManager.Core.Models
         public static bool IsValidProfileName(string profileName)
         {
             if (string.IsNullOrEmpty(profileName)
-             || profileName.IndexOfAny(Path.GetInvalidFileNameChars()) != -1)
+             || -1 < profileName.IndexOfAny(Path.GetInvalidFileNameChars()))
             {
                 return false;
             }

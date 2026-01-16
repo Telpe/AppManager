@@ -48,10 +48,10 @@ namespace AppManager.Core.Actions
         protected override void ExecuteAction()
         {
             var process = ProcessManager.FindProcess(
-                AppName, 
+                AppName!, 
                 IncludeSimilarNames ?? false, 
-                WindowTitle, 
-                requireMainWindow: true) ?? throw new Exception($"No process found to focus: {AppName}");
+                requireMainWindow: true,
+                WindowTitle) ?? throw new Exception($"No process found to focus: {AppName}");
             
             IntPtr mainWindowHandle = process.MainWindowHandle;
                 

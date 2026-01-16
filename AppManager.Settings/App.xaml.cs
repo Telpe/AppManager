@@ -35,7 +35,7 @@ namespace AppManager.Settings
 
         public App()
         {
-            if (ShouldITerminate())
+            if (Shared.ShouldITerminateBringingOtherToFront())
             {
                 Application.Current.Shutdown();
                 return;
@@ -43,7 +43,7 @@ namespace AppManager.Settings
 
             InitializeComponent();
 
-            CheckCoreRunning();
+            SetCoreRunning();
 
             //string profileToLoad = !string.IsNullOrEmpty(SettingsManager.CurrentSettings.LastUsedProfileName) 
             //    ? SettingsManager.CurrentSettings.LastUsedProfileName 
@@ -67,42 +67,7 @@ namespace AppManager.Settings
             //CheckIfAppsRunningValue.Start();
         }
 
-        protected bool ShouldITerminate()
-        {
-            if (CheckSelfRunning(out Process? notSelf) && null != notSelf)
-            {
-                var bringToFrontAction = ActionManager.CreateAction(new ActionModel
-                {
-                    ActionType = AppActionTypeEnum.BringToFront,
-                    AppName = notSelf.ProcessName
-                }, notSelf);
-
-                if (bringToFrontAction.CanExecute()) { bringToFrontAction.Execute(); }
-
-                Log.WriteLine($"{notSelf.ProcessName} is already running, bringing existing instance to front");
-
-                return true;
-            }
-
-            return false;
-        }
-
-        protected bool CheckSelfRunning( out Process? notSelf)
-        {
-            var currentProcess = Process.GetCurrentProcess();
-            var processes = ProcessManager.FindProcesses(currentProcess.ProcessName, false, null, true, false, currentProcess.Id);
-
-            if(processes.Length > 0)
-            {
-                notSelf = processes[0];
-                return true;
-            }
-
-            notSelf = null;
-            return false;
-        }
-
-        protected void CheckCoreRunning()
+        protected void SetCoreRunning()
         {
             if (!ProcessManager.IsProcessRunning("AppManager.Core"))
             {

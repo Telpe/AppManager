@@ -9,7 +9,12 @@
 
         public override string ToString()
         {
-            return $"{Exspansion}.{Patch}.{Hotfix}.{Work}";
+            return ToString('.');
+        }
+
+        public string ToString(char separator)
+        {
+            return $"{Exspansion}{separator}{Patch}{separator}{Hotfix}{separator}{Work}";
         }
 
         public static Version Parse(string version)
@@ -33,10 +38,10 @@
             string[] parts = version.Split('.');
             Version v = new()
             {
-                Exspansion = parts.Length > 0 ? int.Parse(parts[0]) : 0,
-                Patch = parts.Length > 1 ? int.Parse(parts[1]) : 0,
-                Hotfix = parts.Length > 2 ? int.Parse(parts[2]) : 0,
-                Work = parts.Length > 3 ? int.Parse(parts[3]) : 0
+                Exspansion = 0 < parts.Length ? int.Parse(parts[0]) : 0,
+                Patch =      1 < parts.Length ? int.Parse(parts[1]) : 0,
+                Hotfix =     2 < parts.Length ? int.Parse(parts[2]) : 0,
+                Work =       3 < parts.Length ? int.Parse(parts[3]) : 0
             };
 
             return v;

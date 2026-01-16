@@ -21,9 +21,9 @@ namespace AppManager.Core.Utilities
         /// <returns>Array of processes matching the criteria</returns>
         public static Process[] FindProcesses(
             string appName, 
-            bool includeSimilarNames = false, 
-            string? windowTitle = null, 
+            bool includeSimilarNames = false,
             bool requireMainWindow = false,
+            string? windowTitle = null, 
             bool includeChildProcesses = false,
             int excludeId = -1)
         {
@@ -152,11 +152,12 @@ namespace AppManager.Core.Utilities
         /// <returns>First matching process or null if none found</returns>
         public static Process? FindProcess(
             string appName, 
-            bool includeSimilarNames = false, 
-            string? windowTitle = null, 
-            bool requireMainWindow = true)
+            bool includeSimilarNames = false,
+            bool requireMainWindow = true,
+            string? windowTitle = null,
+            int excludeId = -1)
         {
-            var processes = FindProcesses(appName, includeSimilarNames, windowTitle, requireMainWindow, false);
+            var processes = FindProcesses(appName, includeSimilarNames, requireMainWindow, windowTitle, false, excludeId);
             try
             {
                 return processes.FirstOrDefault();

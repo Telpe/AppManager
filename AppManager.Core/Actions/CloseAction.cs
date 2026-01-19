@@ -27,48 +27,68 @@ namespace AppManager.Core.Actions
             ForceOperation = model.ForceOperation;
         }
 
-        protected override void ExecuteAction()
+        protected override bool ExecuteAction()
         {
             Process[]? processes = null;
+            Process[]? processesTemp = null;
             try
             {
-                processes = ProcessManager.FindProcesses(
+                processesTemp = ProcessManager.FindProcesses(
                     AppName!, 
                     IncludeSimilarNames ?? false, 
                     requireMainWindow: false,
                     windowTitle: null, 
-                    IncludeChildProcesses ?? true,
+                    IncludeChildProcesses ?? false,
                     4);
                 
-                if (null == processes || 0 == processes.Length)
+                if (processesTemp is null || 0 == processesTemp.Length)
                 {
                     Log.WriteLine($"No processes found for: {AppName}");
-                    return;
+                    return false;
                 }
 
-                foreach(Process p in processes.Where(a => !String.Equals(a.ProcessName, AppName, StringComparison.CurrentCultureIgnoreCase)))
+                processes = [];
+
+                foreach (Process p in processesTemp)
                 {
-                    p.Dispose();
+                    if (String.Equals(p.ProcessName, AppName, StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        processes = processes.Append(p).ToArray();
+                    }
+                    else
+                    {
+                        p.Dispose();
+                    }
+                    
                 }
-
-                processes = processes.Where(a=> String.Equals(a.ProcessName, AppName, StringComparison.CurrentCultureIgnoreCase)).ToArray();
 
                 Log.WriteLine($"Closing {processes.Length} process{(processes.Length!=1?"es":"")} for: {AppName}");
 
-                if (!ProcessManager.CloseProcesses(processes, TimeoutMs ?? CoreConstants.DefaultActionDelay, ForceOperation ?? true))
+                if (!ProcessManager.CloseProcesses(processes, TimeoutMs ?? CoreConstants.ProcessRestartDelay, ForceOperation ?? true))
                 {
                     throw new Exception($"Failed to close all processes for: {AppName}");
                 }
+
+                return true;
             }
             catch (Exception ex)
             {
                 Log.WriteLine($"Failed to close {AppName}: {ex.Message}");
+                return false;
             }
             finally
             {
-                if (null != processes)
+                if (processes is not null)
                 {
                     foreach (Process p in processes)
+                    {
+                        Log.WriteLine($"Disposing process: {p.ProcessName} (ID: {p.Id})");
+                        p.Dispose();
+                    }
+                }
+                if (processesTemp is not null)
+                {
+                    foreach (Process p in processesTemp)
                     {
                         p.Dispose();
                     }

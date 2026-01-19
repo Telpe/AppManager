@@ -20,6 +20,7 @@ namespace AppManager.Settings.Conditions
             {
                 ConditionTypeEnum.ProcessRunning => $"Process Running: {model.ProcessName}",
                 ConditionTypeEnum.FileExists => $"File Exists: {model.FilePath}",
+                ConditionTypeEnum.PreviousActionSuccess => $"Previous action result. Only when trigger has multiple actions.",
                 _ => $"Unknown Condition: {model.ConditionType}"
             };
         }

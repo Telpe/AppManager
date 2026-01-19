@@ -18,7 +18,7 @@ namespace AppManager.Core.Utilities
         /// <summary>
         /// Standard delay time in milliseconds for process restart operations
         /// </summary>
-        public const int ProcessRestartDelay = 1000;
+        public const int ProcessRestartDelay = 100;
 
         /// <summary>
         /// Minimal delay time in milliseconds for thread synchronization

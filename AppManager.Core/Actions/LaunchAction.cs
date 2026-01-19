@@ -118,7 +118,7 @@ namespace AppManager.Core.Actions
             return false;
         }
 
-        protected override void ExecuteAction()
+        protected override bool ExecuteAction()
         {
             Process? process = null;
 
@@ -135,7 +135,7 @@ namespace AppManager.Core.Actions
 
                 Thread.Sleep(TimeoutMs ?? 0);
 
-                if (null != process)
+                if (process is not null)
                 {
                     Log.WriteLine($"Successfully launched: {AppName}");
 
@@ -143,10 +143,11 @@ namespace AppManager.Core.Actions
                     {
                         Log.WriteLine($"{AppName} exited immediately.");
                     }
+
+                    return true;
                 }
                 else
                 {
-
                     throw new Exception($"Failed to launch {AppName}");
                 }
             }

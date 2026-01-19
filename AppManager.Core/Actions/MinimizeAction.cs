@@ -42,7 +42,7 @@ namespace AppManager.Core.Actions
             return !string.IsNullOrEmpty(AppName) && !TargetProcessesValue.Any(p => p.HasExited);
         }
 
-        protected override void ExecuteAction()
+        protected override bool ExecuteAction()
         {
             var processes = ProcessManager.FindProcesses(
                 AppName!, 
@@ -53,8 +53,10 @@ namespace AppManager.Core.Actions
             if (0 == processes.Length)
             {
                 Log.WriteLine($"No processes found to minimize: {AppName}");
-                return;
+                return false;
             }
+
+            int successCount = 0;
 
             foreach (var process in processes)
             {
@@ -65,18 +67,19 @@ namespace AppManager.Core.Actions
                     Log.WriteLine($"No main window found for process: {process.ProcessName}");
                     continue;
                 }
-
-                bool success = ShowWindow(mainWindowHandle, SW_MINIMIZE);
                             
-                if (success)
+                if (ShowWindow(mainWindowHandle, SW_MINIMIZE))
                 {
                     Log.WriteLine($"Successfully minimized window for: {process.ProcessName}");
+                    successCount++;
                 }
                 else
                 {
                     Log.WriteLine($"Failed to minimize window for: {process.ProcessName}");
                 }
             }
+
+            return 0 < successCount;
         }
 
         public override ActionModel ToModel()

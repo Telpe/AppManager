@@ -34,31 +34,20 @@ namespace AppManager.Core.Utilities
 
             try
             {
-                if (includeSimilarNames)
+                /*if (includeSimilarNames)
                 {
                     processesTemp = Process.GetProcesses();
 
-                    try
+                    foreach (var p in processesTemp)
                     {
-                        foreach (var p in processesTemp)
+                        if ((includeSimilarNames && - 1 < p.ProcessName.IndexOf(appName, StringComparison.OrdinalIgnoreCase)) || p.ProcessName.Equals(appName, StringComparison.OrdinalIgnoreCase))
                         {
-                            if (-1 < p.ProcessName.IndexOf(appName, StringComparison.OrdinalIgnoreCase))
-                            {
-                                processes = processes.Append(p);
-                            }
-                            else
-                            {
-                                p.Dispose();
-                            }
+                            processes = processes.Append(p);
                         }
-                    }
-                    catch
-                    {
-                        foreach (var p in processesTemp)
+                        else
                         {
                             p.Dispose();
                         }
-                        throw;
                     }
 
                     processesTemp = [];
@@ -66,10 +55,24 @@ namespace AppManager.Core.Utilities
                 else
                 {
                     processes = Process.GetProcessesByName(appName);
+                }*/
+
+                processesTemp = Process.GetProcesses();
+
+                foreach (var p in processesTemp)
+                {
+                    if ((includeSimilarNames && -1 < p.ProcessName.IndexOf(appName, StringComparison.OrdinalIgnoreCase)) || p.ProcessName.Equals(appName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        processes = processes.Append(p);
+                    }
+                    else
+                    {
+                        p.Dispose();
+                    }
                 }
 
-                
                 processesTemp = processes;
+
                 processes = Enumerable.Empty<Process>();
 
                 foreach (var p in processesTemp)
@@ -314,7 +317,7 @@ namespace AppManager.Core.Utilities
         /// <returns>True if all processes were closed successfully</returns>
         public static bool CloseProcesses(Process[] processes, int timeoutMs = CoreConstants.DefaultActionDelay, bool forceKill = false)
         {
-            if (processes == null || processes.Length == 0)
+            if (processes is null || processes.Length == 0)
             {
                 return true;
             }
@@ -323,7 +326,7 @@ namespace AppManager.Core.Utilities
 
             foreach (var process in processes)
             {
-                closers = [.. closers, Task<bool>.Run(() => 
+                closers = [..closers, Task<bool>.Run(() => 
                 {
                     try
                     {

@@ -9,6 +9,7 @@ namespace AppManager.Settings.UI
     {
         public ActionModel? ActionModel { get; set; }
         public TriggerModel? TriggerModel { get; set; }
+        public ConditionModel? ConditionModel { get; set; }
 
         public InputEditEventArgs(ActionModel? actionModel = null)
         {
@@ -18,6 +19,11 @@ namespace AppManager.Settings.UI
         public InputEditEventArgs(TriggerModel? triggerModel = null)
         {
             TriggerModel = triggerModel;
+        }
+
+        public InputEditEventArgs(ConditionModel? conditionModel = null)
+        {
+            ConditionModel = conditionModel;
         }
     }
 }

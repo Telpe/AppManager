@@ -71,7 +71,7 @@ namespace AppManager.Core.Actions
             return !(_TargetProcess?.HasExited ?? true);
         }
 
-        protected override void ExecuteAction()
+        protected override bool ExecuteAction()
         {
             try
             {
@@ -103,6 +103,7 @@ namespace AppManager.Core.Actions
                 SetWindowPos(mainWindowHandle, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 
                 Log.WriteLine($"Successfully brought to front: {AppName}");
+                return true;
             }
             catch (Exception ex)
             {

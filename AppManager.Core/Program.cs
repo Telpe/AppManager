@@ -24,20 +24,21 @@ namespace AppManager.Core
         static void Main(string[] args)
         {
             if (Shared.ShouldITerminate()) { return; }
+
+            AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
+
             if (StreamLogging)
             {
                 Log.OpenStream();
             }
-            
-            AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
 
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
+            Log.WriteLine($"Main thread id: {GlobalKeyboardHook.CurrentThreadId}");
 
             InitializeFileWatchers();
             LoadTriggers();
 
-            Log.WriteLine($"Main thread id: {GlobalKeyboardHook.CurrentThreadId}");
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
 
             // Create and run the tray application
             using (TrayAppValue = new TrayApplication())
@@ -308,13 +309,22 @@ namespace AppManager.Core
             try
             {
                 TriggerModel[] triggers = ProfileManager.CurrentProfile.Apps.Where(a => null != a.Triggers).SelectMany(a => a.Triggers!.Select(a => a.Value)).ToArray();
+                int loadCounter = 0;
 
                 foreach (TriggerModel model in triggers) // ProfileManager.CurrentProfile.Triggers
                 {
-                    TriggerManager.RegisterTrigger(TriggerManager.CreateTrigger(model));
+                    try
+                    {
+                        TriggerManager.RegisterTrigger(model);
+                        loadCounter++;
+                    }
+                    catch (Exception e)
+                    {
+                        Log.WriteLine($"Error registering trigger: {e.Message}\n{e.Source}\n{e.StackTrace}\n");
+                    }
                 }
 
-                Log.WriteLine($"Loaded {triggers.Length} triggers from profile: {ProfileManager.CurrentProfile.Name}");
+                Log.WriteLine($"Loaded {loadCounter}/{triggers.Length} triggers from profile: {ProfileManager.CurrentProfile.Name}");
 
                 ProfileManager.ClearCache();
             }

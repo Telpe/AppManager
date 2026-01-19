@@ -37,8 +37,7 @@ namespace AppManager.Core.Actions
                 var conditions = new List<ICondition>();
                 foreach (var conditionModel in model.Conditions)
                 {
-                    var condition = ConditionFactory.CreateCondition(conditionModel);
-                    if (condition != null) { conditions.Add(condition); }
+                    conditions.Add(ConditionFactory.CreateCondition(conditionModel)); 
                 }
                 _Conditions = conditions.ToArray();
             }
@@ -51,7 +50,7 @@ namespace AppManager.Core.Actions
 
         public abstract ActionModel ToModel();
 
-        protected abstract void ExecuteAction();
+        protected abstract bool ExecuteAction();
 
         protected virtual bool CanExecuteAction() { return true; }
 
@@ -69,16 +68,15 @@ namespace AppManager.Core.Actions
             return true;
         }
 
-        public void Execute()
+        public bool Execute()
         {
             if (!CanExecute())
             {
                 Log.WriteLine($"Action {ActionType} cannot be executed due to failing conditions.");
+                return false;
             }
-            else
-            {
-                ExecuteAction();
-            }
+
+            return ExecuteAction();
         }
 
         public void AddCondition(ConditionModel conditionModel)

@@ -48,33 +48,22 @@ namespace AppManager.Core.Actions
             return _Launch.CanExecute();
         }
 
-        protected override void ExecuteAction()
+        protected override bool ExecuteAction()
         {
-
-
-            if (_Close?.CanExecute() ?? false)
+            if (_Close?.Execute() ?? false)
             {
-                try
-                {
-                    _Close.Execute();
-                }
-                catch
-                {
-                    Log.WriteLine($"Failed to close {AppName} for restart");
-                }
-
-                // Wait a moment before launching
-                Task.Delay(CoreConstants.ProcessRestartDelay).Wait();
+                Thread.Sleep(CoreConstants.ProcessRestartDelay);
             }
             else
             {
                 Log.WriteLine($"Close action can not be executed for {AppName}, proceeding to launch.");
             }
 
-            _Launch!.Execute();
+            bool result = _Launch!.Execute();
 
-            Log.WriteLine($"Successfully restarted: {AppName}");
+            Log.WriteLine($"{(result ? "Successive" : "Failed")} restart: {AppName}");
 
+            return result;
         }
 
         public override ActionModel ToModel()

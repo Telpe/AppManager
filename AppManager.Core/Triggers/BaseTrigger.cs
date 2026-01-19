@@ -12,7 +12,7 @@ namespace AppManager.Core.Triggers
     {
         public abstract TriggerTypeEnum TriggerType { get; }
         public string Name { get; set; }
-        public string Description { get; set; } = "";
+        public virtual string Description { get; set; } = "Trigger from outside events";
         public bool Inactive { get; set; }
 
         protected ICondition[] ConditionsValue { get; set; } = [];
@@ -102,12 +102,10 @@ namespace AppManager.Core.Triggers
 
             foreach (var action in ActionsValue)
             {
-                
                 Log.WriteLine($"Executing action {action.ActionType} for trigger {GetType().Name}");
                 try
                 {
-                    action.Execute();
-                    actionSuccess = true;
+                    actionSuccess = action.Execute();
                 }
                 catch(Exception e)
                 {

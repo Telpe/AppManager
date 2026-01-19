@@ -29,6 +29,11 @@ namespace AppManager.Core.Triggers
             };
         }
 
+        public static bool RegisterTrigger(TriggerModel trigger)
+        {
+            return RegisterTrigger(CreateTrigger(trigger));
+        }
+
         public static bool RegisterTrigger(ITrigger trigger)
         { try{
                 if (TriggersValue.Contains(trigger)) { throw new Exception("Error: Attempt to add duplicate trigger."); }

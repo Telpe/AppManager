@@ -81,28 +81,12 @@ namespace AppManager.Settings.Actions
         {
             try
             {
-                if (ActionTypeComboBox != null)
-                {
-                    ActionTypeComboBox.ItemsSource = ActionManager.GetAvailableActions();
-                }
+                ActionTypeComboBox?.ItemsSource = ActionManager.GetAvailableActions();
 
-                if (ConditionsListBox != null)
-                {
-                    ConditionsListBox.ItemsSource = _conditions;
-                }
+                ConditionsListBox?.ItemsSource ??= _conditions;
+                
 
-                if (ConditionTypeComboBox != null)
-                {
-                    var conditionTypes = Enum.GetValues(typeof(ConditionTypeEnum))
-                        .Cast<ConditionTypeEnum>()
-                        .Where(c => c != ConditionTypeEnum.None)
-                        .ToList();
-                    ConditionTypeComboBox.ItemsSource = conditionTypes;
-                    if (conditionTypes.Any())
-                    {
-                        ConditionTypeComboBox.SelectedIndex = 0;
-                    }
-                }
+                
             }
             catch (Exception ex)
             {
@@ -438,17 +422,43 @@ namespace AppManager.Settings.Actions
         {
             try
             {
-                if (ConditionTypeComboBox?.SelectedItem is ConditionTypeEnum conditionType)
-                {
-                    var conditionModel = new ConditionModel { ConditionType = conditionType };
+                ConditionModel conditionModel = new ConditionModel { ConditionType = ConditionTypeEnum.None };
 
-                    var conditionDialog = new ConditionConfigDialog(conditionModel);
-                    if (conditionDialog.ShowDialog() == true)
-                    {
-                        _conditions.Add(new ConditionDisplayItem(conditionDialog.ConditionModel));
-                        UpdatePreview();
-                    }
-                }
+                ConditionEditorControl conditionEditor = new ConditionEditorControl(conditionModel);
+
+                // Subscribe to save event
+                conditionEditor.Save += (s, updatedCondition) =>
+                {
+                    if (null == updatedCondition?.ConditionModel) { return; }
+
+                    CurrentActionModelValue.Conditions ??= [];
+                    CurrentActionModelValue.Conditions = CurrentActionModelValue.Conditions.Append(updatedCondition.ConditionModel).ToArray();
+
+                    // Refresh the UI to show changes
+                    _conditions.Add(new ConditionDisplayItem(updatedCondition.ConditionModel));
+
+                    // Mark as edited
+                    AnnounceEdited();
+                    UpdatePreview();
+
+                    Log.WriteLine($"Condition {updatedCondition.ConditionModel.ConditionType} updated successfully");
+                    ((MainWindow)Application.Current.MainWindow)?.HideOverlay();
+                };
+
+                conditionEditor.Edited += (s, args) =>
+                {
+                    Log.WriteLine($"Condition edited for {conditionModel.ConditionType}");
+                    AnnounceEdited();
+                };
+
+                conditionEditor.Cancel += (s, args) =>
+                {
+                    Log.WriteLine($"Condition cancelled for {conditionModel.ConditionType}");
+                    ((MainWindow)Application.Current.MainWindow)?.HideOverlay();
+                };
+
+                ((MainWindow)Application.Current.MainWindow)?.ShowOverlay(conditionEditor);
+
             }
             catch (Exception ex)
             {
@@ -477,6 +487,9 @@ namespace AppManager.Settings.Actions
             {
                 if (sender is Button button && button.Tag is ConditionDisplayItem condition)
                 {
+                    CurrentActionModelValue.Conditions = CurrentActionModelValue.Conditions?
+                        .Where(c => c != condition.Model)
+                        .ToArray();
                     _conditions.Remove(condition);
                     UpdatePreview();
                 }

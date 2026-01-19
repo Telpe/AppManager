@@ -45,9 +45,9 @@ namespace AppManager.Core.Actions
             return !string.IsNullOrEmpty(AppName);
         }
 
-        protected override void ExecuteAction()
+        protected override bool ExecuteAction()
         {
-            var process = ProcessManager.FindProcess(
+            Process process = ProcessManager.FindProcess(
                 AppName!, 
                 IncludeSimilarNames ?? false, 
                 requireMainWindow: true,
@@ -70,12 +70,10 @@ namespace AppManager.Core.Actions
                 ShowWindow(mainWindowHandle, SW_SHOW);
             }
 
-            // Bring window to foreground
-            bool success = SetForegroundWindow(mainWindowHandle);
-                
-            if (success)
+            if (SetForegroundWindow(mainWindowHandle))
             {
                 Log.WriteLine($"Successfully focused window for: {AppName}");
+                return true;
             }
             else
             {

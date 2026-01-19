@@ -92,21 +92,48 @@ namespace AppManager.Core.Triggers
             return CanExecuteTrigger();
         }
 
-        protected void ExecuteActions()
+        protected async void ExecuteActions()
         {
+            Log.WriteLine($"Thread id should be: {GlobalKeyboardHook.CurrentThreadId}");
+            if (!CanExecute()) { return; }
+
+            bool actionSuccess;
+            int nextIndex = 1;
+
             foreach (var action in ActionsValue)
             {
-                if (action.CanExecute())
+                
+                Log.WriteLine($"Executing action {action.ActionType} for trigger {GetType().Name}");
+                try
                 {
-                    Log.WriteLine($"Executing action {action.ActionType} for trigger {GetType().Name}");
                     action.Execute();
+                    actionSuccess = true;
                 }
-                else
+                catch(Exception e)
                 {
-                    Log.WriteLine($"Action {action.ActionType} cannot be executed for trigger {GetType().Name}");
+                    Log.WriteLine($"Action {action.ActionType} execution failed for trigger {GetType().Name}.\n{e.Message}\n");
+                    actionSuccess = false;
                 }
+
+                if (nextIndex < ActionsValue.Length )
+                {
+                    SetActionSuccessForActionConditions(actionSuccess, ActionsValue[nextIndex]);
+                }
+
+                nextIndex++;
             }
 
+        }
+
+        private void SetActionSuccessForActionConditions(bool actionSuccess, IAction action)
+        {
+            foreach (var condition in action.Conditions)
+            {
+                if (condition is PreviousActionSuccessCondition pasc)
+                {
+                    pasc.ActionSucceeded = actionSuccess;
+                }
+            }
         }
 
         protected virtual bool CheckConditions()
@@ -125,8 +152,7 @@ namespace AppManager.Core.Triggers
 
         protected void ActivateTrigger()
         {
-            //if (CanExecute()) { ExecuteActions(); }
-            Log.WriteLine($"Thread id should be: {GlobalKeyboardHook.CurrentThreadId}");
+            ExecuteActions();
             TriggerActivated?.Invoke(this, EventArgs.Empty);
         }
 

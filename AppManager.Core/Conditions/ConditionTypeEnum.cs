@@ -11,6 +11,7 @@ namespace AppManager.Core.Conditions
         NetworkPortOpen,
         TimeRange,
         DayOfWeek,
-        SystemUptime
+        SystemUptime,
+        PreviousActionSuccess
     }
 }

@@ -46,11 +46,7 @@ namespace AppManager.Core.Actions
 
         public bool CanExecute()
         {
-            // Check all conditions first
-            if (!CheckConditions()) { return false; }
-
-            // Then check action-specific logic
-            return CanExecuteAction();
+            return CheckConditions() && CanExecuteAction();
         }
 
         public abstract ActionModel ToModel();
@@ -77,7 +73,7 @@ namespace AppManager.Core.Actions
         {
             if (!CanExecute())
             {
-                Log.WriteLine($"Action {ActionType} cannot be executed due to failing conditions or action constraints.");
+                Log.WriteLine($"Action {ActionType} cannot be executed due to failing conditions.");
             }
             else
             {

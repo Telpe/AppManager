@@ -19,6 +19,7 @@ namespace AppManager.Core.Actions
 
         public string? ExecutablePath { get; set; }
         public string? Arguments { get; set; }
+        public int? TimeoutMs { get; set; }
 
         public LaunchAction(ActionModel model) : base(model)
         {
@@ -59,11 +60,13 @@ namespace AppManager.Core.Actions
                 
             }
 
-            var key64 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64).OpenSubKey(@"SOFTWARE\MICROSOFT\WINDOWS\CURRENTVERSION\APPMODEL\STATEREPOSITORY\CACHE\APPLICATION\DATA");
-            var possibleNames = FileManager.ExecuteableExtensions.Select(ext => AppName + ext);
-            
+            RegistryKey? key64 = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64).OpenSubKey(@"SOFTWARE\MICROSOFT\WINDOWS\CURRENTVERSION\APPMODEL\STATEREPOSITORY\CACHE\APPLICATION\DATA");
             RegistryKey? fileInfo = null;
+
+            try
             {
+                var possibleNames = FileManager.ExecuteableExtensions.Select(ext => AppName + ext);
+
                 if (null == key64)
                 {
                     Log.WriteLine($"Could not open registry key for finding UWP apps: SOFTWARE\\MICROSOFT\\WINDOWS\\CURRENTVERSION\\APPMODEL\\STATEREPOSITORY\\CACHE\\APPLICATION\\DATA");
@@ -73,27 +76,44 @@ namespace AppManager.Core.Actions
                 foreach (string keyName in key64!.GetSubKeyNames())
                 {
                     RegistryKey? key = key64.OpenSubKey(keyName);
+                    bool found = false;
                     if (null == key) { continue; }
-                    string executable = key.GetValue("Executable") as string ?? throw new Exception("no value for Executable");
 
-                    if (possibleNames.Any(executable.EndsWith))
+                    try
                     {
-                        fileInfo = key;
-                        break;
+                        string executable = key.GetValue("Executable") as string ?? throw new Exception("no value for Executable");
+
+                        if (possibleNames.Any(executable.EndsWith))
+                        {
+                            fileInfo = key;
+                            found = true;
+                            break;
+                        }
+                    }
+                    catch { continue; }
+                    finally
+                    {
+                        if (!found)
+                        {
+                            key.Dispose();
+                        }
                     }
                 }
-            }
 
-            if (null != fileInfo)
+                if (null != fileInfo)
+                {
+                    ExecutablePath = $"explorer.exe";
+                    Arguments = @"shell:AppsFolder\" + (fileInfo.GetValue("ApplicationUserModelId") as string);
+
+                    return true;
+                }
+            }
+            finally
             {
-                ExecutablePath = $"explorer.exe";
-                Arguments = @"shell:AppsFolder\" + (fileInfo.GetValue("ApplicationUserModelId") as string);
-
-                key64.Dispose();
-                return true;
+                key64?.Dispose();
+                fileInfo?.Dispose();
             }
-
-            key64.Dispose();
+            
             Log.WriteLine($"Could not find executable for: {AppName}");
             return false;
         }
@@ -113,6 +133,7 @@ namespace AppManager.Core.Actions
 
                 process = Process.Start(startInfo);
 
+                Thread.Sleep(TimeoutMs ?? 0);
 
                 if (null != process)
                 {
@@ -144,7 +165,8 @@ namespace AppManager.Core.Actions
                 Conditions = Conditions.Select(c => c.ToModel()).ToArray(),
                 AppName = AppName,
                 ExecutablePath = ExecutablePath,
-                Arguments = Arguments
+                Arguments = Arguments,
+                TimeoutMs = TimeoutMs
             };
         }
     }

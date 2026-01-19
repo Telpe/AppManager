@@ -35,7 +35,7 @@ namespace AppManager.Core.Triggers
 
                 if (trigger.CanStart())
                 {
-                    trigger.TriggerActivated += OnTriggerActivated;
+                    //trigger.TriggerActivated += OnTriggerActivated;
                     trigger.Start();
                 }
 
@@ -59,7 +59,7 @@ namespace AppManager.Core.Triggers
 
             foreach (ITrigger trigger in triggers)
             {
-                trigger.TriggerActivated -= OnTriggerActivated;
+                //trigger.TriggerActivated -= OnTriggerActivated;
                 trigger.Dispose();
                 Log.WriteLine($"Trigger '{triggerName}' unregistered successfully");
             }
@@ -113,7 +113,7 @@ namespace AppManager.Core.Triggers
         {
             foreach (ITrigger trigger in TriggersValue)
             {
-                trigger.TriggerActivated -= OnTriggerActivated; // In case the trigger is kept alive elsewhere.
+                //trigger.TriggerActivated -= OnTriggerActivated; // In case the trigger is kept alive elsewhere.
                 trigger.Dispose();
             }
 

@@ -2,6 +2,7 @@ using AppManager.Core.Actions;
 using AppManager.Core.Conditions;
 using AppManager.Core.Models;
 using AppManager.Core.Triggers;
+using AppManager.Core.Utilities;
 using System.IO;
 using System.Printing;
 
@@ -23,13 +24,13 @@ namespace AppManager.Tests.TestUtilities
             {
                 ActionType = actionType,
                 AppName = appName,
-                ExecutablePath = GetTestExecutablePath(appName),
+                ExecutablePath = string.Empty,
                 Arguments = string.Empty,
                 WindowTitle = null,
                 ForceOperation = false,
                 IncludeChildProcesses = false,
                 IncludeSimilarNames = false,
-                TimeoutMs = 5000
+                TimeoutMs = CoreConstants.DefaultActionDelay
             };
         }
 

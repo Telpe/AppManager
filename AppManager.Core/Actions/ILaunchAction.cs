@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace AppManager.Core.Actions
 {
     public interface ILaunchAction
@@ -5,5 +7,11 @@ namespace AppManager.Core.Actions
         string? AppName { get; set; }
         string? ExecutablePath { get; set; }
         string? Arguments { get; set; }
+
+        /// <summary>
+        /// Time in milliseconds to wait before validating app launched.
+        /// </summary>
+        [Range(0, int.MaxValue)]
+        public int? TimeoutMs { get; set; }
     }
 }

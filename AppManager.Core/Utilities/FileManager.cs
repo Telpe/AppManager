@@ -400,7 +400,8 @@ namespace AppManager.Core.Utilities
 #endif
                 AppDomain.CurrentDomain.BaseDirectory,
                 Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
-                Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86)
+                Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                Environment.GetFolderPath(Environment.SpecialFolder.System)
             ];
             
             return commonPaths;

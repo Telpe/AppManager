@@ -10,12 +10,11 @@ namespace AppManager.Core.Conditions
         {
             { ConditionTypeEnum.ProcessRunning, (model) => new ProcessRunningCondition(model) },
             { ConditionTypeEnum.FileExists, (model) => new FileExistsCondition(model) },
+            { ConditionTypeEnum.PreviousActionSuccess, (model) => new PreviousActionSuccessCondition(model) }
         };
 
         public static ICondition CreateCondition(ConditionModel model)
         {
-            model ??= new ConditionModel { ConditionType = ConditionTypeEnum.None };
-
             if (_conditionFactories.TryGetValue(model.ConditionType, out var factory))
             {
                 return factory(model);

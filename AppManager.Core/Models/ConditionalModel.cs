@@ -10,6 +10,17 @@ namespace AppManager.Core.Models
         public bool? Inactive { get; set; }
         public ConditionModel[]? Conditions { get; set; }
 
+        public static string GetDisplayText(ConditionModel model)
+        {
+            return model.ConditionType switch
+            {
+                ConditionTypeEnum.ProcessRunning => $"Process Running: {model.ProcessName}",
+                ConditionTypeEnum.FileExists => $"File Exists: {model.FilePath}",
+                ConditionTypeEnum.PreviousActionSuccess => $"Previous action result. Only when trigger has multiple actions.",
+                _ => $"Unknown Condition: {model.ConditionType}"
+            };
+        }
+
         /// <summary>
         /// Adds a condition to the action. Initializes the Conditions array if null.
         /// </summary>

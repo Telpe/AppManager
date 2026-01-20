@@ -58,7 +58,7 @@ namespace AppManager.Core.Actions
         {
             foreach (var condition in _Conditions)
             {
-                if (!condition.Execute())
+                if (condition.IsNot ? condition.Execute() : !condition.Execute())
                 {
                     Log.WriteLine($"Condition {condition.ConditionType} failed for action {GetType().Name}");
                     return false;

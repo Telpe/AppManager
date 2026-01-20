@@ -43,17 +43,6 @@ namespace AppManager.Settings.Conditions
             ConditionalModel = conditionalModel;
         }
 
-        private string GetDisplayText(ConditionModel model)
-        {
-            return model.ConditionType switch
-            {
-                ConditionTypeEnum.ProcessRunning => $"Process Running: {model.ProcessName}",
-                ConditionTypeEnum.FileExists => $"File Exists: {model.FilePath}",
-                ConditionTypeEnum.PreviousActionSuccess => $"Previous action result. Only when trigger has multiple actions.",
-                _ => $"Unknown Condition: {model.ConditionType}"
-            };
-        }
-
         private void UpdateConditionsList()
         {
             try
@@ -81,7 +70,7 @@ namespace AppManager.Settings.Conditions
                     if (FindVisualChild<TextBlock>(container, "DisplayTextBlock") is TextBlock textBlock
                         && ConditionsListBox.Items[i] is ConditionModel condition)
                     {
-                        textBlock.Text = GetDisplayText(condition);
+                        textBlock.Text = ConditionalModel.GetDisplayText(condition);
                     }
                 }
             }
@@ -167,6 +156,51 @@ namespace AppManager.Settings.Conditions
             catch (Exception ex)
             {
                 MessageBox.Show($"Error removing condition: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void EditConditionButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                if (sender is Button button && button.Tag is ConditionModel condition && _conditionalModel != null)
+                {
+                    var conditionEditor = new ConditionEditorControl(condition.Clone());
+
+                    conditionEditor.Save += (s, args) =>
+                    {
+                        if (args.ConditionModel is ConditionModel updatedCondition && null != _conditionalModel?.Conditions)
+                        {
+                            int index = _conditionalModel.Conditions.IndexOf(condition);
+                            if (-1 < index)
+                            {
+                                _conditionalModel.Conditions[index] = updatedCondition;
+                                UpdateConditionsList();
+                                OnConditionsChanged();
+                                Log.WriteLine($"Condition {updatedCondition.ConditionType} updated successfully");
+                            }
+                            ((MainWindow)Application.Current.MainWindow)?.HideOverlay();
+                        }
+                    };
+
+                    conditionEditor.Edited += (s, args) =>
+                    {
+                        Log.WriteLine($"Condition edited for {condition.ConditionType}");
+                        OnConditionsChanged();
+                    };
+
+                    conditionEditor.Cancel += (s, args) =>
+                    {
+                        Log.WriteLine($"Condition edit cancelled for {condition.ConditionType}");
+                        ((MainWindow)Application.Current.MainWindow)?.HideOverlay();
+                    };
+
+                    ((MainWindow)Application.Current.MainWindow)?.ShowOverlay(conditionEditor);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error editing condition: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 

@@ -2,17 +2,18 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows7.0</TargetFramework>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <UseWPF>false</UseWPF>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <!--
-    <StartAction>Program</StartAction>
-    <StartProgram>C:\Users\Arthonor\source\repos\telpe\AppManager\AppManager\bin\Debug\net8.0-windows10.0.22000.0\AppManager.Core.exe</StartProgram>
-    -->
+    
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <PublishSingleFile>true</PublishSingleFile>
   </PropertyGroup>
+  
   <ItemGroup>
     <PackageReference Include="System.Management" Version="9.0.10" />
   </ItemGroup>

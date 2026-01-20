@@ -25,9 +25,12 @@
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock x:Name="DisplayTextBlock" Grid.Column="0" VerticalAlignment="Center"/>
-                            <Button Grid.Column="1" Content="Remove" Width="60" Height="20" 
+                            <Button Grid.Column="1" Content="Edit" Width="60" Height="20" Margin="0,0,5,0"
+                                    Click="EditConditionButton_Click" Tag="{Binding}"/>
+                            <Button Grid.Column="2" Content="Remove" Width="60" Height="20" 
                                     Click="RemoveConditionButton_Click" Tag="{Binding}"/>
                         </Grid>
                     </DataTemplate>

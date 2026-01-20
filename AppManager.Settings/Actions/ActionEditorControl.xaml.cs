@@ -18,7 +18,6 @@ namespace AppManager.Settings.Actions
     public partial class ActionEditorControl : UserControl, IInputEditControl
     {
         private ActionModel CurrentActionModelValue;
-        private readonly ObservableCollection<ConditionDisplayItem> _conditions = [];
 
         public event EventHandler? Edited;
 
@@ -38,9 +37,9 @@ namespace AppManager.Settings.Actions
 
         public ActionEditorControl(ActionModel actionModel)
         {
-            InitializeComponent();
-
             CurrentActionModelValue = actionModel;
+
+            InitializeComponent();
 
             try
             {
@@ -496,6 +495,11 @@ namespace AppManager.Settings.Actions
             }
             
             AnnounceEdited();
+            UpdatePreview();
+        }
+
+        private void ConditionPlugin_ConditionsChanged(object sender, EventArgs e)
+        {
             UpdatePreview();
         }
     }

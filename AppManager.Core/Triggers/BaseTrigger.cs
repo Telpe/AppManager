@@ -138,7 +138,7 @@ namespace AppManager.Core.Triggers
         {
             foreach (var condition in ConditionsValue)
             {
-                if (!condition.Execute())
+                if (condition.IsNot ? condition.Execute() : !condition.Execute())
                 {
                     Log.WriteLine($"Condition {condition.ConditionType} failed for trigger {GetType().Name}");
                     return false;

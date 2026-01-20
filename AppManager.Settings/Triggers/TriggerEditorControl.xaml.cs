@@ -24,7 +24,6 @@ namespace AppManager.Settings.Triggers
     {
         private TriggerModel CurrentTriggerModelValue;
         private bool IsCapturingKeybindValue = false;
-        private ObservableCollection<ConditionDisplayItem> _conditions = new ObservableCollection<ConditionDisplayItem>();
 
         public event EventHandler? Edited;
 
@@ -97,6 +96,9 @@ namespace AppManager.Settings.Triggers
             TriggerTimeoutTextBox.Text = CurrentTriggerModelValue.TimeoutMs.ToString();
 
             RefreshActionsListBox();
+
+            // Set the conditional model for the condition plugin
+            ConditionPlugin.ConditionalModel = CurrentTriggerModelValue;
 
             UpdatePreview();
         }
@@ -357,69 +359,10 @@ namespace AppManager.Settings.Triggers
             UpdatePreview();
         }
 
-        private void AddConditionButton_Click(object sender, RoutedEventArgs e)
+        private void ConditionPlugin_ConditionsChanged(object sender, EventArgs e)
         {
-            try
-            {
-                ConditionModel conditionModel = new ConditionModel { ConditionType = ConditionTypeEnum.None };
-
-                ConditionEditorControl conditionEditor = new ConditionEditorControl(conditionModel);
-
-                // Subscribe to save event
-                conditionEditor.Save += (s, updatedCondition) =>
-                {
-                    if (null == updatedCondition?.ConditionModel) { return; }
-
-                    CurrentTriggerModelValue.Conditions ??= [];
-                    CurrentTriggerModelValue.Conditions = CurrentTriggerModelValue.Conditions.Append(updatedCondition.ConditionModel).ToArray();
-
-                    // Refresh the UI to show changes
-                    _conditions.Add(new ConditionDisplayItem(updatedCondition.ConditionModel));
-
-                    // Mark as edited
-                    AnnounceEdited();
-                    UpdatePreview();
-
-                    Log.WriteLine($"Condition {updatedCondition.ConditionModel.ConditionType} updated successfully");
-                    ((MainWindow)Application.Current.MainWindow)?.HideOverlay();
-                };
-
-                conditionEditor.Edited += (s, args) =>
-                {
-                    Log.WriteLine($"Condition edited for {conditionModel.ConditionType}");
-                    AnnounceEdited();
-                };
-
-                conditionEditor.Cancel += (s, args) =>
-                {
-                    Log.WriteLine($"Condition cancelled for {conditionModel.ConditionType}");
-                    ((MainWindow)Application.Current.MainWindow)?.HideOverlay();
-                };
-
-                ((MainWindow)Application.Current.MainWindow)?.ShowOverlay(conditionEditor);
-
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error adding condition: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private void RemoveConditionButton_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                if (sender is Button button && button.Tag is ConditionDisplayItem condition)
-                {
-                    _conditions.Remove(condition);
-                    AnnounceEdited();
-                    UpdatePreview();
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.WriteLine($"RemoveConditionButton_Click error: {ex.Message}");
-            }
+            UpdatePreview();
+            AnnounceEdited();
         }
 
         private void AddActionButton_Click(object sender, RoutedEventArgs e)

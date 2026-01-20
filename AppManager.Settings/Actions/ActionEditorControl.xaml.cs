@@ -18,15 +18,13 @@ namespace AppManager.Settings.Actions
     public partial class ActionEditorControl : UserControl, IInputEditControl
     {
         private ActionModel CurrentActionModelValue;
-        private ObservableCollection<ConditionDisplayItem> _conditions = new ObservableCollection<ConditionDisplayItem>();
+        private readonly ObservableCollection<ConditionDisplayItem> _conditions = [];
 
         public event EventHandler? Edited;
 
         public event EventHandler? Cancel;
 
         public event EventHandler<InputEditEventArgs>? Save;
-        /*public event EventHandler<ActionModel> ActionSaved;
-        public event EventHandler ActionCancelled;*/
 
         public ActionModel CurrentActionModel
         {
@@ -82,10 +80,6 @@ namespace AppManager.Settings.Actions
             try
             {
                 ActionTypeComboBox?.ItemsSource = ActionManager.GetAvailableActions();
-
-                ConditionsListBox?.ItemsSource ??= _conditions;
-                
-
                 
             }
             catch (Exception ex)
@@ -98,39 +92,13 @@ namespace AppManager.Settings.Actions
         {
             try
             {
-                if (ActionTypeComboBox != null)
-                {
-                    ActionTypeComboBox.SelectedItem = CurrentActionModelValue.ActionType;
-                }
+                ActionTypeComboBox!.SelectedItem = CurrentActionModelValue.ActionType;
+                ForceOperationCheckBox!.IsChecked = CurrentActionModelValue.ForceOperation;
+                IncludeChildProcessesCheckBox!.IsChecked = CurrentActionModelValue.IncludeChildProcesses;
+                IncludeSimilarNamesCheckBox!.IsChecked = CurrentActionModelValue.IncludeSimilarNames;
+                TimeoutTextBox!.Text = CurrentActionModelValue.TimeoutMs.ToString();
 
-                if (ForceOperationCheckBox != null)
-                {
-                    ForceOperationCheckBox.IsChecked = CurrentActionModelValue.ForceOperation;
-                }
-
-                if (IncludeChildProcessesCheckBox != null)
-                {
-                    IncludeChildProcessesCheckBox.IsChecked = CurrentActionModelValue.IncludeChildProcesses;
-                }
-
-                if (IncludeSimilarNamesCheckBox != null)
-                {
-                    IncludeSimilarNamesCheckBox.IsChecked = CurrentActionModelValue.IncludeSimilarNames;
-                }
-
-                if (TimeoutTextBox != null)
-                {
-                    TimeoutTextBox.Text = CurrentActionModelValue.TimeoutMs.ToString();
-                }
-
-                _conditions.Clear();
-                if (CurrentActionModelValue.Conditions != null)
-                {
-                    foreach (var condition in CurrentActionModelValue.Conditions)
-                    {
-                        _conditions.Add(new ConditionDisplayItem(condition));
-                    }
-                }
+                ConditionPlugin.ConditionalModel = CurrentActionModelValue;
 
                 UpdatePreview();
             }
@@ -418,53 +386,7 @@ namespace AppManager.Settings.Actions
             }
         }
 
-        private void AddConditionButton_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                ConditionModel conditionModel = new ConditionModel { ConditionType = ConditionTypeEnum.None };
-
-                ConditionEditorControl conditionEditor = new ConditionEditorControl(conditionModel);
-
-                // Subscribe to save event
-                conditionEditor.Save += (s, updatedCondition) =>
-                {
-                    if (null == updatedCondition?.ConditionModel) { return; }
-
-                    CurrentActionModelValue.Conditions ??= [];
-                    CurrentActionModelValue.Conditions = CurrentActionModelValue.Conditions.Append(updatedCondition.ConditionModel).ToArray();
-
-                    // Refresh the UI to show changes
-                    _conditions.Add(new ConditionDisplayItem(updatedCondition.ConditionModel));
-
-                    // Mark as edited
-                    AnnounceEdited();
-                    UpdatePreview();
-
-                    Log.WriteLine($"Condition {updatedCondition.ConditionModel.ConditionType} updated successfully");
-                    ((MainWindow)Application.Current.MainWindow)?.HideOverlay();
-                };
-
-                conditionEditor.Edited += (s, args) =>
-                {
-                    Log.WriteLine($"Condition edited for {conditionModel.ConditionType}");
-                    AnnounceEdited();
-                };
-
-                conditionEditor.Cancel += (s, args) =>
-                {
-                    Log.WriteLine($"Condition cancelled for {conditionModel.ConditionType}");
-                    ((MainWindow)Application.Current.MainWindow)?.HideOverlay();
-                };
-
-                ((MainWindow)Application.Current.MainWindow)?.ShowOverlay(conditionEditor);
-
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error adding condition: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
+        
 
         protected void AnnounceEdited()
         {
@@ -481,24 +403,6 @@ namespace AppManager.Settings.Actions
             Save?.Invoke(this, new InputEditEventArgs(CurrentActionModelValue.Clone()));
         }
 
-        private void RemoveConditionButton_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                if (sender is Button button && button.Tag is ConditionDisplayItem condition)
-                {
-                    CurrentActionModelValue.Conditions = CurrentActionModelValue.Conditions?
-                        .Where(c => c != condition.Model)
-                        .ToArray();
-                    _conditions.Remove(condition);
-                    UpdatePreview();
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.WriteLine($"RemoveConditionButton_Click error: {ex.Message}");
-            }
-        }
 
         private void TestActionButton_Click(object sender, RoutedEventArgs e)
         {

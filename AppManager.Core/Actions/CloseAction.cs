@@ -62,7 +62,7 @@ namespace AppManager.Core.Actions
                     
                 }
 
-                Log.WriteLine($"Closing {processes.Length} process{(processes.Length!=1?"es":"")} for: {AppName}");
+                Log.WriteLine($"Closing {processes.Length} process{(processes.Length != 1 ?"es":"")} for: {AppName}");
 
                 if (!ProcessManager.CloseProcesses(processes, TimeoutMs ?? CoreConstants.ProcessRestartDelay, ForceOperation ?? true))
                 {

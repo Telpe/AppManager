@@ -1,0 +1,38 @@
+<UserControl x:Class="AppManager.Settings.Conditions.ConditionPluginControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="200" d:DesignWidth="400">
+    
+    <GroupBox Header="Conditions">
+        <Grid Margin="5">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="100"/>
+            </Grid.RowDefinitions>
+
+            <WrapPanel Grid.Row="0" Margin="0,0,0,5">
+                <Button Content="Add Condition" Width="100" Height="25" 
+                        Click="AddConditionButton_Click"/>
+            </WrapPanel>
+
+            <ListBox x:Name="ConditionsListBox" Grid.Row="1">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock x:Name="DisplayTextBlock" Grid.Column="0" VerticalAlignment="Center"/>
+                            <Button Grid.Column="1" Content="Remove" Width="60" Height="20" 
+                                    Click="RemoveConditionButton_Click" Tag="{Binding}"/>
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </Grid>
+    </GroupBox>
+</UserControl>

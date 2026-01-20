@@ -16,7 +16,7 @@ namespace AppManager.Core.Models
         /// <param name="condition">The condition to add</param>
         public void AddCondition(ConditionModel condition)
         {
-            Conditions = null == Conditions ? new[] { condition } : Conditions.Append(condition).ToArray();
+            Conditions = Conditions is null ? [condition] : [..Conditions, condition];
         }
 
         /// <summary>
@@ -26,7 +26,7 @@ namespace AppManager.Core.Models
         /// <returns>True if the condition was found and removed, false otherwise</returns>
         public bool RemoveCondition(ConditionModel condition)
         {
-            if (null == Conditions || Conditions.Length == 0) { return false; }
+            if (Conditions is null || Conditions.Length == 0) { return false; }
 
             int initialCount = Conditions.Length;
 

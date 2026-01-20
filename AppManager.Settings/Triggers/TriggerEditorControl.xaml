@@ -5,6 +5,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
 	xmlns:local="clr-namespace:AppManager.Settings.Triggers"
+	xmlns:conditions="clr-namespace:AppManager.Settings.Conditions"
     mc:Ignorable="d" 
     d:DesignHeight="500" d:DesignWidth="600">
 
@@ -32,36 +33,8 @@
 			</Grid>
 		</GroupBox>
 
-		<!-- Conditions Section -->
-		<GroupBox Header="Conditions" Margin="5">
-			<Grid Margin="5">
-				<Grid.RowDefinitions>
-					<RowDefinition Height="Auto"/>
-					<RowDefinition Height="100"/>
-				</Grid.RowDefinitions>
-
-				<WrapPanel Grid.Row="0" Margin="0,0,0,5">
-					<Button Content="Add Condition" Width="100" Height="25" 
-                        Click="AddConditionButton_Click"/>
-				</WrapPanel>
-
-				<ListBox x:Name="ConditionsListBox" Grid.Row="1">
-					<ListBox.ItemTemplate>
-						<DataTemplate>
-							<Grid>
-								<Grid.ColumnDefinitions>
-									<ColumnDefinition Width="*"/>
-									<ColumnDefinition Width="Auto"/>
-								</Grid.ColumnDefinitions>
-								<TextBlock Grid.Column="0" Text="{Binding DisplayText}" VerticalAlignment="Center"/>
-								<Button Grid.Column="1" Content="Remove" Width="60" Height="20" 
-                                    Click="RemoveConditionButton_Click" Tag="{Binding}"/>
-							</Grid>
-						</DataTemplate>
-					</ListBox.ItemTemplate>
-				</ListBox>
-			</Grid>
-		</GroupBox>
+		<!-- Conditions Section - Replaced with ConditionPluginControl -->
+		<conditions:ConditionPluginControl x:Name="ConditionPlugin" Margin="5" ConditionsChanged="ConditionPlugin_ConditionsChanged"/>
 
 		<!-- Keybind Configuration -->
 		<GroupBox x:Name="KeybindConfigGroup" Header="Keybind Configuration" Margin="5" Visibility="Collapsed">

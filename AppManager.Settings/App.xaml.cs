@@ -73,11 +73,11 @@ namespace AppManager.Settings
             {
                 Log.WriteLine("AppManager.Core not running, launching it");
 
-                ActionManager.ExecuteAction(new ActionModel
+                ActionFactory.CreateAction(new ActionModel
                 {
                     ActionType = AppActionTypeEnum.Launch,
                     AppName = "AppManager.Core"
-                });
+                }).Execute();
                 
             }
         }

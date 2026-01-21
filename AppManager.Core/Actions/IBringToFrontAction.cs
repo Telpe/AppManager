@@ -4,5 +4,6 @@ namespace AppManager.Core.Actions
     {
         string? AppName { get; set; }
         string? WindowTitle { get; set; }
+        int? ProcessLastId { get; set; }
     }
 }

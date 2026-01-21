@@ -2,7 +2,7 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows7.0</TargetFramework>
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    
     <LangVersion>latest</LangVersion>
     <UseWPF>true</UseWPF>
     <SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
@@ -10,9 +10,12 @@
     
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+
+    <!-- Publish settings 
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <PublishReadyToRun>true</PublishReadyToRun>
     <PublishSingleFile>true</PublishSingleFile>
-
+    -->
     <!-- Additional metadata -->
     <Product>AppManager.Settings</Product>
     <Company>Telpe</Company>

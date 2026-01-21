@@ -25,7 +25,7 @@ namespace AppManager.Tests.Unit.Triggers
             var model = TestDataBuilder.CreateBasicTriggerModel(TriggerTypeEnum.Keybind);
 
             // Act
-            var trigger = TriggerManager.CreateTrigger(model);
+            var trigger = TriggerFactory.CreateTrigger(model);
 
             // Assert
             trigger.Should().NotBeNull();
@@ -43,7 +43,7 @@ namespace AppManager.Tests.Unit.Triggers
             model.TriggerType = (TriggerTypeEnum)999; // Invalid trigger type
 
             // Act & Assert
-            Action act = () => TriggerManager.CreateTrigger(model);
+            Action act = () => TriggerFactory.CreateTrigger(model);
             act.Should().Throw<ArgumentException>()
                .WithMessage("Unsupported trigger type: 999");
         }
@@ -55,7 +55,7 @@ namespace AppManager.Tests.Unit.Triggers
         {
             // Arrange
             var model = TestDataBuilder.CreateBasicTriggerModel(TriggerTypeEnum.Button); // Use Button instead of Keybind to avoid hooking issues in tests
-            var trigger = TriggerManager.CreateTrigger(model);
+            var trigger = TriggerFactory.CreateTrigger(model);
 
             // Act
             var result = TriggerManager.RegisterTrigger(trigger);
@@ -72,7 +72,7 @@ namespace AppManager.Tests.Unit.Triggers
         {
             // Arrange
             var model = TestDataBuilder.CreateBasicTriggerModel(TriggerTypeEnum.Button);
-            var trigger = TriggerManager.CreateTrigger(model);
+            var trigger = TriggerFactory.CreateTrigger(model);
             TriggerManager.RegisterTrigger(trigger);
 
             // Act
@@ -89,7 +89,7 @@ namespace AppManager.Tests.Unit.Triggers
         {
             // Arrange
             var model = TestDataBuilder.CreateBasicTriggerModel(TriggerTypeEnum.Button);
-            var trigger = TriggerManager.CreateTrigger(model);
+            var trigger = TriggerFactory.CreateTrigger(model);
             TriggerManager.RegisterTrigger(trigger);
             string triggerName = trigger.Name;
 
@@ -111,8 +111,8 @@ namespace AppManager.Tests.Unit.Triggers
             var inactiveModel = TestDataBuilder.CreateBasicTriggerModel(TriggerTypeEnum.Button);
             inactiveModel.Inactive = true;
 
-            var activeTrigger = TriggerManager.CreateTrigger(activeModel);
-            var inactiveTrigger = TriggerManager.CreateTrigger(inactiveModel);
+            var activeTrigger = TriggerFactory.CreateTrigger(activeModel);
+            var inactiveTrigger = TriggerFactory.CreateTrigger(inactiveModel);
 
             TriggerManager.RegisterTrigger(activeTrigger);
             TriggerManager.RegisterTrigger(inactiveTrigger);
@@ -134,8 +134,8 @@ namespace AppManager.Tests.Unit.Triggers
             var model1 = TestDataBuilder.CreateBasicTriggerModel(TriggerTypeEnum.Button);
             var model2 = TestDataBuilder.CreateBasicTriggerModel(TriggerTypeEnum.Button);
             
-            var trigger1 = TriggerManager.CreateTrigger(model1);
-            var trigger2 = TriggerManager.CreateTrigger(model2);
+            var trigger1 = TriggerFactory.CreateTrigger(model1);
+            var trigger2 = TriggerFactory.CreateTrigger(model2);
 
             TriggerManager.RegisterTrigger(trigger1);
             TriggerManager.RegisterTrigger(trigger2);
@@ -156,7 +156,7 @@ namespace AppManager.Tests.Unit.Triggers
         {
             // Arrange
             var model = TestDataBuilder.CreateBasicTriggerModel(TriggerTypeEnum.Button);
-            var trigger = TriggerManager.CreateTrigger(model);
+            var trigger = TriggerFactory.CreateTrigger(model);
             TriggerManager.RegisterTrigger(trigger);
 
             // Act
@@ -185,7 +185,7 @@ namespace AppManager.Tests.Unit.Triggers
         {
             // Arrange
             var model = TestDataBuilder.CreateBasicTriggerModel(TriggerTypeEnum.Button);
-            var trigger = TriggerManager.CreateTrigger(model);
+            var trigger = TriggerFactory.CreateTrigger(model);
             TriggerManager.RegisterTrigger(trigger);
 
             // Act

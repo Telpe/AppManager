@@ -32,23 +32,6 @@ namespace AppManager.Tests.Unit.Actions
         [TestMethod]
         [TestCategory("Unit")]
         [TestCategory("Actions")]
-        public void Constructor_WithSpecificProcess_ShouldCreateInstance()
-        {
-            // Arrange
-            var model = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.BringToFront);
-            var currentProcess = Process.GetCurrentProcess();
-
-            // Act
-            var action = new BringToFrontAction(model, currentProcess);
-
-            // Assert
-            action.Should().NotBeNull();
-            action.ActionType.Should().Be(AppActionTypeEnum.BringToFront);
-        }
-
-        [TestMethod]
-        [TestCategory("Unit")]
-        [TestCategory("Actions")]
         public void Constructor_WithWrongActionType_ShouldThrowArgumentException()
         {
             // Arrange
@@ -58,28 +41,6 @@ namespace AppManager.Tests.Unit.Actions
             Action act = () => new BringToFrontAction(model);
             act.Should().Throw<ArgumentException>()
                .WithMessage("*model type 'Launch' does not match trigger type 'BringToFront'*");
-        }
-
-        [TestMethod]
-        [TestCategory("Unit")]
-        [TestCategory("Actions")]
-        public async Task ExecuteAsync_WithCurrentProcess_ShouldReturnTrue()
-        {
-            try
-            {
-                // Arrange
-                var model = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.BringToFront);
-                var currentProcess = Process.GetCurrentProcess();
-                var action = new BringToFrontAction(model, currentProcess);
-
-                // Act
-                action.Execute();
-            }
-            catch
-            {
-                // Assert
-                Assert.Fail("Bringing the process to front failed.");
-            }
         }
 
         [TestMethod]

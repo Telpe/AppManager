@@ -1,4 +1,5 @@
 using AppManager.Core.Actions;
+using AppManager.Core.Conditions;
 using AppManager.Core.Models;
 using System;
 using System.Collections.Generic;
@@ -6,6 +7,7 @@ using System.Diagnostics;
 using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Xml.Linq;
 
 namespace AppManager.Core.Triggers
@@ -15,32 +17,18 @@ namespace AppManager.Core.Triggers
         private static ITrigger[] TriggersValue = [];
         public static ITrigger[] Triggers { get => TriggersValue; }
 
-        public static ITrigger CreateTrigger(TriggerModel model)
-        {
-            return model.TriggerType switch
-            {
-                TriggerTypeEnum.Keybind => new KeybindTrigger(model),
-                TriggerTypeEnum.Button => new ButtonTrigger(model),
-                TriggerTypeEnum.AppLaunch => new AppLaunchTrigger(model),
-                TriggerTypeEnum.AppClose => new AppCloseTrigger(model),
-                TriggerTypeEnum.SystemEvent => new SystemEventTrigger(model),
-                TriggerTypeEnum.NetworkPort => new NetworkPortTrigger(model),
-                _ => throw new ArgumentException($"Unsupported trigger type: {model.TriggerType}")
-            };
-        }
-
         public static bool RegisterTrigger(TriggerModel trigger)
         {
-            return RegisterTrigger(CreateTrigger(trigger));
+            return RegisterTrigger(TriggerFactory.CreateTrigger(trigger));
         }
 
         public static bool RegisterTrigger(ITrigger trigger)
-        { try{
+        { 
+            try{
                 if (TriggersValue.Contains(trigger)) { throw new Exception("Error: Attempt to add duplicate trigger."); }
 
                 if (trigger.CanStart())
                 {
-                    //trigger.TriggerActivated += OnTriggerActivated;
                     trigger.Start();
                 }
 
@@ -64,10 +52,16 @@ namespace AppManager.Core.Triggers
 
             foreach (ITrigger trigger in triggers)
             {
-                //trigger.TriggerActivated -= OnTriggerActivated;
                 trigger.Dispose();
                 Log.WriteLine($"Trigger '{triggerName}' unregistered successfully");
             }
+        }
+
+        public static void UnregisterTrigger(ITrigger trigger)
+        {
+            TriggersValue = TriggersValue.Where(a => a != trigger).ToArray();
+            trigger.Dispose();
+            Log.WriteLine($"Trigger '{trigger.Name}' unregistered successfully");
         }
 
         public static IEnumerable<ITrigger> GetActiveTriggers()
@@ -77,7 +71,7 @@ namespace AppManager.Core.Triggers
 
         public static IEnumerable<string> GetTriggerNames()
         {
-            return TriggersValue.Select(t => t.Name).ToArray();
+            return TriggersValue.Select(t => t.Name);
         }
 
         public static ITrigger? GetTrigger(string name)
@@ -87,30 +81,9 @@ namespace AppManager.Core.Triggers
 
         private static void OnTriggerActivated(object? sender, EventArgs eve)
         {
-            if (sender is BaseTrigger trigger)
+            if (sender is ITrigger trigger)
             {
                 Log.WriteLine($"Trigger '{trigger.Name}' activated");
-                if (trigger.CanExecute())
-                {
-                    _ = Task.Run(() => { 
-                    foreach (IAction action in trigger.Actions)
-                    {
-                        try
-                        {
-                            action.Execute();
-                            Log.WriteLine($"Action '{action.ActionType}' executed successfully for trigger '{trigger.Name}'.");  
-                        }
-                        catch (Exception ex)
-                        {
-                            Log.WriteLine($"Error executing action '{action.ActionType}' for trigger '{trigger.Name}': {ex.Message}");
-                        }
-                    }
-                    });
-                }
-                else
-                {
-                    Log.WriteLine($"Trigger '{trigger.Name}' conditions not met; actions will not be executed");
-                }
             }
         }
 
@@ -118,7 +91,6 @@ namespace AppManager.Core.Triggers
         {
             foreach (ITrigger trigger in TriggersValue)
             {
-                //trigger.TriggerActivated -= OnTriggerActivated; // In case the trigger is kept alive elsewhere.
                 trigger.Dispose();
             }
 

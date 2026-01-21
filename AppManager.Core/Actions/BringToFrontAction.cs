@@ -15,6 +15,7 @@ namespace AppManager.Core.Actions
         public override string Description => "Brings an application window to the front and makes it topmost temporarily";
 
         public string? WindowTitle { get; set; }
+        public int? ProcessLastId { get; set; }
 
         [return: MarshalAs(UnmanagedType.Bool)]
         [LibraryImport("user32.dll", StringMarshalling = StringMarshalling.Utf16, SetLastError = true)]
@@ -38,72 +39,84 @@ namespace AppManager.Core.Actions
         private const uint SWP_NOSIZE = 0x0001;
         private const int SW_RESTORE = 9;
         private const int SW_SHOW = 5;
-        private Process? _TargetProcess;
-        private bool _SpecificProcess = false;
 
         public BringToFrontAction(ActionModel model) : base(model)
         { 
             AppName = model.AppName;
             WindowTitle = model.WindowTitle;
-        }
-
-        public BringToFrontAction(ActionModel model, Process target) : base(model)
-        {
-            AppName = model.AppName;
-            WindowTitle = model.WindowTitle;
-            _TargetProcess = target;
-            _SpecificProcess = true;
+            ProcessLastId = model.ProcessLastId;
         }
 
         protected override bool CanExecuteAction()
         {
-            if (!_SpecificProcess)
-            {
-                _TargetProcess = ProcessManager.FindProcess(
-                                AppName!,
-                                includeSimilarNames: false,
-                                requireMainWindow: true,
-                                WindowTitle);
-
-                return !string.IsNullOrEmpty(AppName) && !(_TargetProcess?.HasExited ?? true);
-            }
-
-            return !(_TargetProcess?.HasExited ?? true);
+            return !String.IsNullOrEmpty(AppName);
         }
 
         protected override bool ExecuteAction()
         {
             try
             {
-                IntPtr mainWindowHandle = _TargetProcess?.MainWindowHandle ?? IntPtr.Zero;
-                
-                if (mainWindowHandle == IntPtr.Zero)
+                Process[] processes = ProcessManager.FindProcesses(
+                            AppName!,
+                            includeSimilarNames: false,
+                            requireMainWindow: true,
+                            WindowTitle);
+                try
                 {
-                    throw new Exception($"No main window found for process: {_TargetProcess?.ProcessName}");
-                }
+                    Process? targetProcess;
 
-                // If window is minimized, restore it first
-                if (IsIconic(mainWindowHandle))
-                {
-                    ShowWindow(mainWindowHandle, SW_RESTORE);
-                }
-                else
-                {
-                    ShowWindow(mainWindowHandle, SW_SHOW);
-                }
+                    if (-1 < (ProcessLastId ?? -1))
+                    {
+                        targetProcess = processes.FirstOrDefault(p => p.Id == ProcessLastId);
+                    }
+                    else
+                    {
+                        targetProcess = processes.FirstOrDefault();
+                    }
 
-                // Make window topmost temporarily
-                SetWindowPos(mainWindowHandle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+                    if (targetProcess is null) 
+                    { 
+                        Log.WriteLine($"No running process found for: {AppName}");
+                        return false; 
+                    }
+
+                    IntPtr mainWindowHandle = targetProcess.MainWindowHandle;
                 
-                // Bring to foreground
-                SetForegroundWindow(mainWindowHandle);
-                
-                // Wait a moment, then remove topmost flag
-                Task.Delay(CoreConstants.StandardUIDelay).Wait();
-                SetWindowPos(mainWindowHandle, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+                    if (mainWindowHandle == IntPtr.Zero)
+                    {
+                        throw new Exception($"No main window found for process: {targetProcess.ProcessName}");
+                    }
 
-                Log.WriteLine($"Successfully brought to front: {AppName}");
-                return true;
+                    // If window is minimized, restore it first
+                    if (IsIconic(mainWindowHandle))
+                    {
+                        ShowWindow(mainWindowHandle, SW_RESTORE);
+                    }
+                    else
+                    {
+                        ShowWindow(mainWindowHandle, SW_SHOW);
+                    }
+
+                    // Make window topmost temporarily
+                    SetWindowPos(mainWindowHandle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+                
+                    // Bring to foreground
+                    SetForegroundWindow(mainWindowHandle);
+                
+                    // Wait a moment, then remove topmost flag
+                    Thread.Sleep(CoreConstants.StandardUIDelay);
+                    SetWindowPos(mainWindowHandle, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+
+                    Log.WriteLine($"Successfully brought to front: {AppName}");
+                    return true;
+                }
+                finally
+                {
+                    foreach (var p in processes)
+                    {
+                        p.Dispose();
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -118,7 +131,8 @@ namespace AppManager.Core.Actions
                 ActionType = ActionType,
                 AppName = AppName,
                 WindowTitle = WindowTitle,
-                Conditions = Conditions.Select(c => c.ToModel()).ToArray()
+                Conditions = Conditions.Select(c => c.ToModel()).ToArray(),
+                ProcessLastId = ProcessLastId
             };
         }
     }

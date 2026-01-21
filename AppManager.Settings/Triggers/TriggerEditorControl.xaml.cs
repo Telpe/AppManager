@@ -312,7 +312,7 @@ namespace AppManager.Settings.Triggers
         {
             try
             {
-                var triggerInstance = TriggerManager.CreateTrigger(CurrentTriggerModelValue);
+                var triggerInstance = TriggerFactory.CreateTrigger(CurrentTriggerModelValue);
                 var canStart = triggerInstance.CanStart();
                 
                 var result = canStart ? "✓ Trigger configuration is valid" : "✗ Trigger configuration is invalid";

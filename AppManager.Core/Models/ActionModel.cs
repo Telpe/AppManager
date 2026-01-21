@@ -17,6 +17,7 @@ namespace AppManager.Core.Models
         public string? WindowTitle { get; set; }
         public string? ExecutablePath { get; set; }
         public string? Arguments { get; set; }
+        public int? ProcessLastId { get; set; }
 
         public ActionModel Clone()
         {

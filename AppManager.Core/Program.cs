@@ -268,8 +268,16 @@ namespace AppManager.Core
             {
                 Log.WriteLine("AppManager.Core: Starting exit cleanup...");
 
-                ActionManager.ExecuteAction(AppActionTypeEnum.Close, "AppManager");
-                ActionManager.ExecuteAction(AppActionTypeEnum.Close, "AppManager.Settings");
+                ActionFactory.CreateAction(new()
+                {
+                    ActionType = AppActionTypeEnum.Close,
+                    AppName = "AppManager"
+                }).Execute();
+                ActionFactory.CreateAction(new()
+                {
+                    ActionType = AppActionTypeEnum.Close,
+                    AppName = "AppManager.Settings"
+                }).Execute();
 
                 // Dispose file watchers
                 SettingsFileWatcherValue?.Dispose();

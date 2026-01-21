@@ -65,12 +65,12 @@ namespace AppManager.Core.Utilities
 
         private void OnOpen(object? sender, EventArgs? e)
         {
-            ActionManager.ExecuteAction(AppActionTypeEnum.Launch, "AppManager");
+            ActionFactory.CreateAction(new() { ActionType = AppActionTypeEnum.Launch, AppName = "AppManager" }).Execute();
         }
 
         private void OnSettings(object? sender, EventArgs? e)
         {
-            ActionManager.ExecuteAction(AppActionTypeEnum.Launch, "AppManager.Settings");
+            ActionFactory.CreateAction(new() { ActionType = AppActionTypeEnum.Launch, AppName = "AppManager.Settings" }).Execute();
         }
 
         private void OnAbout(object? sender, EventArgs? e)

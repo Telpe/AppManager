@@ -60,7 +60,7 @@ namespace AppManager.Tests.Integration
             var triggerModel = TestDataBuilder.CreateBasicTriggerModel(TriggerTypeEnum.Button, "TestButtonTrigger");
             triggerModel.Actions =  [actionModel];
 
-            var trigger = TriggerManager.CreateTrigger(triggerModel);
+            var trigger = TriggerFactory.CreateTrigger(triggerModel);
 
             try
             {
@@ -111,7 +111,7 @@ namespace AppManager.Tests.Integration
         {
             // Arrange
             var triggerModel = TestDataBuilder.CreateBasicTriggerModel(TriggerTypeEnum.Button, "LifecycleTest");
-            var trigger = TriggerManager.CreateTrigger(triggerModel);
+            var trigger = TriggerFactory.CreateTrigger(triggerModel);
 
             // Act & Assert - Register
             var registered = TriggerManager.RegisterTrigger(trigger);
@@ -141,7 +141,7 @@ namespace AppManager.Tests.Integration
 
             // Act - Convert to models and back (simulating save/load)
             var triggerModel = profile.Triggers[0];
-            var recreatedTrigger = TriggerManager.CreateTrigger(triggerModel);
+            var recreatedTrigger = TriggerFactory.CreateTrigger(triggerModel);
 
             // Assert - Data integrity maintained
             recreatedTrigger.Should().NotBeNull();
@@ -153,47 +153,6 @@ namespace AppManager.Tests.Integration
                 var action = recreatedTrigger.Actions[0];
                 var originalAction = triggerModel.Actions![0];
                 action.ActionType.Should().Be(originalAction.ActionType);
-            }
-        }
-
-        [TestMethod]
-        [TestCategory("Integration")]
-        [TestCategory("Performance")]
-        public async Task ActionPerformance_MultipleActionsInSequence_ShouldCompleteInReasonableTime()
-        {
-            // Arrange
-            var stopwatch = Stopwatch.StartNew();
-            const int actionCount = 5;
-            var actions = TestDataBuilder.CreateMultipleActionModels(actionCount);
-
-            try
-            {
-                // Act
-                ActionManager.ExecuteMultipleActions(actions);
-                Assert.IsTrue(true, "Actions executed without exceptions.");
-
-                stopwatch.Stop();
-
-                // Assert
-                stopwatch.ElapsedMilliseconds.Should().BeLessThan(30000); // 30 seconds max
-            }
-            catch (Exception ex)
-            {
-                Assert.Fail($"Exception during action execution: {ex.Message}");
-            }
-            finally
-            {
-                // Cleanup - attempt to close any launched applications
-                var appNames = new[] { "notepad", "CalculatorApp", "mspaint", "cmd", "explorer" };
-                foreach (var appName in appNames)
-                {
-                    try
-                    {
-                        var closeModel = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Close, appName);
-                        ActionManager.ExecuteAction(closeModel);
-                    }
-                    catch { /* Ignore cleanup errors */ }
-                }
             }
         }
     }

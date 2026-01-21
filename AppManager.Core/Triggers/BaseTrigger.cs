@@ -61,7 +61,7 @@ namespace AppManager.Core.Triggers
         {
             if (null == model.Actions) { return; }
 
-            ActionsValue = model.Actions.Select(a => ActionManager.CreateAction(a)).ToArray();
+            ActionsValue = model.Actions.Select(a => ActionFactory.CreateAction(a)).ToArray();
         }
 
         public virtual TriggerModel ToModel()

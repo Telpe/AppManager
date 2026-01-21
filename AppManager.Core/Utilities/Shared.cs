@@ -31,12 +31,13 @@ namespace AppManager.Core.Utilities
             {
                 if (Shared.CheckSelfRunning(out notSelf))
                 {
-                    ActionManager.CreateAction(new ActionModel
+                    ActionFactory.CreateAction(new()
                     {
                         ActionType = AppActionTypeEnum.BringToFront,
                         AppName = notSelf!.ProcessName,
+                        ProcessLastId = notSelf.Id
 
-                    }, notSelf).Execute();
+                    }).Execute();
 
                     return true;
                 }

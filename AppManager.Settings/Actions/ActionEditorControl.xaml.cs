@@ -78,7 +78,7 @@ namespace AppManager.Settings.Actions
         {
             try
             {
-                ActionTypeComboBox?.ItemsSource = ActionManager.GetAvailableActions();
+                ActionTypeComboBox?.ItemsSource = ActionFactory.GetSupportedActionTypes();
                 
             }
             catch (Exception ex)
@@ -407,7 +407,7 @@ namespace AppManager.Settings.Actions
         {
             try
             {
-                var canExecute = ActionManager.CanExecuteAction(CurrentActionModelValue);
+                var canExecute = ActionFactory.CreateAction(CurrentActionModelValue).Execute();
 
                 var result = canExecute ? "✓ Action can be executed" : "✗ Action cannot be executed";
                 MessageBox.Show(result, "Test Result", MessageBoxButton.OK,

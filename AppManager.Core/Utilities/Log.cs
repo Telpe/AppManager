@@ -74,10 +74,7 @@ namespace AppManager.Core.Utilities
                 }
             }
 
-            _ = Task.Run(() =>
-            {
-                CleanupOldLogs();
-            });
+            Task.Run(CleanupOldLogs).Wait();
         }
 
         public static void CloseStream()
@@ -85,6 +82,7 @@ namespace AppManager.Core.Utilities
             lock (LogLock)
             {
                 _streamWriter?.Dispose();
+                _streamWriter = null;
             }
         }
 
@@ -117,11 +115,11 @@ namespace AppManager.Core.Utilities
                 {
                     if (0 < buffer.Length)
                     {
-                        buffer = [text];
+                        buffer[^1] = buffer.Last() + text;
                     }
                     else
                     {
-                        buffer[^1] = buffer.Last() + text;
+                        buffer = [text];
                     }   
                 }
             }
@@ -129,17 +127,21 @@ namespace AppManager.Core.Utilities
 
         public static void Dispose()
         {
-            if (IsStraeming)
+            lock (LogLock)
             {
-                CloseStream();
-                return;
-            }
+                if (IsStraeming)
+                {
+                    CloseStream();
+                    return;
+                }
 
-            if (0 < buffer.Length)
-            {
-                OpenStream();
-                CloseStream();
+                if (0 < buffer.Length)
+                {
+                    OpenStream();
+                    CloseStream();
+                }
             }
+            
         }
 
         private static string GetTimestamp()

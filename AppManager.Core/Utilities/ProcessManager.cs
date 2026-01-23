@@ -56,6 +56,7 @@ namespace AppManager.Core.Utilities
                 {
                     processes = Process.GetProcessesByName(appName);
                 }*/
+                // Test fastest and if different. Above or below.
 
                 processesTemp = Process.GetProcesses();
 

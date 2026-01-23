@@ -187,5 +187,10 @@ namespace AppManager.Core.Keybinds
             return fEatKeyStroke ? (IntPtr)1 : CallNextHookEx(IntPtr.Zero, nCode, wParam, lParam);
         }
 
+        [LibraryImport("USER32", EntryPoint = "ShutdownBlockReasonCreate", SetLastError = true, StringMarshalling = StringMarshalling.Utf16)]
+        public static partial int ShutdownBlockReasonCreate(IntPtr hWnd, [MarshalAs(UnmanagedType.LPWStr)] string pwszReason);
+
+        [LibraryImport("USER32", EntryPoint = "ShutdownBlockReasonDestroy", SetLastError = true)]
+        public static partial int ShutdownBlockReasonDestroy(IntPtr hWnd);
     }
 }

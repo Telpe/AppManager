@@ -80,9 +80,7 @@ namespace AppManager.Core.Triggers
         protected virtual bool CanStartTrigger() { return true; }
         public bool CanStart() 
         {
-            if (Inactive) { return false; }
-
-            return CanStartTrigger();
+            return !Inactive && CanStartTrigger();
         }
         protected virtual bool CanExecuteTrigger() { return true; }
         public bool CanExecute()
@@ -94,7 +92,7 @@ namespace AppManager.Core.Triggers
 
         protected async void ExecuteActions()
         {
-            Log.WriteLine($"Thread id should be: {GlobalKeyboardHook.CurrentThreadId}");
+            Log.WriteLine($"Thread id: {GlobalKeyboardHook.CurrentThreadId}");
             if (!CanExecute()) { return; }
 
             bool actionSuccess;

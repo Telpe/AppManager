@@ -9,6 +9,8 @@ using System.IO;
 using System.Windows.Forms;
 using AppManager.Core.Keybinds;
 using System.Windows.Threading;
+using Microsoft.Win32;
+using System.Runtime.CompilerServices;
 
 namespace AppManager.Core
 {
@@ -25,7 +27,13 @@ namespace AppManager.Core
         {
             if (Shared.ShouldITerminate()) { return; }
 
-            AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
+            SystemEvents.SessionEnding += OnSessionEnding;
+            MainDispatcher.ShutdownStarted += (s, args) =>
+            {
+                Log.WriteLine($"Dispatcher ShutdownStarted...({GlobalKeyboardHook.CurrentThreadId})");
+                Application.Exit();
+                MainDispatcher.Thread.Join(4000);
+            };
 
             if (StreamLogging)
             {
@@ -33,6 +41,7 @@ namespace AppManager.Core
             }
 
             Log.WriteLine($"Main thread id: {GlobalKeyboardHook.CurrentThreadId}");
+            Log.WriteLine($"Version: {FileManager.LoadVersion()}");
 
             InitializeFileWatchers();
             LoadTriggers();
@@ -46,6 +55,7 @@ namespace AppManager.Core
                 Application.Run();
             }
 
+            ExitCleanup();
         }
 
         /// <summary>
@@ -247,53 +257,92 @@ namespace AppManager.Core
         /// </summary>
         private static void SaveApplicationState()
         {
-            try
+            throw new NotImplementedException("SaveApplicationState is not implemented yet.");
+            Log.WriteLine("AppManager.Core: Application state saved");
+        }
+
+        private static void OnSessionEnding(object? sender, SessionEndingEventArgs e)
+        {
+            Log.WriteLine("AppManager.Core: Session ending.");
+            try 
             {
-                // Save current profile or settings if needed
-                // This method can be expanded based on your requirements
-                Log.WriteLine("AppManager.Core: Application state saved");
+                using (Form form = new()
+                {
+                    Text = "AppManager cleaning up.",
+                    Size = new Size(300, 200)
+                })
+                {
+                    form.Show();
+
+                    GlobalKeyboardHook.ShutdownBlockReasonCreate(form.Handle, "App Manager needs a bit cleaning up.");
+                    Application.Exit();
+                    MainDispatcher.Thread.Join(4000);
+                    GlobalKeyboardHook.ShutdownBlockReasonDestroy(form.Handle);
+                }
             }
             catch (Exception ex)
             {
-                Log.WriteLine($"AppManager.Core: Error saving application state: {ex.Message}");
+                Log.WriteLine($"AppManager.Core: Error during session ending cleanup: {ex.Message}");
             }
         }
 
-        /// <summary>
-        /// Event handler for AppDomain.ProcessExit
-        /// </summary>
-        private static void OnProcessExit(object? sender, EventArgs e)
+        private static void ExitCleanup()
         {
             try
             {
-                Log.WriteLine("AppManager.Core: Starting exit cleanup...");
+                Log.WriteLine($"ExitCleanup...({GlobalKeyboardHook.CurrentThreadId})");
 
-                ActionFactory.CreateAction(new()
+                SystemEvents.SessionEnding -= OnSessionEnding;
+                
+                try
                 {
-                    ActionType = AppActionTypeEnum.Close,
-                    AppName = "AppManager"
-                }).Execute();
-                ActionFactory.CreateAction(new()
+                    ActionFactory.CreateAction(new()
+                    {
+                        ActionType = AppActionTypeEnum.Close,
+                        AppName = "AppManager"
+                    }).Execute();
+                }
+                catch { }
+
+                try
                 {
-                    ActionType = AppActionTypeEnum.Close,
-                    AppName = "AppManager.Settings"
-                }).Execute();
+                    ActionFactory.CreateAction(new()
+                    {
+                        ActionType = AppActionTypeEnum.Close,
+                        AppName = "AppManager.Settings"
+                    }).Execute();
+                }
+                catch { }
 
-                // Dispose file watchers
-                SettingsFileWatcherValue?.Dispose();
-                ProfileFileWatcherValue?.Dispose();
-                Log.WriteLine("AppManager.Core: File watchers disposed");
+                try
+                {
+                    // Dispose file watchers
+                    SettingsFileWatcherValue?.Dispose();
+                    ProfileFileWatcherValue?.Dispose();
+                    Log.WriteLine("AppManager.Core: File watchers disposed");
+                }
+                catch { }
 
-                // Stop all triggers and dispose resources
-                TriggerManager.Dispose();
-                Log.WriteLine("AppManager.Core: Triggers disposed");
-
-                // Clean up any running actions
-                //ActionManager.Dispose();
-                //Log.WriteLine("AppManager.Core: Actions disposed");
+                try
+                {
+                    // Stop all triggers and dispose resources
+                    TriggerManager.Dispose();
+                    Log.WriteLine("AppManager.Core: Triggers disposed");
+                }
+                catch(Exception ex)
+                {
+                    Log.WriteLine($"AppManager.Core: Error during exit cleanup \"Stop all triggers\":\n{ex.Message}");
+                }
 
                 // Save any pending data or settings
-                SaveApplicationState();
+                try
+                {
+                    SaveApplicationState();
+                }
+                catch (Exception ex)
+                {
+                    Log.WriteLine($"AppManager.Core: Error during exit cleanup SaveApplicationState:\n{ex.Message}");
+                }
 
                 // Additional cleanup can be added here
                 Log.WriteLine("AppManager.Core: Exit cleanup completed");
@@ -304,10 +353,14 @@ namespace AppManager.Core
             }
             finally
             {
-                Log.Dispose();
+                try
+                {
+                    Log.WriteLine("AppManager.Core: Disposing Log...");
+                    Log.Dispose();
+                }
+                catch { }
             }
         }
-
 
         /// <summary>
         /// Loads triggers from the current profile

@@ -21,6 +21,9 @@ namespace AppManager.Core
         private static FileSystemWatcher? ProfileFileWatcherValue;
         private static Dispatcher MainDispatcher = System.Windows.Threading.Dispatcher.CurrentDispatcher;
         private static bool StreamLogging = true;
+        private static string? _settingsFileHash;
+        private static string? _profileFileHash;
+        private static object ReloadLock = new();
 
         [STAThread]
         static void Main(string[] args)
@@ -65,8 +68,11 @@ namespace AppManager.Core
         {
             try
             {
-                InitializeSettingsFileWatcher();
-                InitializeProfileFileWatcher();
+                lock (ReloadLock)
+                {
+                    InitializeSettingsFileWatcher();
+                    InitializeProfileFileWatcher();
+                }
 
                 Log.WriteLine("File watchers initialized successfully");
             }
@@ -83,8 +89,13 @@ namespace AppManager.Core
         {
             try
             {
+                string settingsPath = FileManager.GetSettingsPath();
+                
+                // Initialize hash for change detection
+                _settingsFileHash = CalculateFileHash(settingsPath);
+                
                 // Create and configure the file watcher
-                SettingsFileWatcherValue = FileManager.BuildFileWatcher(FileManager.GetSettingsPath());
+                SettingsFileWatcherValue = FileManager.BuildFileWatcher(settingsPath);
                 SettingsFileWatcherValue.NotifyFilter = NotifyFilters.LastWrite;
                 SettingsFileWatcherValue.EnableRaisingEvents = true;
 
@@ -107,9 +118,13 @@ namespace AppManager.Core
         {
             try
             {
+                string profilePath = FileManager.GetProfilePath(SettingsManager.CurrentSettings.LastUsedProfileName);
+                
+                // Initialize hash for change detection
+                _profileFileHash = CalculateFileHash(profilePath);
+                
                 // Create and configure the file watcher
-                SettingsManager.CurrentSettings.LastUsedProfileName ??= ProfileManager.DefaultProfileFilename;
-                ProfileFileWatcherValue = FileManager.BuildFileWatcher(FileManager.GetProfilePath(SettingsManager.CurrentSettings.LastUsedProfileName));
+                ProfileFileWatcherValue = FileManager.BuildFileWatcher(profilePath);
                 ProfileFileWatcherValue.NotifyFilter = NotifyFilters.LastWrite;
                 ProfileFileWatcherValue.EnableRaisingEvents = true;
 
@@ -130,16 +145,25 @@ namespace AppManager.Core
         /// </summary>
         private static void OnSettingsFileChanged(object sender, FileSystemEventArgs e)
         {
-            // Add a small delay to ensure file writing is complete
-            // System.Threading.Thread.Sleep(100);
-            //SettingsFileWatcherValue?.EnableRaisingEvents = false;
+            lock (ReloadLock)
+            {
+                // Check if file content actually changed
+                string? currentHash = CalculateFileHash(e.FullPath);
+                if (currentHash == _settingsFileHash)
+                {
+                    Log.WriteLine("Settings file change detected but content unchanged - ignoring");
+                    return;
+                }
+
+                _settingsFileHash = currentHash;
+            }
 
             MainDispatcher.InvokeAsync(() =>
             {
                 Log.WriteLine($"Settings file changed thread id: {GlobalKeyboardHook.CurrentThreadId}");
                 try
                 {
-                    string lastProfile = SettingsManager.CurrentSettings.LastUsedProfileName ?? ProfileManager.DefaultProfileFilename;
+                    string lastProfile = SettingsManager.CurrentSettings.LastUsedProfileName;
                     SettingsManager.ClearCache();
 
                     if (SettingsManager.CurrentSettings.LastUsedProfileName != lastProfile)
@@ -147,7 +171,7 @@ namespace AppManager.Core
                         // Reinitialize the profile file watcher for the new profile
                         ProfileFileWatcherValue?.Dispose();
                         InitializeProfileFileWatcher();
-                        
+
                         // Reload profile and triggers
                         ReloadProfileAndTriggers();
                     }
@@ -156,8 +180,6 @@ namespace AppManager.Core
                 {
                     Log.WriteLine($"Error handling settings file change: {ex.Message}");
                 }
-
-                //SettingsFileWatcherValue?.EnableRaisingEvents = true;
             });
             
         }
@@ -167,7 +189,18 @@ namespace AppManager.Core
         /// </summary>
         private static void OnProfileFileChanged(object sender, FileSystemEventArgs e)
         {
-            //ProfileFileWatcherValue?.EnableRaisingEvents = false;
+            lock(ReloadLock)
+            {
+                // Check if file content actually changed
+                string? currentHash = CalculateFileHash(e.FullPath);
+                if (currentHash == _profileFileHash)
+                {
+                    Log.WriteLine("Profile file change detected but content unchanged - ignoring");
+                    return;
+                }
+
+                _profileFileHash = currentHash;
+            }
 
             MainDispatcher.InvokeAsync(() =>
             {
@@ -175,7 +208,7 @@ namespace AppManager.Core
                 try
                 {
                     Log.WriteLine($"Profile file change detected: {e.FullPath}");
-                
+
                     // Reload profile and triggers
                     ReloadProfileAndTriggers();
                 }
@@ -183,8 +216,6 @@ namespace AppManager.Core
                 {
                     Log.WriteLine($"Error handling profile file change: {ex.Message}");
                 }
-
-                //ProfileFileWatcherValue?.EnableRaisingEvents = true;
             });
         }
 
@@ -259,6 +290,27 @@ namespace AppManager.Core
         {
             throw new NotImplementedException("SaveApplicationState is not implemented yet.");
             Log.WriteLine("AppManager.Core: Application state saved");
+        }
+
+        /// <summary>
+        /// Calculates MD5 hash of a file for change detection
+        /// </summary>
+        private static string? CalculateFileHash(string filePath)
+        {
+            try
+            {
+                if (!File.Exists(filePath))
+                    return null;
+
+                using var md5 = System.Security.Cryptography.MD5.Create();
+                using var stream = File.OpenRead(filePath);
+                var hashBytes = md5.ComputeHash(stream);
+                return Convert.ToHexString(hashBytes);
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         private static void OnSessionEnding(object? sender, SessionEndingEventArgs e)

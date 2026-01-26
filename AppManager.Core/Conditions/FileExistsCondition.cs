@@ -34,12 +34,7 @@ namespace AppManager.Core.Conditions
 
         public override ConditionModel ToModel()
         {
-            return new ConditionModel
-            {
-                ConditionType = ConditionTypeEnum.FileExists,
-                IsNot = IsNot,
-                ExecutablePath = ExecutablePath
-            };
+            return ToConditionModel<IFileExistsCondition>();
         }
     }
 }

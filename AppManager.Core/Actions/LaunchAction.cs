@@ -160,15 +160,7 @@ namespace AppManager.Core.Actions
 
         public override ActionModel ToModel()
         {
-            return new ActionModel
-            {
-                ActionType = ActionType,
-                Conditions = Conditions.Select(c => c.ToModel()).ToArray(),
-                AppName = AppName,
-                ExecutablePath = ExecutablePath,
-                Arguments = Arguments,
-                TimeoutMs = TimeoutMs
-            };
+            return ToActionModel<ILaunchAction>();
         }
     }
 }

@@ -38,12 +38,7 @@ namespace AppManager.Core.Conditions
 
         public override ConditionModel ToModel()
         {
-            return new ConditionModel
-            {
-                ConditionType = ConditionTypeEnum.ProcessRunning,
-                IsNot = IsNot,
-                ProcessName = ProcessName
-            };
+            return ToConditionModel<IProcessRunningCondition>();
         }
     }
 }

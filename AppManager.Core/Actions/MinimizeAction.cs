@@ -33,13 +33,7 @@ namespace AppManager.Core.Actions
 
         protected override bool CanExecuteAction()
         {
-            TargetProcessesValue = ProcessManager.FindProcesses(
-                AppName!, 
-                IncludeSimilarNames ?? false, 
-                requireMainWindow: true,
-                WindowTitle);
-
-            return !string.IsNullOrEmpty(AppName) && !TargetProcessesValue.Any(p => p.HasExited);
+            return !string.IsNullOrEmpty(AppName);
         }
 
         protected override bool ExecuteAction()
@@ -50,7 +44,7 @@ namespace AppManager.Core.Actions
                 requireMainWindow: true,
                 WindowTitle);
                     
-            if (0 == processes.Length)
+            if (0 == processes.Length || processes.All(p => p.HasExited))
             {
                 Log.WriteLine($"No processes found to minimize: {AppName}");
                 return false;
@@ -84,14 +78,7 @@ namespace AppManager.Core.Actions
 
         public override ActionModel ToModel()
         {
-            return new ActionModel
-            {
-                AppName = AppName,
-                ActionType = ActionType,
-                IncludeSimilarNames = IncludeSimilarNames,
-                WindowTitle = WindowTitle,
-                Conditions = Conditions.Select(c => c.ToModel()).ToArray()
-            };
+            return ToActionModel<IMinimizeAction>();
         }
     }
 }

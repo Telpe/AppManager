@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace AppManager.Core.Models
 {
-    public class ConditionModel : IFileExistsCondition, IProcessRunningCondition
+    public class ConditionModel : IFileExistsCondition, IProcessRunningCondition, IPreviousActionSuccessCondition
     {
         public ConditionTypeEnum ConditionType { get; set; }
         public bool IsNot { get; set; } = false;

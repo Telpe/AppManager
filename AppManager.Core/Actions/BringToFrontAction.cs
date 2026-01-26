@@ -126,14 +126,7 @@ namespace AppManager.Core.Actions
 
         public override ActionModel ToModel()
         {
-            return new ActionModel()
-            {
-                ActionType = ActionType,
-                AppName = AppName,
-                WindowTitle = WindowTitle,
-                Conditions = Conditions.Select(c => c.ToModel()).ToArray(),
-                ProcessLastId = ProcessLastId
-            };
+            return ToActionModel<IBringToFrontAction>();
         }
     }
 }

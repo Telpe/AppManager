@@ -98,7 +98,7 @@ namespace AppManager.Settings.Conditions
         {
             // Condition Type
             ConditionTypeComboBox.SelectionChanged += (s, e) => {
-                ConditionModelValue.ConditionType = (ConditionTypeEnum)(ConditionTypeComboBox.SelectedItem ?? ConditionTypeEnum.None);
+                ConditionModelValue.ConditionType = (ConditionTypeEnum)(ConditionTypeComboBox.SelectedItem ?? ConditionTypeEnum.ProcessRunning);
                 AnnounceEdited();
             };
             
@@ -210,12 +210,6 @@ namespace AppManager.Settings.Conditions
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            if (ConditionTypeComboBox.SelectedItem is ConditionTypeEnum.None)
-            {
-                MessageBox.Show("Please select another condition type.", "Invalid Condition Type", MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
             ConditionModelValue.ConditionType = (ConditionTypeEnum)ConditionTypeComboBox.SelectedItem;
 
             DoSave();

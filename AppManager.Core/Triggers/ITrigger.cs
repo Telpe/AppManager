@@ -10,10 +10,9 @@ namespace AppManager.Core.Triggers
     {
         TriggerTypeEnum TriggerType { get; }
         string Name { get; set; }
-        string Description { get; set; }
         bool Inactive { get; set; }
 
-        ICondition[] Conditions { get; set; }
+        ICondition[]? Conditions { get; set; }
 
         IAction[] Actions { get; set; }
         
@@ -23,6 +22,7 @@ namespace AppManager.Core.Triggers
         void Stop();
         bool CanStart();
         bool CanExecute();
+        bool Execute();
         TriggerModel ToModel();
     }
 }

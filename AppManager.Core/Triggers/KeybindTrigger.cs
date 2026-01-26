@@ -290,13 +290,7 @@ namespace AppManager.Core.Triggers
 
         public override TriggerModel ToModel()
         {
-            TriggerModel model = base.ToModel();
-            model.Key = Key;
-            model.Modifiers = Modifiers;
-            model.KeybindCombination = KeybindCombination;
-            model.CustomProperties = CustomProperties;
-
-            return model;
+            return ToTriggerModel<IKeybindTrigger>();
         }
     }
 }

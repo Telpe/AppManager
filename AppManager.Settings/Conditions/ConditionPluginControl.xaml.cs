@@ -105,7 +105,7 @@ namespace AppManager.Settings.Conditions
 
                 var conditionModel = new ConditionModel
                 {
-                    ConditionType = ConditionTypeEnum.None
+                    ConditionType = ConditionTypeEnum.ProcessRunning
                 };
 
                 var conditionEditor = new ConditionEditorControl(conditionModel);

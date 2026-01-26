@@ -83,14 +83,7 @@ namespace AppManager.Core.Actions
 
         public override ActionModel ToModel()
         {
-            return new ActionModel
-            {
-                AppName = AppName,
-                ActionType = ActionType,
-                IncludeSimilarNames = IncludeSimilarNames,
-                WindowTitle = WindowTitle,
-                Conditions = Conditions.Select(c => c.ToModel()).ToArray()
-            };
+            return ToActionModel<IFocusAction>();
         }
     }
 }

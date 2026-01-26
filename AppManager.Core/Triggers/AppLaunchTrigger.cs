@@ -121,13 +121,7 @@ namespace AppManager.Core.Triggers
 
         public override TriggerModel ToModel()
         {
-            TriggerModel model = base.ToModel();
-            model.ProcessName = ProcessName;
-            model.ExecutablePath = ExecutablePath;
-            model.MonitorChildProcesses = MonitorChildProcesses;
-            model.CustomProperties = CustomProperties;
-
-            return model;
+            return ToTriggerModel<IAppLaunchTrigger>();
         }
     }
 }

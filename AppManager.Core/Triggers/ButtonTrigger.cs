@@ -67,9 +67,7 @@ namespace AppManager.Core.Triggers
 
         public override TriggerModel ToModel()
         {
-            TriggerModel model = base.ToModel();
-            model.CustomProperties = CustomProperties;
-            return model;
+            return ToTriggerModel<IButtonTrigger>();
         }
     }
 }

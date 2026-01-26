@@ -2,7 +2,6 @@ namespace AppManager.Core.Conditions
 {
     public enum ConditionTypeEnum
     {
-        None,
         ProcessRunning,
         WindowExists,
         WindowFocused,

@@ -98,16 +98,7 @@ namespace AppManager.Core.Actions
 
         public override ActionModel ToModel()
         {
-            return new ActionModel()
-            {
-                AppName = AppName,
-                ActionType = ActionType,
-                IncludeChildProcesses = IncludeChildProcesses,
-                IncludeSimilarNames = IncludeSimilarNames,
-                TimeoutMs = TimeoutMs,
-                ForceOperation = ForceOperation,
-                Conditions = Conditions.Select(c => c.ToModel()).ToArray()
-            };
+            return ToActionModel<ICloseAction>();
         }
     }
 }

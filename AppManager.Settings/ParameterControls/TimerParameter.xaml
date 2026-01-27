@@ -1,0 +1,138 @@
+﻿<UserControl x:Class="AppManager.Settings.ParameterControls.TimerParameter"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="250" d:DesignWidth="400">
+
+	<GroupBox Header="Timer">
+		<Grid Margin="5">
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="Auto"/>
+			</Grid.RowDefinitions>
+
+			<!-- Edit Mode Selector -->
+			<Grid Grid.Row="0" Margin="0,0,0,10">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="Auto"/>
+					<ColumnDefinition Width="*"/>
+				</Grid.ColumnDefinitions>
+
+				<TextBlock Grid.Column="0" Text="Edit Mode:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+				<ComboBox x:Name="EditModeComboBox" Grid.Column="1" SelectedIndex="2" 
+                          SelectionChanged="EditModeComboBox_SelectionChanged">
+					<ComboBoxItem Content="Milliseconds"/>
+					<ComboBoxItem Content="Seconds + Milliseconds"/>
+					<ComboBoxItem Content="Minutes + Seconds + Milliseconds"/>
+				</ComboBox>
+			</Grid>
+
+			<!-- Mode 1: Milliseconds only -->
+			<StackPanel x:Name="Mode1Panel" Grid.Row="1" Orientation="Vertical" HorizontalAlignment="Center" Margin="0,0,0,10">
+				<TextBlock Text="Milliseconds:" VerticalAlignment="Center" Margin="0,0,5,0" Width="70"/>
+				<StackPanel Orientation="Horizontal">
+					<Button Content="−" Width="20" Height="25" Tag="Milliseconds"
+                        MouseDown="DecrementButton_MouseDown" MouseUp="ArrowButton_MouseUp" MouseLeave="ArrowButton_MouseLeave"/>
+					<TextBox x:Name="MillisecondsTextBox" Width="80" Height="25" Text="0" TextAlignment="Center"
+                         LostFocus="TextBox_LostFocus" KeyDown="TextBox_KeyDown"/>
+					<Button Content="+" Width="20" Height="25" Tag="Milliseconds"
+                        MouseDown="IncrementButton_MouseDown" MouseUp="ArrowButton_MouseUp" MouseLeave="ArrowButton_MouseLeave"/>
+				</StackPanel>
+			</StackPanel>
+
+			<!-- Mode 2: Seconds + Milliseconds -->
+			<StackPanel x:Name="Mode2Panel" Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,10">
+				<StackPanel Orientation="Vertical" Margin="0,0,0,5">
+					<TextBlock Text="Seconds:" VerticalAlignment="Center" Margin="0,0,5,0" Width="70"/>
+					<StackPanel Orientation="Horizontal">
+						<Button Content="−" Width="20" Height="25" Tag="Seconds"
+                            MouseDown="DecrementButton_MouseDown" MouseUp="ArrowButton_MouseUp" MouseLeave="ArrowButton_MouseLeave"/>
+						<TextBox x:Name="SecondsTextBox" Width="60" Height="25" Text="0" TextAlignment="Center"
+                             LostFocus="TextBox_LostFocus" KeyDown="TextBox_KeyDown"/>
+						<Button Content="+" Width="20" Height="25" Tag="Seconds"
+                            MouseDown="IncrementButton_MouseDown" MouseUp="ArrowButton_MouseUp" MouseLeave="ArrowButton_MouseLeave"/>
+					</StackPanel>
+				</StackPanel>
+				<StackPanel Orientation="Vertical">
+					<TextBlock Text="Milliseconds:" VerticalAlignment="Center" Margin="0,0,5,0" Width="70"/>
+					<StackPanel Orientation="Horizontal">
+						<Button Content="−" Width="20" Height="25" Tag="MillisecondsMode2"
+                            MouseDown="DecrementButton_MouseDown" MouseUp="ArrowButton_MouseUp" MouseLeave="ArrowButton_MouseLeave"/>
+						<TextBox x:Name="MillisecondsMode2TextBox" Width="60" Height="25" Text="0" TextAlignment="Center"
+                             LostFocus="TextBox_LostFocus" KeyDown="TextBox_KeyDown"/>
+						<Button Content="+" Width="20" Height="25" Tag="MillisecondsMode2"
+                            MouseDown="IncrementButton_MouseDown" MouseUp="ArrowButton_MouseUp" MouseLeave="ArrowButton_MouseLeave"/>
+					</StackPanel>
+				</StackPanel>
+			</StackPanel>
+
+			<!-- Mode 3: Minutes + Seconds + Milliseconds -->
+			<StackPanel x:Name="Mode3Panel" Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,10">
+				<StackPanel Orientation="Vertical" Margin="0,0,0,5">
+					<TextBlock Text="Minutes:" VerticalAlignment="Center" Margin="0,0,5,0" Width="70"/>
+					<StackPanel Orientation="Horizontal">
+						<Button Content="−" Width="20" Height="25" Tag="Minutes"
+                            MouseDown="DecrementButton_MouseDown" MouseUp="ArrowButton_MouseUp" MouseLeave="ArrowButton_MouseLeave"/>
+						<TextBox x:Name="MinutesTextBox" Width="40" Height="25" Text="0" TextAlignment="Center"
+                             LostFocus="TextBox_LostFocus" KeyDown="TextBox_KeyDown"/>
+						<Button Content="+" Width="20" Height="25" Tag="Minutes"
+                            MouseDown="IncrementButton_MouseDown" MouseUp="ArrowButton_MouseUp" MouseLeave="ArrowButton_MouseLeave"/>
+					</StackPanel>
+				</StackPanel>
+				<StackPanel Orientation="Vertical" Margin="0,0,0,5">
+					<TextBlock Text="Seconds:" VerticalAlignment="Center" Margin="0,0,5,0" Width="70"/>
+					<StackPanel Orientation="Horizontal">
+						<Button Content="−" Width="20" Height="25" Tag="SecondsMode3"
+                            MouseDown="DecrementButton_MouseDown" MouseUp="ArrowButton_MouseUp" MouseLeave="ArrowButton_MouseLeave"/>
+						<TextBox x:Name="SecondsMode3TextBox" Width="40" Height="25" Text="0" TextAlignment="Center"
+                             LostFocus="TextBox_LostFocus" KeyDown="TextBox_KeyDown"/>
+						<Button Content="+" Width="20" Height="25" Tag="SecondsMode3"
+                            MouseDown="IncrementButton_MouseDown" MouseUp="ArrowButton_MouseUp" MouseLeave="ArrowButton_MouseLeave"/>
+					</StackPanel>
+				</StackPanel>
+				<StackPanel Orientation="Vertical">
+					<TextBlock Text="Milliseconds:" VerticalAlignment="Center" Margin="0,0,5,0" Width="70"/>
+					<StackPanel Orientation="Horizontal">
+						<Button Content="−" Width="20" Height="25" Tag="MillisecondsMode3"
+                            MouseDown="DecrementButton_MouseDown" MouseUp="ArrowButton_MouseUp" MouseLeave="ArrowButton_MouseLeave"/>
+						<TextBox x:Name="MillisecondsMode3TextBox" Width="60" Height="25" Text="0" TextAlignment="Center"
+                             LostFocus="TextBox_LostFocus" KeyDown="TextBox_KeyDown"/>
+						<Button Content="+" Width="20" Height="25" Tag="MillisecondsMode3"
+                            MouseDown="IncrementButton_MouseDown" MouseUp="ArrowButton_MouseUp" MouseLeave="ArrowButton_MouseLeave"/>
+					</StackPanel>
+				</StackPanel>
+			</StackPanel>
+
+			<!-- Slider -->
+			<Grid Grid.Row="2" Margin="0,10,0,5">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="Auto"/>
+					<ColumnDefinition Width="*"/>
+					<ColumnDefinition Width="Auto"/>
+				</Grid.ColumnDefinitions>
+
+				<TextBlock Grid.Column="0" Text="-1" VerticalAlignment="Center" Margin="0,0,5,0"/>
+				<Slider x:Name="TimerSlider" Grid.Column="1" Minimum="0" Maximum="180000" 
+                        Value="0" TickPlacement="BottomRight" TickFrequency="30000"
+                        ValueChanged="TimerSlider_ValueChanged"/>
+				<TextBlock Grid.Column="2" Text="3m" VerticalAlignment="Center" Margin="5,0,0,0"/>
+			</Grid>
+
+			<!-- Current Value Display -->
+			<Grid Grid.Row="3">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="Auto"/>
+					<ColumnDefinition Width="*"/>
+				</Grid.ColumnDefinitions>
+
+				<TextBlock Grid.Column="0" Text="Current Value:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+				<TextBlock Grid.Column="1" Text="{Binding TimerValue, StringFormat='{}{0} ms'}" 
+                           VerticalAlignment="Center" FontWeight="Bold"/>
+			</Grid>
+		</Grid>
+	</GroupBox>
+</UserControl>

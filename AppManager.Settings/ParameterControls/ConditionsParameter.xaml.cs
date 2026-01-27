@@ -11,7 +11,7 @@ using AppManager.Settings.UI;
 
 namespace AppManager.Settings.ParameterControls
 {
-    public partial class ConditionPluginControl : UserControl, INotifyPropertyChanged
+    public partial class ConditionsParameter : UserControl, INotifyPropertyChanged
     {
         private ConditionalModel? _conditionalModel;
 
@@ -26,19 +26,19 @@ namespace AppManager.Settings.ParameterControls
                 if (_conditionalModel != value)
                 {
                     _conditionalModel = value;
-                    OnPropertyChanged(nameof(ConditionalModel));
                     UpdateConditionsList();
+                    OnPropertyChanged(nameof(ConditionalModel));
                 }
             }
         }
 
-        public ConditionPluginControl()
+        public ConditionsParameter()
         {
             InitializeComponent();
             this.DataContext = this;
         }
 
-        public ConditionPluginControl(ConditionalModel conditionalModel) : this()
+        public ConditionsParameter(ConditionalModel conditionalModel) : this()
         {
             ConditionalModel = conditionalModel;
         }
@@ -49,9 +49,7 @@ namespace AppManager.Settings.ParameterControls
             {
                 ConditionsListBox.ItemsSource = _conditionalModel?.Conditions;
                 
-                // Update the display text for each item after the template is applied
                 ConditionsListBox.Loaded += (s, e) => UpdateDisplayTexts();
-                //UpdateDisplayTexts();
             }
             catch (Exception ex)
             {

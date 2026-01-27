@@ -36,7 +36,7 @@
 			</Grid>
 		</GroupBox>
 
-		<parameterControls:ConditionPluginControl x:Name="ConditionPlugin" Grid.Row="1" Margin="5" ConditionsChanged="ConditionPlugin_ConditionsChanged"/>
+		<parameterControls:ConditionsParameter x:Name="ConditionPlugin" Grid.Row="1" Margin="5" ConditionsChanged="ConditionPlugin_ConditionsChanged"/>
 
 		<!-- Launch-specific Options -->
 		<GroupBox x:Name="LaunchOptionsGroup" Header="Launch Options" Grid.Row="2" Margin="5" Visibility="Collapsed">
@@ -71,9 +71,7 @@
 				<CheckBox x:Name="IncludeSimilarNamesCheckBox" Content="Include Similar Names" 
                           Grid.Row="0" Grid.Column="2" Margin="5" VerticalAlignment="Center"/>
 
-				<Label Content="Timeout (ms):" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center"/>
-				<TextBox x:Name="TimeoutTextBox" Grid.Row="1" Grid.Column="1" Margin="5,0,0,0" 
-                         VerticalAlignment="Center" Height="22" Text="5000"/>
+				<parameterControls:TimerParameter x:Name="TimeoutParameter" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Margin="5" TimerValueChanged="TimeoutParameter_TimerValueChanged" />
 			</Grid>
 		</GroupBox>
 

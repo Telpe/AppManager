@@ -94,8 +94,8 @@ namespace AppManager.Settings.EditorControls
                 ForceOperationCheckBox!.IsChecked = CurrentActionModelValue.ForceOperation;
                 IncludeChildProcessesCheckBox!.IsChecked = CurrentActionModelValue.IncludeChildProcesses;
                 IncludeSimilarNamesCheckBox!.IsChecked = CurrentActionModelValue.IncludeSimilarNames;
-                TimeoutTextBox!.Text = CurrentActionModelValue.TimeoutMs.ToString();
 
+                TimeoutParameter!.TimerValue = CurrentActionModelValue.TimeoutMs;
                 ConditionPlugin.ConditionalModel = CurrentActionModelValue;
 
                 UpdatePreview();
@@ -425,11 +425,6 @@ namespace AppManager.Settings.EditorControls
                 var errors = new List<string>();
 
 
-                if (!int.TryParse(TimeoutTextBox?.Text, out int timeout) || timeout <= 0)
-                {
-                    errors.Add("Timeout must be a positive number");
-                }
-
                 var message = errors.Any() ?
                     $"Validation failed:\n{string.Join("\n", errors)}" :
                     "✓ Validation passed";
@@ -500,6 +495,11 @@ namespace AppManager.Settings.EditorControls
         private void ConditionPlugin_ConditionsChanged(object sender, EventArgs e)
         {
             UpdatePreview();
+        }
+
+        private void TimeoutParameter_TimerValueChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }

@@ -32,6 +32,7 @@ namespace AppManager.Core.Models
                 WindowTitle = this.WindowTitle,
                 ExecutablePath = this.ExecutablePath,
                 Arguments = this.Arguments,
+                ProcessLastId = this.ProcessLastId,
                 Conditions = this.Conditions?.Select(c => c.Clone()).ToArray()
             };
         }

@@ -1,9 +1,10 @@
-﻿using System;
+﻿using AppManager.Settings.UI;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Windows.Controls;
 
-namespace AppManager.Settings.UI
+namespace AppManager.Settings.Interfaces
 {
     public interface IInputEditControl
     {

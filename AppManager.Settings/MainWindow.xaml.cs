@@ -1,8 +1,7 @@
 ﻿using AppManager.Core.Actions;
 using AppManager.Core.Models;
 using AppManager.Core.Utilities;
-using AppManager.Settings.AppGroups;
-using AppManager.Settings.Apps;
+using AppManager.Settings.Interfaces;
 using AppManager.Settings.Pages;
 using AppManager.Settings.UI;
 using AppManager.Settings.Utilities;
@@ -26,8 +25,8 @@ namespace AppManager.Settings
     /// </summary>
     public partial class MainWindow : Window
     {
-        private readonly Apps.AppsPage AppsPage = new();
-        private readonly AppGroups.AppGroupsPage AppGroupsPage = new();
+        private readonly Pages.AppsPage AppsPage = new();
+        private readonly Pages.AppGroupsPage AppGroupsPage = new();
         private readonly ShortcutsPage ShortcutsPage = new();
         private OverlayManager? OverlayManagerValue;
         private readonly ObservableCollection<string> Nav1ListValue = new();

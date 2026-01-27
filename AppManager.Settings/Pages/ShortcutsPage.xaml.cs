@@ -1,3 +1,4 @@
+using AppManager.Settings.Interfaces;
 using System.Diagnostics;
 using System.Windows.Controls;
 

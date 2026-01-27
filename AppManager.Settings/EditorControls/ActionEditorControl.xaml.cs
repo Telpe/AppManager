@@ -8,12 +8,11 @@ using AppManager.Core.Actions;
 using AppManager.Core.Conditions;
 using AppManager.Core.Models;
 using AppManager.Core.Utilities;
-using AppManager.Settings.Actions;
-using AppManager.Settings.Conditions;
+using AppManager.Settings.Interfaces;
 using AppManager.Settings.UI;
 using Microsoft.Win32;
 
-namespace AppManager.Settings.Actions
+namespace AppManager.Settings.EditorControls
 {
     public partial class ActionEditorControl : UserControl, IInputEditControl
     {

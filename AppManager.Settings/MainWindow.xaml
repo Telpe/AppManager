@@ -9,7 +9,7 @@
 	<Window.Resources>
 		<ResourceDictionary>
 			<ResourceDictionary.MergedDictionaries>
-				<ResourceDictionary Source="UI/Nav1ListItemTemplate.xaml" />
+				<ResourceDictionary Source="ListTemplates/Nav1ListItemTemplate.xaml" />
 			</ResourceDictionary.MergedDictionaries>
 		</ResourceDictionary>
 	</Window.Resources>

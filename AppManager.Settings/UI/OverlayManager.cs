@@ -1,3 +1,4 @@
+using AppManager.Settings.Interfaces;
 using System;
 using System.Numerics;
 using System.Windows;

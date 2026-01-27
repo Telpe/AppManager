@@ -50,7 +50,7 @@ namespace AppManager.Settings.UI
         public int ConditionCount => Model.Conditions?.Length ?? 0;
         public bool HasConditions => ConditionCount > 0;
 
-        public ModelListItem(int id, T model, Apps.AppsPage? page = null)
+        public ModelListItem(int id, T model, Pages.AppsPage? page = null)
         {
             Id = id;
             Model = model;

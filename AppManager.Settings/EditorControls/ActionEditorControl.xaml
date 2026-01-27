@@ -1,11 +1,11 @@
 <UserControl
-	x:Class="AppManager.Settings.Actions.ActionEditorControl"
+	x:Class="AppManager.Settings.EditorControls.ActionEditorControl"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-	xmlns:local="clr-namespace:AppManager.Settings.Actions"
-	xmlns:conditions="clr-namespace:AppManager.Settings.Conditions"
+	xmlns:local="clr-namespace:AppManager.Settings.EditorControls"
+	xmlns:parameterControls="clr-namespace:AppManager.Settings.ParameterControls"
     mc:Ignorable="d" 
     d:DesignHeight="450" d:DesignWidth="600">
 
@@ -36,8 +36,7 @@
 			</Grid>
 		</GroupBox>
 
-		<!-- Conditions Section - Replaced with ConditionPluginControl -->
-		<conditions:ConditionPluginControl x:Name="ConditionPlugin" Grid.Row="1" Margin="5" ConditionsChanged="ConditionPlugin_ConditionsChanged"/>
+		<parameterControls:ConditionPluginControl x:Name="ConditionPlugin" Grid.Row="1" Margin="5" ConditionsChanged="ConditionPlugin_ConditionsChanged"/>
 
 		<!-- Launch-specific Options -->
 		<GroupBox x:Name="LaunchOptionsGroup" Header="Launch Options" Grid.Row="2" Margin="5" Visibility="Collapsed">

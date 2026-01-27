@@ -3,8 +3,7 @@ using AppManager.Core.Conditions;
 using AppManager.Core.Models;
 using AppManager.Core.Triggers;
 using AppManager.Core.Utilities;
-using AppManager.Settings.Actions;
-using AppManager.Settings.Conditions;
+using AppManager.Settings.Interfaces;
 using AppManager.Settings.UI;
 using AppManager.Settings.Utilities;
 using System;
@@ -18,7 +17,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 
-namespace AppManager.Settings.Triggers
+namespace AppManager.Settings.EditorControls
 {
     public partial class TriggerEditorControl : UserControl, IInputEditControl
     {
@@ -310,24 +309,71 @@ namespace AppManager.Settings.Triggers
 
         private void TestTriggerButton_Click(object sender, RoutedEventArgs e)
         {
+            ITrigger? triggerInstance = null;
+
             try
             {
-                var triggerInstance = TriggerFactory.CreateTrigger(CurrentTriggerModelValue);
-                var canStart = triggerInstance.CanStart();
-                
-                var result = canStart ? "✓ Trigger configuration is valid" : "✗ Trigger configuration is invalid";
-                MessageBox.Show(result, "Test Result", MessageBoxButton.OK, 
-                    canStart ? MessageBoxImage.Information : MessageBoxImage.Warning);
-                
-                triggerInstance.Dispose();
+                triggerInstance = TriggerFactory.CreateTrigger(CurrentTriggerModelValue);
+
+                if (!triggerInstance.CanStart())
+                {
+                    MessageBox.Show("✗ Trigger configuration is invalid", "Trigger validation", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+                else
+                {
+                    try
+                    {
+                        MessageBox.Show($"Actions executed {(triggerInstance.Execute() ? "with success" : "without complete success.")}.", "Actions Result", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"Error during trigger's execution of actions:\n{ex.Message}", "Action Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    }
+                }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Test failed: {ex.Message}", "Test Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Validation critically failed:\n{ex.Message}", "Trigger Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                triggerInstance?.Dispose();
             }
         }
 
-        private void SaveTriggerButton_Click(object sender, RoutedEventArgs e) => DoSave();
+        private void SaveTriggerButton_Click(object sender, RoutedEventArgs e)
+        {
+            ITrigger? triggerInstance = null;
+            MessageBoxResult doSave = MessageBoxResult.No;
+
+            try
+            {
+                triggerInstance = TriggerFactory.CreateTrigger(CurrentTriggerModelValue);
+
+                if (!triggerInstance.CanStart())
+                {
+                    doSave = MessageBox.Show("✗ Trigger configuration is invalid\n\nDo you still want to save?", "Trigger validation", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                }
+                else
+                {
+                    doSave = MessageBoxResult.Yes;
+                    Log.WriteLine("✓ Trigger configuration is valid");
+                }
+            }
+            catch (Exception ex)
+            {
+                doSave = MessageBox.Show($"Validation critically failed: {ex.Message}\n\nDo you still want to save?", "Trigger Error", MessageBoxButton.YesNo, MessageBoxImage.Error);
+            }
+            finally
+            {
+                triggerInstance?.Dispose();
+            }
+
+            if (MessageBoxResult.Yes == doSave)
+            {
+                DoSave();
+            }
+        }
 
         private void CancelTriggerButton_Click(object sender, RoutedEventArgs e) => DoCancel();
 
@@ -343,7 +389,6 @@ namespace AppManager.Settings.Triggers
 
         protected void DoSave()
         {
-
             Save?.Invoke(this, new InputEditEventArgs(CurrentTriggerModelValue));
         }
 

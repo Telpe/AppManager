@@ -1,5 +1,6 @@
 ﻿using AppManager.Core.Conditions;
 using AppManager.Core.Models;
+using AppManager.Settings.Interfaces;
 using AppManager.Settings.UI;
 using System;
 using System.Collections.Generic;
@@ -15,7 +16,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace AppManager.Settings.Conditions
+namespace AppManager.Settings.EditorControls
 {
     /// <summary>
     /// Interaction logic for ConditionEditorControl.xaml

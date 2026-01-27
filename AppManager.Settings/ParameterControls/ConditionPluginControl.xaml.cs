@@ -6,10 +6,10 @@ using System.Windows.Controls;
 using AppManager.Core.Conditions;
 using AppManager.Core.Models;
 using AppManager.Core.Utilities;
-using AppManager.Settings.Conditions;
+using AppManager.Settings.EditorControls;
 using AppManager.Settings.UI;
 
-namespace AppManager.Settings.Conditions
+namespace AppManager.Settings.ParameterControls
 {
     public partial class ConditionPluginControl : UserControl, INotifyPropertyChanged
     {

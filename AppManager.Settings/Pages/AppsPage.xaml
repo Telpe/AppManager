@@ -3,8 +3,10 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-      xmlns:local="clr-namespace:AppManager.Settings.Pages"
-      mc:Ignorable="d" 
+      xmlns:local="clr-namespace:AppManager.Settings.Pages" 
+	  xmlns:ui="clr-namespace:AppManager.Settings.UI" 
+	  d:DataContext="{d:DesignInstance Type=local:AppsPage}"
+	  mc:Ignorable="d" 
       d:DesignHeight="500" d:DesignWidth="600"
       Title="App">
 

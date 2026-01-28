@@ -95,7 +95,7 @@ namespace AppManager.Settings.EditorControls
                 IncludeChildProcessesCheckBox!.IsChecked = CurrentActionModelValue.IncludeChildProcesses;
                 IncludeSimilarNamesCheckBox!.IsChecked = CurrentActionModelValue.IncludeSimilarNames;
 
-                TimeoutParameter!.TimerValue = CurrentActionModelValue.TimeoutMs;
+                TimeoutParameter!.TimerValue = CurrentActionModelValue.TimeoutMs ?? -1;
                 ConditionPlugin.ConditionalModel = CurrentActionModelValue;
 
                 UpdatePreview();

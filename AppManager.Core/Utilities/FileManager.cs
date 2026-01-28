@@ -25,8 +25,13 @@ namespace AppManager.Core.Utilities
             WriteIndented = true,
             DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
         };
+        private static string[]? DefaultSearchPaths = null;
         public static readonly string IconfileDefault = "AppManagerIcon_temp.png";
+#if DEBUG
+        public static readonly string AppDataPath = Path.Combine(GetAppManagerCoreDebugPath(), "AppData");
+#else
         public static readonly string AppDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "AppManager");
+#endif
         public static readonly string OSShortcutsPath = Path.Combine(AppDataPath, "Shortcuts");
         public static readonly string ProfilesPath = Path.Combine(AppDataPath, "Profiles");
         public static readonly string LogsPath = Path.Combine(AppDataPath, "Logs");
@@ -69,7 +74,7 @@ namespace AppManager.Core.Utilities
         // File System Operations
         public static bool FileExists(string path) => !string.IsNullOrEmpty(path) && File.Exists(path);
         
-        public static string[] FindExecutables(string appName, string[]? searchPaths = null, bool slobbySearch = false, bool? includeAllDirectories = null)
+        public static string[] FindExecutables(string appName, string[]? searchPaths = null, bool slobbySearch = false, bool includeAllDirectories = false)
         {
             searchPaths ??= GetDefaultSearchPaths();
             var results = new List<string>();
@@ -84,7 +89,7 @@ namespace AppManager.Core.Utilities
                         results.AddRange(Directory.GetFiles(
                             basePath,
                             slobbySearch ? $"*{appName}" : appName,
-                            false != includeAllDirectories ? System.IO.SearchOption.AllDirectories : System.IO.SearchOption.TopDirectoryOnly
+                            includeAllDirectories ? System.IO.SearchOption.AllDirectories : System.IO.SearchOption.TopDirectoryOnly
                             ));
                     }
 
@@ -93,7 +98,7 @@ namespace AppManager.Core.Utilities
                         results.AddRange(Directory.GetFiles(
                             basePath,
                             slobbySearch ? $"*{appName}*{ext}" : $"{appName}{ext}",
-                            true != includeAllDirectories ? System.IO.SearchOption.TopDirectoryOnly : System.IO.SearchOption.AllDirectories
+                            includeAllDirectories ? System.IO.SearchOption.AllDirectories : System.IO.SearchOption.TopDirectoryOnly
                             ));
                     }
                 }
@@ -377,6 +382,13 @@ namespace AppManager.Core.Utilities
             }
         }
 
+#if DEBUG
+        private static string GetAppManagerCoreDebugPath()
+        {
+            return GetDefaultSearchPaths().Where(a => a.Contains(typeof(FileManager).Assembly.GetName().Name!)).First();
+        }
+#endif
+
         //private const uint SHGFI_ICON = 0x100;
         /// <summary>
         /// private const uint SHGFI_LARGEICON = 0x0;
@@ -385,26 +397,29 @@ namespace AppManager.Core.Utilities
 
         private static string[] GetDefaultSearchPaths()
         {
+            if (DefaultSearchPaths is null)
+            {
 #if DEBUG
-            string[] otherPaths = AppDomain.CurrentDomain.BaseDirectory.Split(Path.DirectorySeparatorChar);
-            int iop = Array.IndexOf(otherPaths, "AppManager");
-            string basePath = Path.Combine( otherPaths.Where((a,i)=> i <= iop).ToArray() );
-            string devCorePath = Path.GetDirectoryName(FindExecutables("AppManager.Core.exe", [basePath], false, true).First()) ?? String.Empty;
-            string devSettingsPath = Path.GetDirectoryName(FindExecutables("AppManager.Settings.exe", [basePath], false, true).First()) ?? String.Empty;
-            string devAppManagerPath = Path.GetDirectoryName(FindExecutables("AppManager.exe", [basePath], false, true).First()) ?? String.Empty;
+                string[] otherPaths = AppDomain.CurrentDomain.BaseDirectory.Split(Path.DirectorySeparatorChar);
+                int iop = Array.IndexOf(otherPaths, "AppManager");
+                string basePath = Path.Combine(otherPaths.Where((a, i) => i <= iop).ToArray());
+                string devCorePath = Path.GetDirectoryName(FindExecutables("AppManager.Core.exe", [Path.Combine(basePath, "AppManager.Core")], false, true).First())!;
+                string devSettingsPath = Path.GetDirectoryName(FindExecutables("AppManager.Settings.exe", [Path.Combine(basePath, "AppManager.Settings")], false, true).First())!;
+                string devAppManagerPath = Path.GetDirectoryName(FindExecutables("AppManager.exe", [Path.Combine(basePath, "AppManager")], false, true).First())!;
 #endif
-            //var pathEnv = Environment.GetEnvironmentVariable("PATH")?.Split(Path.PathSeparator) ?? Array.Empty<string>();
-            string[] commonPaths = [
+                //var pathEnv = Environment.GetEnvironmentVariable("PATH")?.Split(Path.PathSeparator) ?? Array.Empty<string>();
+                DefaultSearchPaths = [
 #if DEBUG
-                devCorePath, devSettingsPath,devAppManagerPath,
+                    devCorePath, devSettingsPath,devAppManagerPath,
 #endif
-                AppDomain.CurrentDomain.BaseDirectory,
-                Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
-                Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
-                Environment.GetFolderPath(Environment.SpecialFolder.System)
-            ];
-            
-            return commonPaths;
+                    AppDomain.CurrentDomain.BaseDirectory,
+                    Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
+                    Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                    Environment.GetFolderPath(Environment.SpecialFolder.System)
+                    ];
+            }
+
+            return DefaultSearchPaths;
         }
 
         public static string GetProfilePath(string profileName) 

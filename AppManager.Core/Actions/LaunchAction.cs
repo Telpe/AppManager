@@ -39,7 +39,7 @@ namespace AppManager.Core.Actions
 
             if (String.IsNullOrEmpty(AppName)) { throw new Exception($"{ActionType} require an AppName when the executeable path is not a file"); }
 
-            string[] executablePaths = Directory.Exists(ExecutablePath) ? FileManager.FindExecutables(AppName, [ExecutablePath]) : FileManager.FindExecutables(AppName);
+            string[] executablePaths = Directory.Exists(ExecutablePath) ? FileManager.FindExecutables(AppName, [ExecutablePath]) : FileManager.FindExecutables(AppName,null,false,true);
 
             if (executablePaths.Length == 1)
             {

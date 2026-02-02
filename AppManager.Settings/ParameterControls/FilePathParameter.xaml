@@ -7,34 +7,32 @@
 			 d:DataContext="{d:DesignInstance Type=parametercontrols:FilePathParameter}"
 			 mc:Ignorable="d" 
              d:DesignHeight="120" d:DesignWidth="400">
+	
+	<Grid Margin="5">
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="Auto"/>
+		</Grid.RowDefinitions>
 
-	<GroupBox Header="{Binding HeaderText}">
-		<Grid Margin="5">
-			<Grid.RowDefinitions>
-				<RowDefinition Height="Auto"/>
-				<RowDefinition Height="Auto"/>
-				<RowDefinition Height="Auto"/>
-			</Grid.RowDefinitions>
+		<Grid Grid.Row="0" Margin="0,0,0,5">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="*"/>
+				<ColumnDefinition Width="Auto"/>
+				<ColumnDefinition Width="Auto"/>
+			</Grid.ColumnDefinitions>
 
-			<Grid Grid.Row="0" Margin="0,0,0,5">
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="*"/>
-					<ColumnDefinition Width="Auto"/>
-					<ColumnDefinition Width="Auto"/>
-				</Grid.ColumnDefinitions>
-
-				<TextBox x:Name="FilePathTextBox" Grid.Column="0" Height="25" 
-                         Text="{Binding Value, Mode=TwoWay}"
-                         />
-				<Button Grid.Column="1" Content="Browse..." Width="70" Height="25" Margin="5,0,0,0"
-                        Click="BrowseButton_Click"/>
-				<Button Grid.Column="2" Content="Clear" Width="60" Height="25" Margin="5,0,0,0"
-                        Click="ClearButton_Click"/>
-			</Grid>
-
-			<TextBlock x:Name="FileStatusTextBlock" Grid.Row="1" Margin="0,5,0,0" 
-                       FontSize="10" Text="No file selected" 
-                       Foreground="Gray"/>
+			<TextBox x:Name="FilePathTextBox" Grid.Column="0" Height="25" 
+                        Text="{Binding Value, Mode=TwoWay}"
+                        />
+			<Button Grid.Column="1" Content="Browse..." Width="70" Height="25" Margin="5,0,0,0"
+                    Click="BrowseButton_Click"/>
+			<Button Grid.Column="2" Content="Clear" Width="60" Height="25" Margin="5,0,0,0"
+                    Click="ClearButton_Click"/>
 		</Grid>
-	</GroupBox>
+
+		<TextBlock x:Name="FileStatusTextBlock" Grid.Row="1" Margin="0,5,0,0" 
+                    FontSize="10" Text="No file selected" 
+                    Foreground="Gray"/>
+	</Grid>
 </UserControl>

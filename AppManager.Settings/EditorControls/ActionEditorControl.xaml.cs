@@ -43,24 +43,25 @@ namespace AppManager.Settings.EditorControls
             CurrentActionModelValue = actionModel;
 
             InitializeComponent();
-
-            try
-            {
-                Initialize();
-            }
-            catch (Exception ex)
-            {
-                Log.WriteLine($"ActionEditorControl initialization error: {ex.Message}");
-                InitializeManually();
-            }
+            Initialize();
 
             
         }
 
         private void Initialize()
         {
-            InitializeComboBoxes();
-            LoadActionData();
+            try
+            {
+                ActionTypeComboBox!.ItemsSource = ActionFactory.GetSupportedActionTypes();
+
+                LoadActionData();
+            }
+            catch (Exception ex)
+            {
+                Log.WriteLine($"ActionEditorControl initialization error: {ex.Message}");
+                InitializeManually();
+            }
+            
         }
 
         private void InitializeManually()
@@ -77,19 +78,6 @@ namespace AppManager.Settings.EditorControls
 
         }
 
-        private void InitializeComboBoxes()
-        {
-            try
-            {
-                ActionTypeComboBox?.ItemsSource = ActionFactory.GetSupportedActionTypes();
-                
-            }
-            catch (Exception ex)
-            {
-                Log.WriteLine($"InitializeComboBoxes error: {ex.Message}");
-            }
-        }
-
 
         private void LoadActionData()
         {
@@ -97,6 +85,7 @@ namespace AppManager.Settings.EditorControls
             {
                 ActionTypeComboBox!.SelectedItem = CurrentActionModelValue.ActionType;
 
+                ActionConditions.Content = new ConditionsParameter(CurrentActionModelValue.Conditions ?? []);
 
                 UpdatePreview();
             }
@@ -177,23 +166,23 @@ namespace AppManager.Settings.EditorControls
                 {
                     case nameof(ActionModel.AppName):
 
-                        ((ProcessParameter)ActionParameters.Children[
-                                ActionParameters.Children.Add(new ProcessParameter(CurrentActionModel.AppName, "App Name:"))
-                            ]).PropertyChanged += (s, e) => { TextBox_TextChanged(s ?? this, e); };
+                        ProcessParameter pp = new(CurrentActionModel.AppName);
+                        UseParameterGroupBox("App Name:").Content = pp;
+                        pp.PropertyChanged += (s, e) => { TextBox_TextChanged(s ?? this, e); };
                         break;
 
                     case nameof(ActionModel.Conditions):
 
-                        ((ConditionsParameter)ActionParameters.Children[
-                                ActionParameters.Children.Add(new ConditionsParameter(CurrentActionModel.Conditions ?? []))
-                            ]).PropertyChanged += ConditionsChanged;
+                        ConditionsParameter cp = new(CurrentActionModel.Conditions ?? []);
+                        UseParameterGroupBox("Conditions:").Content = cp;
+                        cp.PropertyChanged += ConditionsChanged;
                         break;
 
                     case nameof(ActionModel.ExecutablePath):
 
-                        ((FilePathParameter)ActionParameters.Children[
-                                ActionParameters.Children.Add(new FilePathParameter(CurrentActionModel.ExecutablePath, "Executable Path:"))
-                            ]).PropertyChanged += (s, e) => { TextBox_TextChanged(s ?? this, e); };
+                        FilePathParameter fpp = new(CurrentActionModel.ExecutablePath);
+                        UseParameterGroupBox("Executable Path:").Content = fpp;
+                        fpp.PropertyChanged += (s, e) => { TextBox_TextChanged(s ?? this, e); };
                         break;
 
                     case nameof(ActionModel.Arguments):
@@ -203,24 +192,24 @@ namespace AppManager.Settings.EditorControls
 
                     case nameof(ActionModel.ForceOperation):
 
-                        AddCheckBoxRow(CurrentActionModel.ForceOperation, "Force Operation:");
+                        AddCheckBoxRow(CurrentActionModel.ForceOperation, "Advanced:", "Force Operation:");
                         break;
 
                     case nameof(ActionModel.IncludeChildProcesses):
 
-                        AddCheckBoxRow(CurrentActionModel.IncludeChildProcesses, "Include Child Processes:");
+                        AddCheckBoxRow(CurrentActionModel.IncludeChildProcesses, "Advanced:", "Include Child Processes:");
                         break;
 
                     case nameof(ActionModel.IncludeSimilarNames):
 
-                        AddCheckBoxRow(CurrentActionModel.IncludeSimilarNames, "Include Similar Names:");
+                        AddCheckBoxRow(CurrentActionModel.IncludeSimilarNames, "Advanced:", "Include Similar Names:");
                         break;
 
                     case nameof(ActionModel.TimeoutMs):
 
-                        ((TimerParameter)ActionParameters.Children[
-                                ActionParameters.Children.Add(new TimerParameter(CurrentActionModel.TimeoutMs ?? -1, "Timeout (ms):"))
-                            ]).PropertyChanged += TimeoutParameter_ValueChanged;
+                        TimerParameter tp = new(CurrentActionModel.TimeoutMs ?? -1);
+                        UseParameterGroupBox("Timeout (ms):").Content = tp;
+                        tp.PropertyChanged += TimeoutParameter_ValueChanged;
                         break;
 
                     case nameof(ActionModel.WindowTitle):
@@ -243,35 +232,94 @@ namespace AppManager.Settings.EditorControls
             }
         }
 
-        private void AddTextBoxRow(string text, string header)
+        private GroupBox UseParameterGroupBox(string header)
         {
-            ((TextBox)((GroupBox)ActionParameters.Children[
-                                ActionParameters.Children.Add(new GroupBox
-                                {
-                                    Header = header,
-                                    Content = new TextBox { Text = text }
-                                })
-                            ]).Content).TextChanged += TextBox_TextChanged;
+            GroupBox? box = null;
 
+            foreach (object aBox in ActionParameters.Children)
+            {
+                if (aBox is GroupBox gb 
+                    && gb.Header is string sh 
+                    && sh == header)
+                {
+                    box = gb; 
+                    break;
+                }
+            }
+
+            if (box is null)
+            {
+                box = new GroupBox
+                {
+                    Header = header
+                };
+
+                ActionParameters.Children.Add(box);
+            }
+
+            return box;
         }
 
-        private void AddCheckBoxRow(bool? isChecked, string header)
+        private StackPanel UseParameterStackPanel(string header, Orientation orientation = Orientation.Vertical)
         {
-            var chkbox = new CheckBox 
+            GroupBox box = UseParameterGroupBox(header);
+
+            if (box.Content is StackPanel sp)
+            {
+                return sp;
+            }
+
+            if (box.Content is null)
+            {
+                box.Content = new StackPanel
+                {
+                    Orientation = orientation
+                };
+
+                return (StackPanel)box.Content;
+            }
+
+            throw new InvalidOperationException($"GroupBox with header '{header}', has Content that is not of type {typeof(StackPanel).Name}");
+        }
+
+        private void AddTextBoxRow(string text, string header, string? labelText = null)
+        {
+            TextBox textBox = new()
+            {
+                Text = text,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+
+            UseParameterStackPanel(header).Children.Add(labelText is null ? textBox : ToLabeled(textBox, labelText));
+
+            textBox.TextChanged += TextBox_TextChanged;
+        }
+
+        private void AddCheckBoxRow(bool? isChecked, string header, string? labelText = null)
+        {
+            CheckBox chkbox = new() 
             { 
                 IsChecked = isChecked,
                 Margin = new Thickness(5),
                 VerticalAlignment = VerticalAlignment.Center
             };
 
-            ActionParameters.Children.Add(new GroupBox
-            {
-                Header = header,
-                Content = chkbox
-            });
+            UseParameterStackPanel(header, Orientation.Horizontal).Children.Add( labelText is null ? chkbox : ToLabeled(chkbox, labelText) );
 
             chkbox.Checked += CheckBox_Changed;
             chkbox.Unchecked += CheckBox_Changed;
+        }
+
+        private StackPanel ToLabeled(UIElement element, string labelText)
+        {
+            Label label = new() { Content = labelText };
+
+            StackPanel sp = new() { Orientation = Orientation.Horizontal };
+
+            sp.Children.Add(label);
+            sp.Children.Add(element);
+
+            return sp;
         }
                 
 

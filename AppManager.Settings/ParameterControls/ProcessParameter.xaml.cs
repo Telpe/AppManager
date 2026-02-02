@@ -37,10 +37,9 @@ namespace AppManager.Settings.ParameterControls
             this.DataContext = this;
         }
 
-        public ProcessParameter(string? processName, string? header = null) : this()
+        public ProcessParameter(string? processName) : this()
         {
             if (processName is not null) { _processName = processName; }
-            if (header is not null) { HeaderText = header; }
         }
 
         private void UpdateProcessDisplay()

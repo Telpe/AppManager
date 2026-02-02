@@ -8,7 +8,7 @@
 			 mc:Ignorable="d" 
              d:DesignHeight="250" d:DesignWidth="400">
 
-	<GroupBox Header="Timer">
+	<GroupBox Header="{Binding HeaderText}">
 		<Grid Margin="5">
 			<Grid.RowDefinitions>
 				<RowDefinition Height="Auto"/>
@@ -119,7 +119,7 @@
 
 				<TextBlock Grid.Column="0" Text="-1" VerticalAlignment="Center" Margin="0,0,5,0"/>
 				<Slider x:Name="TimerSlider" Grid.Column="1" Minimum="{Binding SliderMinimum, Mode=OneTime}" Maximum="{Binding SliderMaximum, Mode=OneTime}" 
-                        Value="{Binding TimerValue, Mode=TwoWay}" TickPlacement="BottomRight" TickFrequency="30000"/>
+                        Value="{Binding Value, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" TickPlacement="BottomRight" TickFrequency="30000"/>
 				<TextBlock Grid.Column="2" Text="3m" VerticalAlignment="Center" Margin="5,0,0,0"/>
 			</Grid>
 
@@ -134,7 +134,7 @@
 				</Grid.RowDefinitions>
 
 				<TextBlock Grid.Column="0" Text="Raw Value:" VerticalAlignment="Center" Margin="0,0,5,0"/>
-				<TextBlock Grid.Column="1" Text="{Binding TimerValue, StringFormat='{}{0} ms'}" 
+				<TextBlock Grid.Column="1" Text="{Binding Value, StringFormat='{}{0} ms'}" 
                            VerticalAlignment="Center" FontWeight="Bold"/>
 			</Grid>
 		</Grid>

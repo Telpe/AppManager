@@ -34,7 +34,7 @@
 		</GroupBox>
 
 		<!-- Conditions Section - Replaced with ConditionPluginControl -->
-		<parameterControls:ConditionsParameter x:Name="ConditionPlugin" Margin="5" ConditionsChanged="ConditionPlugin_ConditionsChanged"/>
+		<parameterControls:ConditionsParameter x:Name="ConditionPlugin" Margin="5" PropertyChanged="ConditionsChanged"/>
 
 		<!-- Keybind Configuration -->
 		<GroupBox x:Name="KeybindConfigGroup" Header="Keybind Configuration" Margin="5" Visibility="Collapsed">

@@ -35,7 +35,6 @@
     <Folder Include="Unit\Conditions\" />
     <Folder Include="Unit\Models\" />
     <Folder Include="Unit\Triggers\" />
-    <Folder Include="TestUtilities\" />
   </ItemGroup>
 
 </Project>

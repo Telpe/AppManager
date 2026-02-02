@@ -11,7 +11,7 @@ namespace AppManager.Core.Actions
         /// <summary>
         /// Time in milliseconds to wait before validating app launched.
         /// </summary>
-        [Range(0, int.MaxValue)]
+        [Range(-1, int.MaxValue)]
         public int? TimeoutMs { get; set; }
     }
 }

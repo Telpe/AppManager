@@ -36,44 +36,10 @@
 			</Grid>
 		</GroupBox>
 
-		<parameterControls:ConditionsParameter x:Name="ConditionPlugin" Grid.Row="1" Margin="5" ConditionsChanged="ConditionPlugin_ConditionsChanged"/>
+		<StackPanel x:Name="ActionParameters" Orientation="Vertical" Grid.Row="1" Margin="5">
+			
+		</StackPanel>
 
-		<!-- Launch-specific Options -->
-		<GroupBox x:Name="LaunchOptionsGroup" Header="Launch Options" Grid.Row="2" Margin="5" Visibility="Collapsed">
-			<Grid Margin="5">
-				<Grid.RowDefinitions>
-					<RowDefinition Height="Auto"/>
-				</Grid.RowDefinitions>
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="Auto"/>
-				</Grid.ColumnDefinitions>
-			</Grid>
-		</GroupBox>
-
-		<!-- Advanced Options -->
-		<GroupBox Header="Advanced Options" Grid.Row="3" Margin="5">
-			<Grid Margin="5">
-				<Grid.RowDefinitions>
-					<RowDefinition Height="Auto"/>
-					<RowDefinition Height="Auto"/>
-					<RowDefinition Height="Auto"/>
-				</Grid.RowDefinitions>
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="*"/>
-					<ColumnDefinition Width="*"/>
-					<ColumnDefinition Width="*"/>
-				</Grid.ColumnDefinitions>
-
-				<CheckBox x:Name="ForceOperationCheckBox" Content="Force Operation" 
-                          Grid.Row="0" Grid.Column="0" Margin="5" VerticalAlignment="Center"/>
-				<CheckBox x:Name="IncludeChildProcessesCheckBox" Content="Include Child Processes" 
-                          Grid.Row="0" Grid.Column="1" Margin="5" VerticalAlignment="Center"/>
-				<CheckBox x:Name="IncludeSimilarNamesCheckBox" Content="Include Similar Names" 
-                          Grid.Row="0" Grid.Column="2" Margin="5" VerticalAlignment="Center"/>
-
-				<parameterControls:TimerParameter x:Name="TimeoutParameter" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Margin="5" TimerValueChanged="TimeoutParameter_TimerValueChanged" />
-			</Grid>
-		</GroupBox>
 
 		<!-- Preview/Test Section -->
 		<GroupBox Header="Preview n Test" Grid.Row="4" Margin="5">

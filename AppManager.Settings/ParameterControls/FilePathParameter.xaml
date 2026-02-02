@@ -8,7 +8,7 @@
 			 mc:Ignorable="d" 
              d:DesignHeight="120" d:DesignWidth="400">
 
-	<GroupBox Header="File Path">
+	<GroupBox Header="{Binding HeaderText}">
 		<Grid Margin="5">
 			<Grid.RowDefinitions>
 				<RowDefinition Height="Auto"/>
@@ -24,8 +24,8 @@
 				</Grid.ColumnDefinitions>
 
 				<TextBox x:Name="FilePathTextBox" Grid.Column="0" Height="25" 
-                         Text="{Binding FilePath, UpdateSourceTrigger=PropertyChanged}"
-                         TextChanged="FilePathTextBox_TextChanged"/>
+                         Text="{Binding Value, Mode=TwoWay}"
+                         />
 				<Button Grid.Column="1" Content="Browse..." Width="70" Height="25" Margin="5,0,0,0"
                         Click="BrowseButton_Click"/>
 				<Button Grid.Column="2" Content="Clear" Width="60" Height="25" Margin="5,0,0,0"

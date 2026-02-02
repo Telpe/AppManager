@@ -4,11 +4,13 @@ using AppManager.Core.Models;
 using AppManager.Core.Triggers;
 using AppManager.Core.Utilities;
 using AppManager.Settings.Interfaces;
+using AppManager.Settings.ParameterControls;
 using AppManager.Settings.UI;
 using AppManager.Settings.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -29,12 +31,10 @@ namespace AppManager.Settings.EditorControls
         public event EventHandler? Cancel;
 
         public event EventHandler<InputEditEventArgs>? Save;
-        //public event EventHandler<TriggerModel>? TriggerSaved;
-        //public event EventHandler? TriggerCancelled;
 
         private ObservableCollection<ModelListItem<ActionModel>> ActionListItemsValue = new();
 
-        public TriggerModel CurrentTrigger
+        public TriggerModel CurrentTriggerModel
         {
             get => CurrentTriggerModelValue;
             set
@@ -67,8 +67,6 @@ namespace AppManager.Settings.EditorControls
 
         private void LoadTriggerData()
         {
-            if (CurrentTriggerModelValue == null) return;
-
             TriggerTypeComboBox.SelectedItem = CurrentTriggerModelValue.TriggerType;
             TriggerNameTextBox.Text = GenerateTriggerName(CurrentTriggerModelValue.TriggerType);
             
@@ -97,7 +95,7 @@ namespace AppManager.Settings.EditorControls
             RefreshActionsListBox();
 
             // Set the conditional model for the condition plugin
-            ConditionPlugin.ConditionalModel = CurrentTriggerModelValue;
+            ConditionPlugin.Value = CurrentTriggerModelValue.Conditions ?? [];
 
             UpdatePreview();
         }
@@ -371,23 +369,23 @@ namespace AppManager.Settings.EditorControls
 
             if (MessageBoxResult.Yes == doSave)
             {
-                DoSave();
+                BroadcastSave();
             }
         }
 
-        private void CancelTriggerButton_Click(object sender, RoutedEventArgs e) => DoCancel();
+        private void CancelTriggerButton_Click(object sender, RoutedEventArgs e) => BroadcastCancel();
 
-        protected void AnnounceEdited()
+        protected void BroadcastEdited()
         {
             Edited?.Invoke(this, EventArgs.Empty);
         }
 
-        protected void DoCancel()
+        protected void BroadcastCancel()
         {
             Cancel?.Invoke(this, EventArgs.Empty);
         }
 
-        protected void DoSave()
+        protected void BroadcastSave()
         {
             Save?.Invoke(this, new InputEditEventArgs(CurrentTriggerModelValue));
         }
@@ -395,19 +393,24 @@ namespace AppManager.Settings.EditorControls
         // Event handlers for text changes to update preview
         private void TextBox_TextChanged(object sender, TextChangedEventArgs e) 
         {
-            AnnounceEdited();
+            BroadcastEdited();
             UpdatePreview();
         }
         private void CheckBox_Changed(object sender, RoutedEventArgs e)
         {
-            AnnounceEdited();
+            BroadcastEdited();
             UpdatePreview();
         }
 
-        private void ConditionPlugin_ConditionsChanged(object sender, EventArgs e)
+        public void ConditionsChanged(object? sender, PropertyChangedEventArgs e)
         {
+            if (sender is ConditionsParameter conditionsParameter)
+            {
+                CurrentTriggerModelValue.Conditions = conditionsParameter.Value?.Length == 0 ? null : conditionsParameter.Value;
+            }
+
             UpdatePreview();
-            AnnounceEdited();
+            BroadcastEdited();
         }
 
         private void AddActionButton_Click(object sender, RoutedEventArgs e)
@@ -422,7 +425,7 @@ namespace AppManager.Settings.EditorControls
             CurrentTriggerModelValue.Actions = CurrentTriggerModelValue.Actions.Append(newAction).ToArray();
 
             RefreshActionsListBox();
-            AnnounceEdited();
+            BroadcastEdited();
         }
 
         private void EditActionButton_Click(object? sender, RoutedEventArgs e)
@@ -450,7 +453,7 @@ namespace AppManager.Settings.EditorControls
                             RefreshActionsListBox();
 
                             // Mark as edited
-                            AnnounceEdited();
+                            BroadcastEdited();
 
                             Log.WriteLine($"Action {actionModelListItem.DisplayName} updated successfully");
                             ((MainWindow)Application.Current.MainWindow)?.HideOverlay();
@@ -461,7 +464,7 @@ namespace AppManager.Settings.EditorControls
                     actionEditor.Edited += (s, args) =>
                     {
                         Log.WriteLine($"Action edited for {actionModelListItem.DisplayName}");
-                        AnnounceEdited();
+                        BroadcastEdited();
                     };
 
                     actionEditor.Cancel += (s, args) =>

@@ -1,16 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Windows;
-using System.Windows.Controls;
-using AppManager.Core.Actions;
+﻿using AppManager.Core.Actions;
 using AppManager.Core.Conditions;
 using AppManager.Core.Models;
 using AppManager.Core.Utilities;
 using AppManager.Settings.Interfaces;
+using AppManager.Settings.ParameterControls;
 using AppManager.Settings.UI;
 using Microsoft.Win32;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Linq;
+using System.Reflection;
+using System.Windows;
+using System.Windows.Controls;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace AppManager.Settings.EditorControls
 {
@@ -86,17 +90,13 @@ namespace AppManager.Settings.EditorControls
             }
         }
 
+
         private void LoadActionData()
         {
             try
             {
                 ActionTypeComboBox!.SelectedItem = CurrentActionModelValue.ActionType;
-                ForceOperationCheckBox!.IsChecked = CurrentActionModelValue.ForceOperation;
-                IncludeChildProcessesCheckBox!.IsChecked = CurrentActionModelValue.IncludeChildProcesses;
-                IncludeSimilarNamesCheckBox!.IsChecked = CurrentActionModelValue.IncludeSimilarNames;
 
-                TimeoutParameter!.TimerValue = CurrentActionModelValue.TimeoutMs ?? -1;
-                ConditionPlugin.ConditionalModel = CurrentActionModelValue;
 
                 UpdatePreview();
             }
@@ -168,235 +168,124 @@ namespace AppManager.Settings.EditorControls
             };
         }
 
-        private void ActionTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+
+        private void AddParametersFromInterface(Type modelType)
         {
-            try
+            foreach (PropertyInfo prop in modelType.GetProperties())
             {
-                if (ActionTypeComboBox?.SelectedItem is AppActionTypeEnum actionType)
+                switch (prop.Name)
                 {
-                    CurrentActionModelValue.ActionType = actionType;
-                    GenerateDynamicGrid(actionType);
-                }
+                    case nameof(ActionModel.AppName):
 
-                UpdatePreview();
-            }
-            catch (Exception ex)
-            {
-                Log.WriteLine($"ActionTypeComboBox_SelectionChanged error: {ex.Message}");
-            }
-        }
+                        ((ProcessParameter)ActionParameters.Children[
+                                ActionParameters.Children.Add(new ProcessParameter(CurrentActionModel.AppName, "App Name:"))
+                            ]).PropertyChanged += (s, e) => { TextBox_TextChanged(s ?? this, e); };
+                        break;
 
-        private void GenerateDynamicGrid(AppActionTypeEnum actionType)
-        {
-            if (null == LaunchOptionsGroup){ return; }
+                    case nameof(ActionModel.Conditions):
 
-            var grid = new Grid
-            {
-                Margin = new Thickness(5)
-            };
+                        ((ConditionsParameter)ActionParameters.Children[
+                                ActionParameters.Children.Add(new ConditionsParameter(CurrentActionModel.Conditions ?? []))
+                            ]).PropertyChanged += ConditionsChanged;
+                        break;
 
-            var rowCount = 0;
-            //var controlDictionary = new Dictionary<string, UIElement>();
+                    case nameof(ActionModel.ExecutablePath):
 
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(0, GridUnitType.Auto) });
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-            grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(0, GridUnitType.Auto) });
+                        ((FilePathParameter)ActionParameters.Children[
+                                ActionParameters.Children.Add(new FilePathParameter(CurrentActionModel.ExecutablePath, "Executable Path:"))
+                            ]).PropertyChanged += (s, e) => { TextBox_TextChanged(s ?? this, e); };
+                        break;
 
-            switch (actionType)
-            {
-                case AppActionTypeEnum.Launch:
-                    AddGridRowsFromInterface(grid, ref rowCount, typeof(ILaunchAction));
-                    LaunchOptionsGroup.Header = "Launch Options";
-                    LaunchOptionsGroup.Visibility = Visibility.Visible;
-                    break;
+                    case nameof(ActionModel.Arguments):
+                        
+                        AddTextBoxRow(CurrentActionModel.WindowTitle ?? String.Empty, "Arguments:");
+                        break;
 
-                case AppActionTypeEnum.Close:
-                    AddGridRowsFromInterface(grid, ref rowCount, typeof(ICloseAction));
-                    LaunchOptionsGroup.Header = "Close Options";
-                    LaunchOptionsGroup.Visibility = Visibility.Visible;
-                    break;
+                    case nameof(ActionModel.ForceOperation):
 
-                case AppActionTypeEnum.Restart:
-                    AddGridRowsFromInterface(grid, ref rowCount, typeof(IRestartAction));
-                    LaunchOptionsGroup.Header = "Restart Options";
-                    LaunchOptionsGroup.Visibility = Visibility.Visible;
-                    break;
+                        AddCheckBoxRow(CurrentActionModel.ForceOperation, "Force Operation:");
+                        break;
 
-                case AppActionTypeEnum.Focus:
-                    AddGridRowsFromInterface(grid, ref rowCount, typeof(IFocusAction));
-                    LaunchOptionsGroup.Header = "Focus Options";
-                    LaunchOptionsGroup.Visibility = Visibility.Visible;
-                    break;
+                    case nameof(ActionModel.IncludeChildProcesses):
 
-                case AppActionTypeEnum.BringToFront:
-                    AddGridRowsFromInterface(grid, ref rowCount, typeof(IBringToFrontAction));
-                    LaunchOptionsGroup.Header = "Bring To Front Options";
-                    LaunchOptionsGroup.Visibility = Visibility.Visible;
-                    break;
+                        AddCheckBoxRow(CurrentActionModel.IncludeChildProcesses, "Include Child Processes:");
+                        break;
 
-                case AppActionTypeEnum.Minimize:
-                    AddGridRowsFromInterface(grid, ref rowCount, typeof(IMinimizeAction));
-                    LaunchOptionsGroup.Header = "Minimize Options";
-                    LaunchOptionsGroup.Visibility = Visibility.Visible;
-                    break;
+                    case nameof(ActionModel.IncludeSimilarNames):
 
-                default:
-                    LaunchOptionsGroup.Visibility = Visibility.Collapsed;
-                    break;
-            }
+                        AddCheckBoxRow(CurrentActionModel.IncludeSimilarNames, "Include Similar Names:");
+                        break;
 
-            LaunchOptionsGroup.Content = grid;
-        }
+                    case nameof(ActionModel.TimeoutMs):
 
-        private void AddGridRowsFromInterface(Grid grid, ref int rowIndex, Type modelType)
-        {
-            foreach (var prop in modelType.GetProperties())
-            {
-                var propLabel = prop.Name switch
-                {
-                    "ExecutablePath" => "Executable Path:",
-                    "Arguments" => "Arguments:",
-                    "ForceOperation" => "Force Operation",
-                    "IncludeChildProcesses" => "Include Child Processes",
-                    "IncludeSimilarNames" => "Include Similar Names",
-                    "TimeoutMs" => "Timeout (ms):",
-                    "WindowTitle" => "Window Title:",
-                    _ => prop.Name
-                };
+                        ((TimerParameter)ActionParameters.Children[
+                                ActionParameters.Children.Add(new TimerParameter(CurrentActionModel.TimeoutMs ?? -1, "Timeout (ms):"))
+                            ]).PropertyChanged += TimeoutParameter_ValueChanged;
+                        break;
 
-                if (prop.PropertyType == typeof(string))
-                {
-                    AddTextBoxRow(grid, ref rowIndex, prop.Name, propLabel, "ExecutablePath" == prop.Name ? TextHelperButtonEnum.BrowseExecutable : TextHelperButtonEnum.None);
-                }
-                else if (prop.PropertyType == typeof(bool))
-                {
-                    AddCheckBoxRow(grid, ref rowIndex, prop.Name, propLabel);
+                    case nameof(ActionModel.WindowTitle):
+
+                        AddTextBoxRow(CurrentActionModel.WindowTitle ?? String.Empty, "Window Title:");
+                        break;
+
+                    default:
+
+                        if (prop.PropertyType == typeof(string))
+                        {
+                            AddTextBoxRow((string?)prop.GetValue(CurrentActionModel) ?? String.Empty, prop.Name);
+                        }
+                        else if (prop.PropertyType == typeof(bool))
+                        {
+                            AddCheckBoxRow((bool?)prop.GetValue(CurrentActionModel), prop.Name);
+                        }
+                        break;
                 }
             }
         }
 
-        private void AddTextBoxRow(Grid grid, ref int rowIndex, string controlName, string labelText, TextHelperButtonEnum withButton = TextHelperButtonEnum.None)
+        private void AddTextBoxRow(string text, string header)
         {
-            grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(0, GridUnitType.Auto) });
+            ((TextBox)((GroupBox)ActionParameters.Children[
+                                ActionParameters.Children.Add(new GroupBox
+                                {
+                                    Header = header,
+                                    Content = new TextBox { Text = text }
+                                })
+                            ]).Content).TextChanged += TextBox_TextChanged;
 
-            var label = new Label
-            {
-                Content = labelText,
-                VerticalAlignment = VerticalAlignment.Center
-            };
-            Grid.SetRow(label, rowIndex);
-            Grid.SetColumn(label, 0);
-            grid.Children.Add(label);
-
-            var textBox = new TextBox
-            {
-                Name = controlName + "TextBox",
-                Margin = new Thickness(5, 0, 5, 0),
-                VerticalAlignment = VerticalAlignment.Center,
-                Height = 22
-            };
-            Grid.SetRow(textBox, rowIndex);
-            Grid.SetColumn(textBox, 1);
-            grid.Children.Add(textBox);
-
-            textBox.Text = CurrentActionModelValue.GetType().GetProperty(controlName)?.GetValue(CurrentActionModelValue)?.ToString() ?? string.Empty;
-
-            textBox.TextChanged += TextBox_TextChanged;
-
-            if (TextHelperButtonEnum.BrowseExecutable == withButton)
-            {
-                var browseButton = new Button
-                {
-                    Content = "Browse...",
-                    Width = 80,
-                    Height = 25,
-                    Tag = controlName
-                };
-                browseButton.Click += (sender, e) => BrowseExecutableButton_Click(sender, e, textBox);
-                Grid.SetRow(browseButton, rowIndex);
-                Grid.SetColumn(browseButton, 2);
-                grid.Children.Add(browseButton);
-            }
-
-            rowIndex++;
         }
 
-        private void AddCheckBoxRow(Grid grid, ref int rowIndex, string controlName, string checkBoxText)
+        private void AddCheckBoxRow(bool? isChecked, string header)
         {
-            grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(0, GridUnitType.Auto) });
-
-            var checkBox = new CheckBox
-            {
-                Content = checkBoxText,
-                Name = controlName + "CheckBox",
+            var chkbox = new CheckBox 
+            { 
+                IsChecked = isChecked,
                 Margin = new Thickness(5),
                 VerticalAlignment = VerticalAlignment.Center
             };
-            checkBox.Checked += CheckBox_Changed;
-            checkBox.Unchecked += CheckBox_Changed;
 
-            Grid.SetRow(checkBox, rowIndex);
-            Grid.SetColumn(checkBox, 0);
-            Grid.SetColumnSpan(checkBox, 2);
-            grid.Children.Add(checkBox);
-
-            RegisterCheckBox(checkBox, controlName);
-
-            rowIndex++;
-        }
-
-        private void RegisterCheckBox(CheckBox checkBox, string controlName)
-        {
-            switch (controlName)
+            ActionParameters.Children.Add(new GroupBox
             {
-                case "ForceOperation":
-                    ForceOperationCheckBox = checkBox;
-                    break;
-                case "IncludeChildProcesses":
-                    IncludeChildProcessesCheckBox = checkBox;
-                    break;
-                case "IncludeSimilarNames":
-                    IncludeSimilarNamesCheckBox = checkBox;
-                    break;
-            }
+                Header = header,
+                Content = chkbox
+            });
+
+            chkbox.Checked += CheckBox_Changed;
+            chkbox.Unchecked += CheckBox_Changed;
         }
+                
 
-        private void BrowseExecutableButton_Click(object sender, RoutedEventArgs e, TextBox target)
-        {
-            try
-            {
-                var openFileDialog = new OpenFileDialog
-                {
-                    Filter = $"Executable files({String.Join(',', FileManager.ExecuteableExtensions.Select(a => "*" + a))})|{String.Join(';', FileManager.ExecuteableExtensions.Select(a=>"*"+a))}|All files (*.*)|*.*",
-                    Title = "Select Executable"
-                };
-
-                if (openFileDialog.ShowDialog() == true)
-                {
-                    target.Text = System.IO.Path.GetFullPath(openFileDialog.FileName);
-
-                    UpdatePreview();
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error browsing for executable: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        
-
-        protected void AnnounceEdited()
+        protected void BroadcastEdited()
         {
             Edited?.Invoke(this, EventArgs.Empty);
         }
 
-        protected void DoCancel()
+        protected void BroadcastCancel()
         {
             Cancel?.Invoke(this, EventArgs.Empty);
         }
 
-        protected void DoSave()
+        protected void BroadcastSave()
         {
             Save?.Invoke(this, new InputEditEventArgs(CurrentActionModelValue.Clone()));
         }
@@ -424,7 +313,6 @@ namespace AppManager.Settings.EditorControls
             {
                 var errors = new List<string>();
 
-
                 var message = errors.Any() ?
                     $"Validation failed:\n{string.Join("\n", errors)}" :
                     "✓ Validation passed";
@@ -440,15 +328,57 @@ namespace AppManager.Settings.EditorControls
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            DoSave();
+            BroadcastSave();
         }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
-            DoCancel();
+            BroadcastCancel();
         }
 
-        private void TextBox_TextChanged(object sender, TextChangedEventArgs e)
+
+        private void ActionTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            try
+            {
+                if (ActionTypeComboBox?.SelectedItem is AppActionTypeEnum actionType)
+                {
+                    CurrentActionModelValue.ActionType = actionType;
+                    ActionParameters.Children.Clear();
+
+                    switch (actionType)
+                    {
+                        case AppActionTypeEnum.Launch:
+                            AddParametersFromInterface(typeof(ILaunchAction));
+                            break;
+                        case AppActionTypeEnum.Close:
+                            AddParametersFromInterface(typeof(ICloseAction));
+                            break;
+                        case AppActionTypeEnum.Restart:
+                            AddParametersFromInterface(typeof(IRestartAction));
+                            break;
+                        case AppActionTypeEnum.Minimize:
+                            AddParametersFromInterface(typeof(IMinimizeAction));
+                            break;
+                        case AppActionTypeEnum.Focus:
+                            AddParametersFromInterface(typeof(IFocusAction));
+                            break;
+                        case AppActionTypeEnum.BringToFront:
+                            AddParametersFromInterface(typeof(IBringToFrontAction));
+                            break;
+                    }
+
+                }
+
+                UpdatePreview();
+            }
+            catch (Exception ex)
+            {
+                Log.WriteLine($"ActionTypeComboBox_SelectionChanged error: {ex.Message}");
+            }
+        }
+
+        private void TextBox_TextChanged(object sender, EventArgs e)
         {
             if (sender is TextBox textBox && !string.IsNullOrEmpty(textBox.Name))
             {
@@ -469,15 +399,14 @@ namespace AppManager.Settings.EditorControls
                         property.SetValue(CurrentActionModelValue, textBox.Text);
                     }
                 }
+
+                ParameterChanged(sender, new PropertyChangedEventArgs(propertyName));
             }
-            
-            AnnounceEdited();
-            UpdatePreview();
         }
 
         private void CheckBox_Changed(object sender, RoutedEventArgs e)
         {
-            if (sender is CheckBox checkBox && !string.IsNullOrEmpty(checkBox.Name))
+            if (sender is CheckBox checkBox)
             {
                 var propertyName = checkBox.Name.Replace("CheckBox", "");
                 var property = CurrentActionModelValue.GetType().GetProperty(propertyName);
@@ -486,20 +415,34 @@ namespace AppManager.Settings.EditorControls
                 {
                     property.SetValue(CurrentActionModelValue, checkBox.IsChecked == true);
                 }
+
+                ParameterChanged(sender, new PropertyChangedEventArgs(propertyName));
+            }
+        }
+
+        private void ConditionsChanged(object? sender, EventArgs e)
+        {
+            if (sender is ConditionsParameter cp)
+            {
+                CurrentActionModelValue.Conditions = cp.Value;
+                ParameterChanged(sender, new PropertyChangedEventArgs(nameof(ActionModel.Conditions)));
+            }
+        }
+
+        private void TimeoutParameter_ValueChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (sender is TimerParameter tp)
+            {
+                CurrentActionModelValue.TimeoutMs = tp.Value;
+                ParameterChanged(sender, e);
             }
             
-            AnnounceEdited();
-            UpdatePreview();
         }
 
-        private void ConditionPlugin_ConditionsChanged(object sender, EventArgs e)
+        private void ParameterChanged(object? sender, PropertyChangedEventArgs e)
         {
             UpdatePreview();
-        }
-
-        private void TimeoutParameter_TimerValueChanged(object sender, EventArgs e)
-        {
-
+            BroadcastEdited();
         }
     }
 }

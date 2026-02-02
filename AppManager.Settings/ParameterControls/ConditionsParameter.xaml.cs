@@ -1,33 +1,34 @@
-using System;
-using System.ComponentModel;
-using System.Linq;
-using System.Windows;
-using System.Windows.Controls;
 using AppManager.Core.Conditions;
 using AppManager.Core.Models;
 using AppManager.Core.Utilities;
 using AppManager.Settings.EditorControls;
 using AppManager.Settings.UI;
+using System;
+using System.ComponentModel;
+using System.Linq;
+using System.Windows;
+using System.Windows.Automation;
+using System.Windows.Controls;
 
 namespace AppManager.Settings.ParameterControls
 {
-    public partial class ConditionsParameter : UserControl, INotifyPropertyChanged
+    public partial class ConditionsParameter : UserControl, INotifyPropertyChanged // , INotifyValueChanged<ConditionModel[]>
     {
-        private ConditionalModel? _conditionalModel;
+        private ConditionModel[] ConditionsValue = [];
 
-        public event EventHandler? ConditionsChanged;
+        //public event EventHandler? OnValueChanged;
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        public ConditionalModel? ConditionalModel
+        public ConditionModel[] Value
         {
-            get => _conditionalModel;
+            get => ConditionsValue;
             set
             {
-                if (_conditionalModel != value)
+                if (ConditionsValue != value)
                 {
-                    _conditionalModel = value;
+                    ConditionsValue = value;
                     UpdateConditionsList();
-                    OnPropertyChanged(nameof(ConditionalModel));
+                    BroadcastValueChanged();
                 }
             }
         }
@@ -38,16 +39,16 @@ namespace AppManager.Settings.ParameterControls
             this.DataContext = this;
         }
 
-        public ConditionsParameter(ConditionalModel conditionalModel) : this()
+        public ConditionsParameter(ConditionModel[] Conditions) : this()
         {
-            ConditionalModel = conditionalModel;
+            ConditionsValue = Conditions;
         }
 
         private void UpdateConditionsList()
         {
             try
             {
-                ConditionsListBox.ItemsSource = _conditionalModel?.Conditions;
+                ConditionsListBox.ItemsSource = ConditionsValue;
                 
                 ConditionsListBox.Loaded += (s, e) => UpdateDisplayTexts();
             }
@@ -95,7 +96,7 @@ namespace AppManager.Settings.ParameterControls
         {
             try
             {
-                if (_conditionalModel is null)
+                if (ConditionsValue is null)
                 {
                     MessageBox.Show("No model is currently set.", "Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
@@ -112,9 +113,7 @@ namespace AppManager.Settings.ParameterControls
                 {
                     if (args.ConditionModel is ConditionModel updatedCondition)
                     {
-                        _conditionalModel.AddCondition(updatedCondition);
-                        UpdateConditionsList();
-                        OnConditionsChanged();
+                        Value = [..ConditionsValue, updatedCondition];
                         Log.WriteLine($"Condition {updatedCondition.ConditionType} added successfully");
                         ((MainWindow)Application.Current.MainWindow)?.HideOverlay();
                     }
@@ -123,7 +122,7 @@ namespace AppManager.Settings.ParameterControls
                 conditionEditor.Edited += (s, args) =>
                 {
                     Log.WriteLine($"Condition edited for {conditionModel.ConditionType}");
-                    OnConditionsChanged();
+                    BroadcastValueChanged();
                 };
 
                 conditionEditor.Cancel += (s, args) =>
@@ -144,11 +143,9 @@ namespace AppManager.Settings.ParameterControls
         {
             try
             {
-                if (sender is Button button && button.Tag is ConditionModel condition && _conditionalModel != null)
+                if (sender is Button button && button.Tag is ConditionModel condition && ConditionsValue != null)
                 {
-                    _conditionalModel.RemoveCondition(condition);
-                    UpdateConditionsList();
-                    OnConditionsChanged();
+                    Value = ConditionsValue.Where(c => c != condition).ToArray();
                 }
             }
             catch (Exception ex)
@@ -161,20 +158,20 @@ namespace AppManager.Settings.ParameterControls
         {
             try
             {
-                if (sender is Button button && button.Tag is ConditionModel condition && _conditionalModel != null)
+                if (sender is Button button && button.Tag is ConditionModel condition && ConditionsValue != null)
                 {
                     var conditionEditor = new ConditionEditorControl(condition.Clone());
 
                     conditionEditor.Save += (s, args) =>
                     {
-                        if (args.ConditionModel is ConditionModel updatedCondition && null != _conditionalModel?.Conditions)
+                        if (args.ConditionModel is ConditionModel updatedCondition && null != ConditionsValue)
                         {
-                            int index = _conditionalModel.Conditions.IndexOf(condition);
+                            int index = ConditionsValue.IndexOf(condition);
                             if (-1 < index)
                             {
-                                _conditionalModel.Conditions[index] = updatedCondition;
+                                ConditionsValue[index] = updatedCondition;
                                 UpdateConditionsList();
-                                OnConditionsChanged();
+                                BroadcastValueChanged();
                                 Log.WriteLine($"Condition {updatedCondition.ConditionType} updated successfully");
                             }
                             ((MainWindow)Application.Current.MainWindow)?.HideOverlay();
@@ -184,7 +181,7 @@ namespace AppManager.Settings.ParameterControls
                     conditionEditor.Edited += (s, args) =>
                     {
                         Log.WriteLine($"Condition edited for {condition.ConditionType}");
-                        OnConditionsChanged();
+                        BroadcastValueChanged();
                     };
 
                     conditionEditor.Cancel += (s, args) =>
@@ -202,14 +199,10 @@ namespace AppManager.Settings.ParameterControls
             }
         }
 
-        protected virtual void OnConditionsChanged()
+        protected virtual void BroadcastValueChanged()
         {
-            ConditionsChanged?.Invoke(this, EventArgs.Empty);
-        }
-
-        protected virtual void OnPropertyChanged(string propertyName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Value)));
+            //OnValueChanged?.Invoke(this, EventArgs.Empty);
         }
 
         public void RefreshConditions()

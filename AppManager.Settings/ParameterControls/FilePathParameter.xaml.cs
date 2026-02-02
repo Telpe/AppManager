@@ -8,14 +8,15 @@ using Microsoft.Win32;
 
 namespace AppManager.Settings.ParameterControls
 {
-    public partial class FilePathParameter : UserControl, INotifyPropertyChanged
+    public partial class FilePathParameter : UserControl, INotifyPropertyChanged // , INotifyValueChanged<string>
     {
-        private string? _filePath;
+        private string _filePath = String.Empty;
+        public string HeaderText { get; } = "File Path";
 
-        public event EventHandler? FilePathChanged;
+        //public event EventHandler? OnValueChanged;
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        public string? FilePath
+        public string Value
         {
             get => _filePath;
             set
@@ -24,13 +25,13 @@ namespace AppManager.Settings.ParameterControls
                 {
                     _filePath = value;
                     UpdateFilePathDisplay();
-                    OnPropertyChanged(nameof(FilePath));
+                    BroadcastFilePathChanged();
                 }
             }
         }
 
-        public string? FileFilter { get; set; } = "All Files (*.*)|*.*";
-        public string? Title { get; set; } = "Select File";
+        public string FileFilter { get; } = "All Files (*.*)|*.*";
+        public string Title { get; } = "Select File";
 
         public FilePathParameter()
         {
@@ -38,16 +39,17 @@ namespace AppManager.Settings.ParameterControls
             this.DataContext = this;
         }
 
-        public FilePathParameter(string filePath) : this()
+        public FilePathParameter(string? filePath, string? header = null) : this()
         {
-            FilePath = filePath;
+            if (filePath is not null) { _filePath = filePath; }
+            if (header is not null) { HeaderText = header; }
         }
 
         private void UpdateFilePathDisplay()
         {
             try
             {
-                FilePathTextBox.Text = _filePath ?? string.Empty;
+                FilePathTextBox.Text = _filePath;
                 UpdateFileStatus();
             }
             catch (Exception ex)
@@ -81,8 +83,8 @@ namespace AppManager.Settings.ParameterControls
             {
                 var openFileDialog = new OpenFileDialog
                 {
-                    Filter = FileFilter ?? "All Files (*.*)|*.*",
-                    Title = Title ?? "Select File",
+                    Filter = FileFilter,
+                    Title = Title,
                     CheckFileExists = false,
                     CheckPathExists = true
                 };
@@ -98,9 +100,9 @@ namespace AppManager.Settings.ParameterControls
 
                 if (openFileDialog.ShowDialog() == true)
                 {
-                    FilePath = openFileDialog.FileName;
-                    OnFilePathChanged();
-                    Log.WriteLine($"File path selected: {FilePath}");
+                    Value = openFileDialog.FileName;
+                    //BroadcastFilePathChanged();
+                    Log.WriteLine($"File path selected: {Value}");
                 }
             }
             catch (Exception ex)
@@ -113,8 +115,8 @@ namespace AppManager.Settings.ParameterControls
         {
             try
             {
-                FilePath = string.Empty;
-                OnFilePathChanged();
+                Value = string.Empty;
+                //BroadcastFilePathChanged();
                 Log.WriteLine("File path cleared");
             }
             catch (Exception ex)
@@ -122,15 +124,15 @@ namespace AppManager.Settings.ParameterControls
                 MessageBox.Show($"Error clearing file path: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
-
+/*
         private void FilePathTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             try
             {
                 if (sender is TextBox textBox)
                 {
-                    FilePath = textBox.Text;
-                    OnFilePathChanged();
+                    Value = textBox.Text;
+                    BroadcastFilePathChanged();
                 }
             }
             catch (Exception ex)
@@ -138,15 +140,12 @@ namespace AppManager.Settings.ParameterControls
                 Log.WriteLine($"FilePathTextBox_TextChanged error: {ex.Message}");
             }
         }
+*/
 
-        protected virtual void OnFilePathChanged()
+        protected void BroadcastFilePathChanged()
         {
-            FilePathChanged?.Invoke(this, EventArgs.Empty);
-        }
-
-        protected virtual void OnPropertyChanged(string propertyName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Value)));
+            //OnValueChanged?.Invoke(this, EventArgs.Empty);
         }
 
         public void RefreshFilePath()

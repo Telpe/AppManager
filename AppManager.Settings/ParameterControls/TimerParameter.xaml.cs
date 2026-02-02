@@ -16,47 +16,47 @@ namespace AppManager.Settings.ParameterControls
         MinutesSecondsMilliseconds = 3
     }
 
-    public partial class TimerParameter : UserControl, INotifyPropertyChanged
+    public partial class TimerParameter : UserControl, INotifyPropertyChanged // , INotifyValueChanged<int>
     {
-        private int TimerValueValue = MIN_VALUE;
+        private int TimerValue = MIN_VALUE;
         private TimerEditMode _editMode = TimerEditMode.MinutesSecondsMilliseconds;
         private bool _isUpdatingFromFields;
         private Stopwatch? _holdTimer;
         private Task? StepField;
         private TextBox? TextBoxToIncrement;
         private int CurrentIncrement = 0;
-        private Dispatcher MainDispatcher = Dispatcher.CurrentDispatcher;
+        private readonly Dispatcher MainDispatcher = Dispatcher.CurrentDispatcher;
 
         protected const int MAX_VALUE = 180000;
         protected const int MIN_VALUE = -1;
         protected const int HOLD_INITIAL_DELAY = 300;
         protected const int HOLD_REPEAT_INTERVAL = 167;
-        public double SliderMinimum => MIN_VALUE;
-        public double SliderMaximum => MAX_VALUE;
+        public static double SliderMinimum { get => MIN_VALUE; }
+        public static double SliderMaximum { get => MAX_VALUE; }
+        public string HeaderText { get; } = "Timer";
 
-        public event EventHandler? TimerValueChanged;
+        //public event EventHandler? OnValueChanged;
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        public int TimerValue
+        public int Value
         {
             get 
             { 
-                return TimerValueValue; 
+                return TimerValue; 
             }
             set
             {
-                if (TimerValueValue != value)
+                if (TimerValue != value)
                 {
                     int validatedValue = value < MIN_VALUE ? MIN_VALUE : (MAX_VALUE < value ? MAX_VALUE : value);
 
-                    if (TimerValueValue != validatedValue)
+                    if (TimerValue != validatedValue)
                     {
-                        TimerValueValue = validatedValue;
+                        TimerValue = validatedValue;
 
                         UpdateFieldsFromValue();
-
-                        OnTimerValueChanged();
-                        OnPropertyChanged(nameof(TimerValue));
+                        
+                        BroadcastTimerValueChanged();
                     }
                     else
                     {
@@ -89,9 +89,10 @@ namespace AppManager.Settings.ParameterControls
             UpdateFieldsFromValue();
         }
 
-        public TimerParameter(int? timerValue) : this()
+        public TimerParameter(int? milliseconds = null, string? header = null) : this()
         {
-            TimerValue = timerValue ?? -1;
+            if (milliseconds is not null) { TimerValue = (int)milliseconds; }
+            if (header is not null) { HeaderText = header; }
         }
 
         private void UpdateModeVisibility()
@@ -106,19 +107,19 @@ namespace AppManager.Settings.ParameterControls
             switch (EditMode)
             {
                 case TimerEditMode.Milliseconds:
-                    MillisecondsTextBox.Text = TimerValueValue.ToString();
+                    MillisecondsTextBox.Text = TimerValue.ToString();
                     break;
                 
                 case TimerEditMode.SecondsMilliseconds:
-                    int seconds = TimerValueValue / 1000;
-                    int remainingMs = TimerValueValue % 1000;
+                    int seconds = TimerValue / 1000;
+                    int remainingMs = TimerValue % 1000;
                     SecondsTextBox.Text = seconds.ToString();
                     MillisecondsMode2TextBox.Text = remainingMs.ToString();
                     break;
                 
                 case TimerEditMode.MinutesSecondsMilliseconds:
-                    int minutes = TimerValueValue / 60000;
-                    int remainingAfterMinutes = TimerValueValue % 60000;
+                    int minutes = TimerValue / 60000;
+                    int remainingAfterMinutes = TimerValue % 60000;
                     int secondsMode3 = remainingAfterMinutes / 1000;
                     int msMode3 = remainingAfterMinutes % 1000;
                     MinutesTextBox.Text = minutes.ToString();
@@ -160,7 +161,7 @@ namespace AppManager.Settings.ParameterControls
                         break;
                 }
 
-                TimerValue = newValue;
+                Value = newValue;
             }
             finally
             {
@@ -281,16 +282,10 @@ namespace AppManager.Settings.ParameterControls
             }
         }
 
-        
-
-        protected virtual void OnTimerValueChanged()
+        protected virtual void BroadcastTimerValueChanged()
         {
-            TimerValueChanged?.Invoke(this, EventArgs.Empty);
-        }
-
-        protected virtual void OnPropertyChanged(string propertyName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Value)));
+            //OnValueChanged?.Invoke(this, EventArgs.Empty);
         }
 
     }

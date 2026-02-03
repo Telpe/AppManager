@@ -20,21 +20,7 @@
 		</Grid.RowDefinitions>
 
 		<!-- Action Type Selection -->
-		<GroupBox Header="Action Type" Grid.Row="0" Margin="5">
-			<Grid Margin="5">
-				<Grid.RowDefinitions>
-					<RowDefinition Height="Auto"/>
-				</Grid.RowDefinitions>
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="Auto"/>
-					<ColumnDefinition Width="*"/>
-				</Grid.ColumnDefinitions>
-
-				<Label Content="Change:" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center"/>
-				<ComboBox x:Name="ActionTypeComboBox" Grid.Row="0" Grid.Column="1" Margin="5,0,0,0" 
-                          SelectionChanged="ActionTypeComboBox_SelectionChanged"/>
-			</Grid>
-		</GroupBox>
+		<GroupBox x:Name="TypeSelectionGroupBox" Header="Action Type" Grid.Row="0" Margin="5"/>
 
 		<GroupBox x:Name="ActionConditions" Header="Conditions:" Grid.Row="1" Margin="5"/>
 

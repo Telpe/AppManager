@@ -2,7 +2,7 @@ using AppManager.Core.Conditions;
 using AppManager.Core.Models;
 using AppManager.Core.Utilities;
 using AppManager.Settings.EditorControls;
-using AppManager.Settings.UI;
+using AppManager.Settings.Utilities;
 using System;
 using System.ComponentModel;
 using System.Linq;

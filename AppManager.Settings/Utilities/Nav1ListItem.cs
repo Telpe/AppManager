@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AppManager.Settings.UI
+namespace AppManager.Settings.Utilities
 {
     class Nav1ListItem
     {

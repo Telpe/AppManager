@@ -5,7 +5,7 @@ using AppManager.Core.Triggers;
 using AppManager.Core.Utilities;
 using AppManager.Settings.Interfaces;
 using AppManager.Settings.ParameterControls;
-using AppManager.Settings.UI;
+using AppManager.Settings.Utilities;
 using AppManager.Settings.Utilities;
 using System;
 using System.Collections.Generic;

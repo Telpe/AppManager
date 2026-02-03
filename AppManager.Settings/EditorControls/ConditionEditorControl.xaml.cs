@@ -1,7 +1,7 @@
 ﻿using AppManager.Core.Conditions;
 using AppManager.Core.Models;
 using AppManager.Settings.Interfaces;
-using AppManager.Settings.UI;
+using AppManager.Settings.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;

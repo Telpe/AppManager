@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace AppManager.Settings.UI
+namespace AppManager.Settings.Utilities
 {
     public class InputEditEventArgs : EventArgs
     {

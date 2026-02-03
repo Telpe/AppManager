@@ -3,7 +3,7 @@ using AppManager.Core.Models;
 using AppManager.Core.Utilities;
 using AppManager.Settings.Interfaces;
 using AppManager.Settings.Pages;
-using AppManager.Settings.UI;
+using AppManager.Settings.Utilities;
 using AppManager.Settings.Utilities;
 using System;
 using System.Collections.ObjectModel;

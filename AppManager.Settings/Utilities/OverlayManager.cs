@@ -6,7 +6,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 
-namespace AppManager.Settings.UI
+namespace AppManager.Settings.Utilities
 {
     /// <summary>
     /// Manages application-wide overlay functionality

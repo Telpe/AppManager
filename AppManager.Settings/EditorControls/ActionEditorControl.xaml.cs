@@ -4,7 +4,7 @@ using AppManager.Core.Models;
 using AppManager.Core.Utilities;
 using AppManager.Settings.Interfaces;
 using AppManager.Settings.ParameterControls;
-using AppManager.Settings.UI;
+using AppManager.Settings.Utilities;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;

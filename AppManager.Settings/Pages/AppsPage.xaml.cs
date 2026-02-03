@@ -1,7 +1,7 @@
 ﻿using AppManager.Core.Actions;
 using AppManager.Core.Models;
 using AppManager.Core.Triggers;
-using AppManager.Settings.UI;
+using AppManager.Settings.Utilities;
 using AppManager.Core.Utilities;
 using System;
 using System.Collections.Generic;

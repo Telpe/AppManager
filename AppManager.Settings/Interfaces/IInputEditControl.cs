@@ -1,4 +1,4 @@
-﻿using AppManager.Settings.UI;
+﻿using AppManager.Settings.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Text;

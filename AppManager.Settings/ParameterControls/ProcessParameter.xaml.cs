@@ -5,15 +5,13 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using AppManager.Core.Utilities;
+using AppManager.Settings.Dialogs;
 
 namespace AppManager.Settings.ParameterControls
 {
-    public partial class ProcessParameter : UserControl, INotifyPropertyChanged
+    public partial class ProcessParameter : BaseParameterControl
     {
         private string _processName = String.Empty;
-        public string HeaderText { get; } = "Process";
-
-        public event PropertyChangedEventHandler? PropertyChanged;
 
         public string Value
         {
@@ -24,22 +22,32 @@ namespace AppManager.Settings.ParameterControls
                 {
                     _processName = value;
                     UpdateProcessDisplay();
-                    BroadcastProcessChanged();
+                    BroadcastPropertyChanged(ValueName);
                 }
             }
         }
 
-        public string Title { get; } = "Select Process";
-
         public ProcessParameter()
         {
+            _headerText = "Process";
+            _labelText = "Select Process";
+            ValueName = nameof(Value);
+
             InitializeComponent();
             this.DataContext = this;
+
+            UpdateProcessDisplay();
         }
 
-        public ProcessParameter(string? processName) : this()
+        public ProcessParameter(string? processName, PropertyChangedEventHandler? eventHandler = null, string? customValueName = null) : this()
         {
             if (processName is not null) { _processName = processName; }
+
+            if (customValueName is not null) { ValueName = customValueName; }
+
+            UpdateProcessDisplay();
+
+            if(eventHandler is not null) { PropertyChanged += eventHandler; }
         }
 
         private void UpdateProcessDisplay()
@@ -128,11 +136,6 @@ namespace AppManager.Settings.ParameterControls
             {
                 MessageBox.Show($"Error refreshing process status: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
-        }
-
-        protected void BroadcastProcessChanged()
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Value)));
         }
 
         public void RefreshProcess()

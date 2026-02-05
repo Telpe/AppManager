@@ -16,11 +16,11 @@ namespace AppManager.Settings.ParameterControls
         MinutesSecondsMilliseconds = 3
     }
 
-    public partial class TimerParameter : UserControl, INotifyPropertyChanged // , INotifyValueChanged<int>
+    public partial class TimerParameter : BaseParameterControl
     {
         private int TimerValue = MIN_VALUE;
         private TimerEditMode _editMode = TimerEditMode.MinutesSecondsMilliseconds;
-        private bool _isUpdatingFromFields;
+        private bool _isUpdatingFields;
         private Stopwatch? _holdTimer;
         private Task? StepField;
         private TextBox? TextBoxToIncrement;
@@ -33,10 +33,6 @@ namespace AppManager.Settings.ParameterControls
         protected const int HOLD_REPEAT_INTERVAL = 167;
         public static double SliderMinimum { get => MIN_VALUE; }
         public static double SliderMaximum { get => MAX_VALUE; }
-        public string HeaderText { get; } = "Timer";
-
-        //public event EventHandler? OnValueChanged;
-        public event PropertyChangedEventHandler? PropertyChanged;
 
         public int Value
         {
@@ -46,22 +42,16 @@ namespace AppManager.Settings.ParameterControls
             }
             set
             {
-                if (TimerValue != value)
+                if (_isUpdatingFields) { return; }
+
+                int validatedValue = value < MIN_VALUE ? MIN_VALUE : (MAX_VALUE < value ? MAX_VALUE : value);
+
+                UpdateFieldsFromValue(validatedValue);
+
+                if (TimerValue != validatedValue)
                 {
-                    int validatedValue = value < MIN_VALUE ? MIN_VALUE : (MAX_VALUE < value ? MAX_VALUE : value);
-
-                    if (TimerValue != validatedValue)
-                    {
-                        TimerValue = validatedValue;
-
-                        UpdateFieldsFromValue();
-                        
-                        BroadcastTimerValueChanged();
-                    }
-                    else
-                    {
-                        UpdateFieldsFromValue();
-                    }
+                    TimerValue = validatedValue;
+                    BroadcastPropertyChanged(ValueName);
                 }
             }
         }
@@ -82,17 +72,42 @@ namespace AppManager.Settings.ParameterControls
 
         public TimerParameter()
         {
+            _headerText = "Timespan:";
+            _labelText = "Duration:";
+            ValueName = nameof(Value);
+
             InitializeComponent();
             this.DataContext = this;
-            UpdateModeVisibility();
 
+            UpdateModeVisibility();
             UpdateFieldsFromValue();
         }
 
-        public TimerParameter(int? milliseconds = null, string? header = null) : this()
+        public TimerParameter(int? milliseconds = null, PropertyChangedEventHandler? eventHandler = null, string? customValueName = null, string? headerText = null, string? labelText = null) : this()
         {
             if (milliseconds is not null) { TimerValue = (int)milliseconds; }
-            if (header is not null) { HeaderText = header; }
+
+            if (headerText != null)
+            {
+                _headerText = headerText;
+            }
+
+            if (labelText != null)
+            {
+                _labelText = labelText;
+            }
+
+            if (customValueName != null)
+            {
+                ValueName = customValueName;
+            }
+
+            UpdateFieldsFromValue();
+
+            if (eventHandler != null)
+            {
+                PropertyChanged += eventHandler;
+            }
         }
 
         private void UpdateModeVisibility()
@@ -102,71 +117,71 @@ namespace AppManager.Settings.ParameterControls
             Mode3Panel.Visibility = EditMode == TimerEditMode.MinutesSecondsMilliseconds ? Visibility.Visible : Visibility.Collapsed;
         }
 
-        private void UpdateFieldsFromValue()
+        private void UpdateFieldsFromValue(int? aValue = null)
         {
-            switch (EditMode)
-            {
-                case TimerEditMode.Milliseconds:
-                    MillisecondsTextBox.Text = TimerValue.ToString();
-                    break;
-                
-                case TimerEditMode.SecondsMilliseconds:
-                    int seconds = TimerValue / 1000;
-                    int remainingMs = TimerValue % 1000;
-                    SecondsTextBox.Text = seconds.ToString();
-                    MillisecondsMode2TextBox.Text = remainingMs.ToString();
-                    break;
-                
-                case TimerEditMode.MinutesSecondsMilliseconds:
-                    int minutes = TimerValue / 60000;
-                    int remainingAfterMinutes = TimerValue % 60000;
-                    int secondsMode3 = remainingAfterMinutes / 1000;
-                    int msMode3 = remainingAfterMinutes % 1000;
-                    MinutesTextBox.Text = minutes.ToString();
-                    SecondsMode3TextBox.Text = secondsMode3.ToString();
-                    MillisecondsMode3TextBox.Text = msMode3.ToString();
-                    break;
-            }
-        }
+            _isUpdatingFields = true;
 
-        private void UpdateValueFromFields()
-        {
-            _isUpdatingFromFields = true;
             try
             {
-                int newValue = 0;
-                
+                aValue ??= TimerValue;
+
                 switch (EditMode)
                 {
                     case TimerEditMode.Milliseconds:
-                        if (int.TryParse(MillisecondsTextBox.Text, out int ms))
-                            newValue = ms;
+                        MillisecondsTextBox.Text = aValue.ToString();
                         break;
-                    
+                
                     case TimerEditMode.SecondsMilliseconds:
-                        if (int.TryParse(SecondsTextBox.Text, out int sec) && 
-                            int.TryParse(MillisecondsMode2TextBox.Text, out int ms2))
-                        {
-                            newValue = (sec * 1000) + ms2;
-                        }
+                        int seconds = (int)aValue / 1000;
+                        int remainingMs = (int)aValue % 1000;
+                        SecondsTextBox.Text = seconds.ToString();
+                        MillisecondsMode2TextBox.Text = remainingMs.ToString();
                         break;
-                    
+                
                     case TimerEditMode.MinutesSecondsMilliseconds:
-                        if (int.TryParse(MinutesTextBox.Text, out int min) && 
-                            int.TryParse(SecondsMode3TextBox.Text, out int sec3) && 
-                            int.TryParse(MillisecondsMode3TextBox.Text, out int ms3))
-                        {
-                            newValue = (min * 60000) + (sec3 * 1000) + ms3;
-                        }
+                        int minutes = (int)aValue / 60000;
+                        int remainingAfterMinutes = (int)aValue % 60000;
+                        int secondsMode3 = remainingAfterMinutes / 1000;
+                        int msMode3 = remainingAfterMinutes % 1000;
+                        MinutesTextBox.Text = minutes.ToString();
+                        SecondsMode3TextBox.Text = secondsMode3.ToString();
+                        MillisecondsMode3TextBox.Text = msMode3.ToString();
                         break;
                 }
+            }
+            finally { _isUpdatingFields = false; }
+        }
 
-                Value = newValue;
-            }
-            finally
+        private int GetValueFromFields()
+        {
+            int newValue = 0;
+                
+            switch (EditMode)
             {
-                _isUpdatingFromFields = false;
+                case TimerEditMode.Milliseconds:
+                    if (int.TryParse(MillisecondsTextBox.Text, out int ms))
+                        newValue = ms;
+                    break;
+                    
+                case TimerEditMode.SecondsMilliseconds:
+                    if (int.TryParse(SecondsTextBox.Text, out int sec) && 
+                        int.TryParse(MillisecondsMode2TextBox.Text, out int ms2))
+                    {
+                        newValue = (sec * 1000) + ms2;
+                    }
+                    break;
+                    
+                case TimerEditMode.MinutesSecondsMilliseconds:
+                    if (int.TryParse(MinutesTextBox.Text, out int min) && 
+                        int.TryParse(SecondsMode3TextBox.Text, out int sec3) && 
+                        int.TryParse(MillisecondsMode3TextBox.Text, out int ms3))
+                    {
+                        newValue = (min * 60000) + (sec3 * 1000) + ms3;
+                    }
+                    break;
             }
+
+            return newValue;
         }
 
         private void EditModeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -179,15 +194,14 @@ namespace AppManager.Settings.ParameterControls
 
         private void TextBox_LostFocus(object sender, RoutedEventArgs e)
         {
-            // TODO: only if changed
-            UpdateValueFromFields();
+            Value = GetValueFromFields();
         }
 
         private void TextBox_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Enter)
             {
-                UpdateValueFromFields();
+                Value = GetValueFromFields();
             }
         }
 
@@ -273,7 +287,7 @@ namespace AppManager.Settings.ParameterControls
                 if (TextBoxToIncrement != null && int.TryParse(TextBoxToIncrement.Text, out int currentValue))
                 {
                     TextBoxToIncrement.Text = (currentValue + CurrentIncrement).ToString();
-                    UpdateValueFromFields();
+                    Value = GetValueFromFields();
                 }
             }
             catch (Exception ex)
@@ -282,11 +296,6 @@ namespace AppManager.Settings.ParameterControls
             }
         }
 
-        protected virtual void BroadcastTimerValueChanged()
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Value)));
-            //OnValueChanged?.Invoke(this, EventArgs.Empty);
-        }
 
     }
 }

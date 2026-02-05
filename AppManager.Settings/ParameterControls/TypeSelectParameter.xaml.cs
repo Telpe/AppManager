@@ -6,46 +6,41 @@ using System.Windows.Controls;
 
 namespace AppManager.Settings.ParameterControls
 {
-    public partial class TypeSelectParameter : UserControl, INotifyPropertyChanged
+    public partial class TypeSelectParameter : BaseParameterControl
     {
         private Type? _enumType;
         private object? _selectedValue;
-        private string _labelText = "Change:";
-        private string _headerText = "Selection";
-
-        public event PropertyChangedEventHandler? PropertyChanged;
-
-        public string LabelText
-        {
-            get => _labelText;
-        }
-
-        public string HeaderText
-        {
-            get => _headerText;
-        }
 
         public object? Selected
         {
             get => _selectedValue;
             set
             {
+                if (value != TypeComboBox.SelectedItem)
+                {
+                    TypeComboBox.SelectedItem = value;
+                }
+
                 if (_selectedValue != value)
                 {
                     _selectedValue = value;
-                    TypeComboBox.SelectedItem = _selectedValue; //UpdateComboBoxSelection();
-                    BroadcastPropertyChanged(nameof(Selected));
+                    BroadcastPropertyChanged(ValueName);
                 }
             }
         }
 
         public TypeSelectParameter()
         {
+            _labelText = "Change:";
+            _headerText = "Select Type";
+            ValueName = nameof(Selected);
+
             InitializeComponent();
             this.DataContext = this;
+            
         }
 
-        public TypeSelectParameter(Type enumType, Enum? selectedValue = null, string? headerText = null, string? labelText = null) : this()
+        public TypeSelectParameter(Type enumType, Enum? selectedValue = null, PropertyChangedEventHandler? eventHandler = null, string? customValueName = null, string? headerText = null, string? labelText = null) : this()
         {
             if (!enumType.IsEnum) { throw new ArgumentException("Type must be an enum", nameof(enumType)); }
 
@@ -61,12 +56,22 @@ namespace AppManager.Settings.ParameterControls
                 _labelText = labelText;
             }
 
+            if (customValueName != null)
+            {
+                ValueName = customValueName;
+            }
+
             if (selectedValue != null)
             {
                 _selectedValue = selectedValue;
             }
 
             PopulateComboBox();
+
+            if (eventHandler != null)
+            {
+                PropertyChanged += eventHandler;
+            }
         }
 
         private void PopulateComboBox()
@@ -77,17 +82,12 @@ namespace AppManager.Settings.ParameterControls
 
             TypeComboBox.ItemsSource = Enum.GetValues(_enumType);
 
-            TypeComboBox.SelectedItem = Selected;
+            TypeComboBox.SelectedItem = _selectedValue;
         }
 
         private void TypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             Selected = TypeComboBox.SelectedItem;
-        }
-
-        protected virtual void BroadcastPropertyChanged(string propertyName)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

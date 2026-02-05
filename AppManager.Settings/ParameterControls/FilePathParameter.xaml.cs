@@ -8,25 +8,21 @@ using Microsoft.Win32;
 
 namespace AppManager.Settings.ParameterControls
 {
-    public partial class FilePathParameter : UserControl, INotifyPropertyChanged // , INotifyValueChanged<string>
+    public partial class FilePathParameter : BaseParameterControl
     {
         private string _filePath = String.Empty;
-        public string HeaderText { get; } = "File Path";
-
-        //public event EventHandler? OnValueChanged;
-        public event PropertyChangedEventHandler? PropertyChanged;
 
         public string Value
         {
             get => _filePath;
             set
             {
-                if (_filePath != value)
-                {
-                    _filePath = value;
-                    UpdateFilePathDisplay();
-                    BroadcastFilePathChanged();
-                }
+                if (_filePath == value) { return; }
+
+                _filePath = value;
+
+                UpdateFilePathDisplay();
+                BroadcastPropertyChanged(ValueName);
             }
         }
 
@@ -35,14 +31,26 @@ namespace AppManager.Settings.ParameterControls
 
         public FilePathParameter()
         {
+            _headerText = "File Path";
+            _labelText = "Select File";
+
             InitializeComponent();
             this.DataContext = this;
+
+            UpdateFilePathDisplay();
         }
 
-        public FilePathParameter(string? filePath, string? header = null) : this()
+        public FilePathParameter(string? filePath, PropertyChangedEventHandler? eventHandler = null, string? customValueName = null, string? headerText = null, string? labelText = null) : this()
         {
             if (filePath is not null) { _filePath = filePath; }
-            if (header is not null) { HeaderText = header; }
+            if (headerText is not null) { _headerText = headerText; }
+            if (labelText is not null) { _labelText = labelText; }
+
+            if (customValueName is not null) { ValueName = customValueName; }
+
+            UpdateFilePathDisplay();
+
+            if (eventHandler is not null) { PropertyChanged += eventHandler; }
         }
 
         private void UpdateFilePathDisplay()
@@ -101,7 +109,6 @@ namespace AppManager.Settings.ParameterControls
                 if (openFileDialog.ShowDialog() == true)
                 {
                     Value = openFileDialog.FileName;
-                    //BroadcastFilePathChanged();
                     Log.WriteLine($"File path selected: {Value}");
                 }
             }
@@ -116,7 +123,6 @@ namespace AppManager.Settings.ParameterControls
             try
             {
                 Value = string.Empty;
-                //BroadcastFilePathChanged();
                 Log.WriteLine("File path cleared");
             }
             catch (Exception ex)
@@ -142,11 +148,6 @@ namespace AppManager.Settings.ParameterControls
         }
 */
 
-        protected void BroadcastFilePathChanged()
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Value)));
-            //OnValueChanged?.Invoke(this, EventArgs.Empty);
-        }
 
         public void RefreshFilePath()
         {

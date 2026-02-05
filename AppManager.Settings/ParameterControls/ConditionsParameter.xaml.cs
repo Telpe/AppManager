@@ -12,36 +12,58 @@ using System.Windows.Controls;
 
 namespace AppManager.Settings.ParameterControls
 {
-    public partial class ConditionsParameter : UserControl, INotifyPropertyChanged // , INotifyValueChanged<ConditionModel[]>
+    public partial class ConditionsParameter : BaseParameterControl
     {
         private ConditionModel[] ConditionsValue = [];
-
-        //public event EventHandler? OnValueChanged;
-        public event PropertyChangedEventHandler? PropertyChanged;
 
         public ConditionModel[] Value
         {
             get => ConditionsValue;
             set
             {
-                if (ConditionsValue != value)
-                {
-                    ConditionsValue = value;
-                    UpdateConditionsList();
-                    BroadcastValueChanged();
-                }
+                if (ConditionsValue == value) { return; }
+                
+                ConditionsValue = value;
+
+                UpdateConditionsList();
+                BroadcastPropertyChanged(ValueName);
             }
         }
 
         public ConditionsParameter()
         {
+            _headerText = "Conditions";
+            _labelText = String.Empty;
+
             InitializeComponent();
             this.DataContext = this;
         }
 
-        public ConditionsParameter(ConditionModel[] Conditions) : this()
+        public ConditionsParameter(ConditionModel[] Conditions, PropertyChangedEventHandler? eventHandler = null, string? customValueName = null, string? headerText = null, string? labelText = null) : this()
         {
+            if (headerText != null)
+            {
+                _headerText = headerText;
+            }
+
+            if (labelText != null)
+            {
+                _labelText = labelText;
+            }
+
+            if (customValueName != null)
+            {
+                ValueName = customValueName;
+            }
+
             ConditionsValue = Conditions;
+
+            UpdateConditionsList();
+
+            if (eventHandler != null)
+            {
+                PropertyChanged += eventHandler;
+            }
         }
 
         private void UpdateConditionsList()
@@ -122,7 +144,7 @@ namespace AppManager.Settings.ParameterControls
                 conditionEditor.Edited += (s, args) =>
                 {
                     Log.WriteLine($"Condition edited for {conditionModel.ConditionType}");
-                    BroadcastValueChanged();
+                    
                 };
 
                 conditionEditor.Cancel += (s, args) =>
@@ -171,7 +193,7 @@ namespace AppManager.Settings.ParameterControls
                             {
                                 ConditionsValue[index] = updatedCondition;
                                 UpdateConditionsList();
-                                BroadcastValueChanged();
+                                BroadcastPropertyChanged(ValueName);
                                 Log.WriteLine($"Condition {updatedCondition.ConditionType} updated successfully");
                             }
                             ((MainWindow)Application.Current.MainWindow)?.HideOverlay();
@@ -181,7 +203,7 @@ namespace AppManager.Settings.ParameterControls
                     conditionEditor.Edited += (s, args) =>
                     {
                         Log.WriteLine($"Condition edited for {condition.ConditionType}");
-                        BroadcastValueChanged();
+                        
                     };
 
                     conditionEditor.Cancel += (s, args) =>
@@ -197,12 +219,6 @@ namespace AppManager.Settings.ParameterControls
             {
                 MessageBox.Show($"Error editing condition: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
-        }
-
-        protected virtual void BroadcastValueChanged()
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Value)));
-            //OnValueChanged?.Invoke(this, EventArgs.Empty);
         }
 
         public void RefreshConditions()

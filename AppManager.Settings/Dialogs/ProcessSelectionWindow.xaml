@@ -1,4 +1,4 @@
-<Window x:Class="AppManager.Settings.ParameterControls.ProcessSelectionWindow"
+<Window x:Class="AppManager.Settings.Dialogs.ProcessSelectionWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Select Process" Height="500" Width="600"

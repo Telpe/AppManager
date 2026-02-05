@@ -1,4 +1,5 @@
-<UserControl x:Class="AppManager.Settings.ParameterControls.FilePathParameter"
+<parametercontrols:BaseParameterControl 
+	x:Class="AppManager.Settings.ParameterControls.FilePathParameter"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -35,4 +36,4 @@
                     FontSize="10" Text="No file selected" 
                     Foreground="Gray"/>
 	</Grid>
-</UserControl>
+</parametercontrols:BaseParameterControl>

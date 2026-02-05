@@ -19,7 +19,6 @@ namespace AppManager.Core.Models
         
         // Window-related parameters
         public string? WindowTitle { get; set; }
-        public string? WindowClassName { get; set; }
 
         // Network-related parameters
         public int? Port { get; set; }
@@ -55,7 +54,6 @@ namespace AppManager.Core.Models
                 IncludeChildProcesses = this.IncludeChildProcesses,
                 FilePath = this.FilePath,
                 WindowTitle = this.WindowTitle,
-                WindowClassName = this.WindowClassName,
                 Port = this.Port,
                 IPAddress = this.IPAddress,
                 StartTime = this.StartTime,

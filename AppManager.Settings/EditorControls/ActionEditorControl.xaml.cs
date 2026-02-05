@@ -88,7 +88,7 @@ namespace AppManager.Settings.EditorControls
 
                 ActionConditions.Content = new ConditionsParameter(CurrentActionModelValue.Conditions ?? []);
 
-                (ActionConditions.Content as ConditionsParameter)!.PropertyChanged += ConditionsChanged;
+                (ActionConditions.Content as ConditionsParameter)!.PropertyChanged += ParameterChanged;
 
                 if (TypeSelectionGroupBox!.Content is TypeSelectParameter { Selected: AppActionTypeEnum actionType })
                 {
@@ -194,61 +194,76 @@ namespace AppManager.Settings.EditorControls
                 {
                     case nameof(ActionModel.AppName):
 
-                        ProcessParameter pp = new(CurrentActionModel.AppName);
-                        UseParameterGroupBox("App Name:").Content = pp;
-                        pp.PropertyChanged += (s, e) => { TextBox_TextChanged(s ?? this, e); };
+
+                        UseParameterGroupBox("App Name:").Content = new ProcessParameter(
+                            CurrentActionModel.AppName, 
+                            ParameterChanged, 
+                            nameof(ActionModel.AppName));
                         break;
 
                     case nameof(ActionModel.ExecutablePath):
 
-                        FilePathParameter fpp = new(CurrentActionModel.ExecutablePath);
-                        UseParameterGroupBox("Executable Path:").Content = fpp;
-                        fpp.PropertyChanged += (s, e) => { TextBox_TextChanged(s ?? this, e); };
+                        UseParameterGroupBox("Executable Path:").Content = new FilePathParameter(
+                            CurrentActionModel.ExecutablePath, 
+                            ParameterChanged, 
+                            nameof(ActionModel.ExecutablePath));
                         break;
 
                     case nameof(ActionModel.Arguments):
                         
-                        AddTextBoxRow(CurrentActionModel.WindowTitle ?? String.Empty, "Arguments:");
+                        UseParameterStackPanel("Arguments:").Children.Add(new ExeArgumentsParameter(
+                            CurrentActionModel.WindowTitle,
+                            ParameterChanged,
+                            nameof(ActionModel.Arguments)));
                         break;
 
                     case nameof(ActionModel.ForceOperation):
 
-                        AddCheckBoxRow(CurrentActionModel.ForceOperation, "Advanced:", "Force Operation:");
+                        UseParameterStackPanel("Advanced:").Children.Add(new BooleanParameter(
+                            CurrentActionModel.ForceOperation,
+                            ParameterChanged,
+                            nameof(ActionModel.ForceOperation),
+                            "Advanced:",
+                            "Force Operation:"));
                         break;
 
                     case nameof(ActionModel.IncludeChildProcesses):
 
-                        AddCheckBoxRow(CurrentActionModel.IncludeChildProcesses, "Advanced:", "Include Child Processes:");
+                        UseParameterStackPanel("Advanced:").Children.Add(new BooleanParameter(
+                            CurrentActionModel.IncludeChildProcesses,
+                            ParameterChanged,
+                            nameof(ActionModel.IncludeChildProcesses),
+                            "Advanced:",
+                            "Include Child Processes:"));
                         break;
 
                     case nameof(ActionModel.IncludeSimilarNames):
 
-                        AddCheckBoxRow(CurrentActionModel.IncludeSimilarNames, "Advanced:", "Include Similar Names:");
+                        UseParameterStackPanel("Advanced:").Children.Add(new BooleanParameter(
+                            CurrentActionModel.IncludeSimilarNames,
+                            ParameterChanged,
+                            nameof(ActionModel.IncludeSimilarNames),
+                            "Advanced:",
+                            "Include Similar Names:"));
                         break;
 
                     case nameof(ActionModel.TimeoutMs):
 
-                        TimerParameter tp = new(CurrentActionModel.TimeoutMs ?? -1);
-                        UseParameterGroupBox("Timeout (ms):").Content = tp;
-                        tp.PropertyChanged += TimeoutParameter_ValueChanged;
+                        UseParameterGroupBox("Timeout (ms):").Content = new TimerParameter(
+                            CurrentActionModel.TimeoutMs,
+                            ParameterChanged,
+                            nameof(ActionModel.TimeoutMs));
                         break;
 
                     case nameof(ActionModel.WindowTitle):
 
-                        AddTextBoxRow(CurrentActionModel.WindowTitle ?? String.Empty, "Window Title:");
+                        UseParameterGroupBox("Window Title:").Content = new StringParameter(
+                            CurrentActionModel.WindowTitle,
+                            ParameterChanged,
+                            nameof(ActionModel.WindowTitle));
                         break;
 
-                    default:
-
-                        if (prop.PropertyType == typeof(string))
-                        {
-                            AddTextBoxRow((string?)prop.GetValue(CurrentActionModel) ?? String.Empty, prop.Name);
-                        }
-                        else if (prop.PropertyType == typeof(bool))
-                        {
-                            AddCheckBoxRow((bool?)prop.GetValue(CurrentActionModel), prop.Name);
-                        }
-                        break;
+                    
                 }
             }
         }
@@ -302,47 +317,7 @@ namespace AppManager.Settings.EditorControls
 
             throw new InvalidOperationException($"GroupBox with header '{header}', has Content that is not of type {typeof(StackPanel).Name}");
         }
-
-        private void AddTextBoxRow(string text, string header, string? labelText = null)
-        {
-            TextBox textBox = new()
-            {
-                Text = text,
-                VerticalAlignment = VerticalAlignment.Center
-            };
-
-            UseParameterStackPanel(header).Children.Add(labelText is null ? textBox : ToLabeled(textBox, labelText));
-
-            textBox.TextChanged += TextBox_TextChanged;
-        }
-
-        private void AddCheckBoxRow(bool? isChecked, string header, string? labelText = null)
-        {
-            CheckBox chkbox = new() 
-            { 
-                IsChecked = isChecked,
-                Margin = new Thickness(5),
-                VerticalAlignment = VerticalAlignment.Center
-            };
-
-            UseParameterStackPanel(header, Orientation.Horizontal).Children.Add( labelText is null ? chkbox : ToLabeled(chkbox, labelText) );
-
-            chkbox.Checked += CheckBox_Changed;
-            chkbox.Unchecked += CheckBox_Changed;
-        }
-
-        private StackPanel ToLabeled(UIElement element, string labelText)
-        {
-            Label label = new() { Content = labelText };
-
-            StackPanel sp = new() { Orientation = Orientation.Horizontal };
-
-            sp.Children.Add(label);
-            sp.Children.Add(element);
-
-            return sp;
-        }
-                
+       
 
         protected void BroadcastEdited()
         {
@@ -422,71 +397,67 @@ namespace AppManager.Settings.EditorControls
             throw new InvalidOperationException($"{nameof(ActionTypeComboBox_SelectionChanged)}: {nameof(sender)} is not {nameof(TypeSelectParameter)} or {nameof(TypeSelectParameter.Selected)} is not {nameof(AppActionTypeEnum)}");
         }
 
-        private void TextBox_TextChanged(object sender, EventArgs e)
-        {
-            if (sender is TextBox textBox && !string.IsNullOrEmpty(textBox.Name))
-            {
-                var propertyName = textBox.Name.Replace("TextBox", "");
-                var property = CurrentActionModelValue.GetType().GetProperty(propertyName);
-                
-                if (property != null)
-                {
-                    if (property.PropertyType == typeof(int) || property.PropertyType == typeof(int?))
-                    {
-                        if (int.TryParse(textBox.Text, out int intValue))
-                        {
-                            property.SetValue(CurrentActionModelValue, intValue);
-                        }
-                    }
-                    else if (property.PropertyType == typeof(string))
-                    {
-                        property.SetValue(CurrentActionModelValue, textBox.Text);
-                    }
-                }
-
-                ParameterChanged(sender, new PropertyChangedEventArgs(propertyName));
-            }
-        }
-
-        private void CheckBox_Changed(object sender, RoutedEventArgs e)
-        {
-            if (sender is CheckBox checkBox)
-            {
-                var propertyName = checkBox.Name.Replace("CheckBox", "");
-                var property = CurrentActionModelValue.GetType().GetProperty(propertyName);
-                
-                if (property != null && property.PropertyType == typeof(bool))
-                {
-                    property.SetValue(CurrentActionModelValue, checkBox.IsChecked == true);
-                }
-
-                ParameterChanged(sender, new PropertyChangedEventArgs(propertyName));
-            }
-        }
-
-        private void ConditionsChanged(object? sender, EventArgs e)
-        {
-            if (sender is ConditionsParameter cp)
-            {
-                CurrentActionModelValue.Conditions = cp.Value;
-                ParameterChanged(sender, new PropertyChangedEventArgs(nameof(ActionModel.Conditions)));
-            }
-        }
-
-        private void TimeoutParameter_ValueChanged(object? sender, PropertyChangedEventArgs e)
-        {
-            if (sender is TimerParameter tp)
-            {
-                CurrentActionModelValue.TimeoutMs = tp.Value;
-                ParameterChanged(sender, e);
-            }
-            
-        }
-
         private void ParameterChanged(object? sender, PropertyChangedEventArgs e)
         {
-            UpdatePreview();
-            BroadcastEdited();
+            if (sender is not null)
+            {
+                switch (e.PropertyName)
+                {
+                    case nameof(ActionModel.ActionType):
+                        ActionTypeComboBox_SelectionChanged(sender, e);
+                        break;
+
+                    case nameof(ActionModel.AppName):
+                        CurrentActionModelValue.AppName = (sender as ProcessParameter)!.Value ;
+                        break;
+
+                    case nameof(ActionModel.Arguments):
+                        CurrentActionModelValue.Arguments = (sender as ExeArgumentsParameter)!.Value;
+                        break;
+
+                    case nameof(ActionModel.Conditions):
+                        CurrentActionModelValue.Conditions = (sender as ConditionsParameter)!.Value;
+                        break;
+
+                    case nameof(ActionModel.ExecutablePath):
+                        CurrentActionModelValue.ExecutablePath = (sender as FilePathParameter)!.Value;
+                        break;
+
+                    case nameof(ActionModel.ForceOperation):
+                        CurrentActionModelValue.ForceOperation = (sender as BooleanParameter)!.Value;
+                        break;
+
+                    case nameof(ActionModel.Inactive):
+                        CurrentActionModelValue.Inactive = (sender as BooleanParameter)!.Value;
+                        break;
+
+                    case nameof(ActionModel.IncludeChildProcesses):
+                        CurrentActionModelValue.IncludeChildProcesses = (sender as BooleanParameter)!.Value;
+                        break;
+
+                    case nameof(ActionModel.IncludeSimilarNames):
+                        CurrentActionModelValue.IncludeSimilarNames = (sender as BooleanParameter)!.Value;
+                        break;
+
+                    case nameof(ActionModel.ProcessLastId):
+                        break;
+
+                    case nameof(ActionModel.TimeoutMs):
+                        CurrentActionModelValue.TimeoutMs = (sender as TimerParameter)!.Value;
+                        break;
+                    case nameof(ActionModel.WindowTitle):
+                        CurrentActionModelValue.WindowTitle = (sender as StringParameter)!.Value;
+                        break;
+
+                }
+
+                UpdatePreview();
+                BroadcastEdited();
+
+                return;
+            }
+
+            throw new InvalidOperationException($"{nameof(ParameterChanged)}: {nameof(sender)} is not {nameof(TypeSelectParameter)} or {nameof(TypeSelectParameter.Selected)} is not {nameof(AppActionTypeEnum)}");
         }
     }
 }

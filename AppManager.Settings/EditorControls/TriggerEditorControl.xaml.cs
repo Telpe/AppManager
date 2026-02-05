@@ -422,7 +422,7 @@ namespace AppManager.Settings.EditorControls
             };
 
             CurrentTriggerModelValue.Actions ??= [];
-            CurrentTriggerModelValue.Actions = CurrentTriggerModelValue.Actions.Append(newAction).ToArray();
+            CurrentTriggerModelValue.Actions = [..CurrentTriggerModelValue.Actions, newAction];
 
             RefreshActionsListBox();
             BroadcastEdited();

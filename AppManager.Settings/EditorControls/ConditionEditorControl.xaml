@@ -4,27 +4,19 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:AppManager.Settings.EditorControls"
+			 xmlns:parameterControls="clr-namespace:AppManager.Settings.ParameterControls"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel Orientation="Vertical" Margin="10">
             <!-- Condition Type Section -->
-            <GroupBox Header="Condition Type" Margin="0,0,0,10">
-                <StackPanel Orientation="Vertical" Margin="5">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <Label Grid.Column="0" Content="Type:" VerticalAlignment="Center" Width="80"/>
-                        <ComboBox x:Name="ConditionTypeComboBox" Grid.Column="1" Width="200" 
-                                  HorizontalAlignment="Left" Margin="5,0,0,0"/>
-                    </Grid>
-                    <CheckBox x:Name="IsNotCheckBox" Content="Invert condition (NOT)" Margin="85,5,0,0"/>
-                </StackPanel>
-            </GroupBox>
+			<GroupBox Header="Condition Type:" Margin="0,0,0,10">
+				<StackPanel x:Name="TypeSelectionPanel" Orientation="Horizontal" Margin="5"/>
+			</GroupBox>
 
-            <!-- Process Parameters -->
+			<StackPanel x:Name="ConditionParameters" Orientation="Vertical" Grid.Row="2" Margin="5"/>
+
+			<!-- Process Parameters -->
             <GroupBox Header="Process Parameters" Margin="0,0,0,10">
                 <Grid Margin="5">
                     <Grid.ColumnDefinitions>
@@ -76,8 +68,6 @@
                     <Label Grid.Row="0" Grid.Column="0" Content="Window Title:" VerticalAlignment="Center" Width="120"/>
                     <TextBox x:Name="WindowTitleTextBox" Grid.Row="0" Grid.Column="1" Margin="5,0,0,5"/>
                     
-                    <Label Grid.Row="1" Grid.Column="0" Content="Window Class:" VerticalAlignment="Center"/>
-                    <TextBox x:Name="WindowClassNameTextBox" Grid.Row="1" Grid.Column="1" Margin="5,0,0,0"/>
                 </Grid>
             </GroupBox>
 

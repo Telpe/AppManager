@@ -26,11 +26,11 @@ namespace AppManager.Settings.EditorControls
         private TriggerModel CurrentTriggerModelValue;
         private bool IsCapturingKeybindValue = false;
 
-        public event EventHandler? Edited;
+        public event EventHandler? OnEdited;
 
-        public event EventHandler? Cancel;
+        public event EventHandler? OnCancel;
 
-        public event EventHandler<InputEditEventArgs>? Save;
+        public event EventHandler<InputEditEventArgs>? OnSave;
 
         private ObservableCollection<ModelListItem<ActionModel>> ActionListItemsValue = new();
 
@@ -369,36 +369,36 @@ namespace AppManager.Settings.EditorControls
 
             if (MessageBoxResult.Yes == doSave)
             {
-                BroadcastSave();
+                AnnounceSave();
             }
         }
 
-        private void CancelTriggerButton_Click(object sender, RoutedEventArgs e) => BroadcastCancel();
+        private void CancelTriggerButton_Click(object sender, RoutedEventArgs e) => AnnounceCancel();
 
-        protected void BroadcastEdited()
+        protected void AnnounceEdited()
         {
-            Edited?.Invoke(this, EventArgs.Empty);
+            OnEdited?.Invoke(this, EventArgs.Empty);
         }
 
-        protected void BroadcastCancel()
+        protected void AnnounceCancel()
         {
-            Cancel?.Invoke(this, EventArgs.Empty);
+            OnCancel?.Invoke(this, EventArgs.Empty);
         }
 
-        protected void BroadcastSave()
+        protected void AnnounceSave()
         {
-            Save?.Invoke(this, new InputEditEventArgs(CurrentTriggerModelValue));
+            OnSave?.Invoke(this, new InputEditEventArgs(CurrentTriggerModelValue));
         }
 
         // Event handlers for text changes to update preview
         private void TextBox_TextChanged(object sender, TextChangedEventArgs e) 
         {
-            BroadcastEdited();
+            AnnounceEdited();
             UpdatePreview();
         }
         private void CheckBox_Changed(object sender, RoutedEventArgs e)
         {
-            BroadcastEdited();
+            AnnounceEdited();
             UpdatePreview();
         }
 
@@ -410,7 +410,7 @@ namespace AppManager.Settings.EditorControls
             }
 
             UpdatePreview();
-            BroadcastEdited();
+            AnnounceEdited();
         }
 
         private void AddActionButton_Click(object sender, RoutedEventArgs e)
@@ -425,7 +425,7 @@ namespace AppManager.Settings.EditorControls
             CurrentTriggerModelValue.Actions = [..CurrentTriggerModelValue.Actions, newAction];
 
             RefreshActionsListBox();
-            BroadcastEdited();
+            AnnounceEdited();
         }
 
         private void EditActionButton_Click(object? sender, RoutedEventArgs e)
@@ -440,7 +440,7 @@ namespace AppManager.Settings.EditorControls
                     var actionEditor = new ActionEditorControl(actionModelListItem.Model.Clone());
 
                     // Subscribe to save event
-                    actionEditor.Save += (s, updatedAction) =>
+                    actionEditor.OnSave += (s, updatedAction) =>
                     {
                         if (null == updatedAction.ActionModel) { return; }
 
@@ -453,7 +453,7 @@ namespace AppManager.Settings.EditorControls
                             RefreshActionsListBox();
 
                             // Mark as edited
-                            BroadcastEdited();
+                            AnnounceEdited();
 
                             Log.WriteLine($"Action {actionModelListItem.DisplayName} updated successfully");
                             ((MainWindow)Application.Current.MainWindow)?.HideOverlay();
@@ -461,13 +461,13 @@ namespace AppManager.Settings.EditorControls
                         
                     };
 
-                    actionEditor.Edited += (s, args) =>
+                    actionEditor.OnEdited += (s, args) =>
                     {
                         Log.WriteLine($"Action edited for {actionModelListItem.DisplayName}");
-                        BroadcastEdited();
+                        AnnounceEdited();
                     };
 
-                    actionEditor.Cancel += (s, args) =>
+                    actionEditor.OnCancel += (s, args) =>
                     {
                         Log.WriteLine($"Action editing cancelled for {actionModelListItem.DisplayName}");
                         ((MainWindow)Application.Current.MainWindow)?.HideOverlay();

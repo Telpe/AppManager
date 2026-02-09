@@ -9,25 +9,25 @@ namespace AppManager.Core.Conditions
     {
         public override ConditionTypeEnum ConditionType => ConditionTypeEnum.FileExists;
         public override string Description { get; set; } = "Checks if a specific file exists";
-        public string? ExecutablePath { get; set; } = model.ExecutablePath;
+        public string? FilePath { get; set; } = model.FilePath;
 
         public override bool Execute()
         {
             try
             {
-                if (string.IsNullOrEmpty(ExecutablePath))
+                if (string.IsNullOrEmpty(FilePath))
                 {
                     LogConditionResult(false, "No file path specified");
                     return false;
                 }
 
-                bool exists = FileManager.FileExists(ExecutablePath);
+                bool exists = FileManager.FileExists(FilePath);
                 //LogConditionResult(exists, $"File '{FilePath}' exists: {exists}");
                 return exists;
             }
             catch (Exception ex)
             {
-                LogConditionResult(false, $"Error checking file: '{ExecutablePath}'\n{ex.Message}");
+                LogConditionResult(false, $"Error checking file: '{FilePath}'\n{ex.Message}");
                 return false;
             }
         }

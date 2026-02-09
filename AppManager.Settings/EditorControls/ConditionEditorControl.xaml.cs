@@ -7,6 +7,7 @@ using AppManager.Settings.Utilities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -19,6 +20,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace AppManager.Settings.EditorControls
 {
@@ -27,11 +29,13 @@ namespace AppManager.Settings.EditorControls
     /// </summary>
     public partial class ConditionEditorControl : UserControl, IInputEditControl
     {
-        public event EventHandler? Edited;
+        private readonly string AllowedDaysPanelName = "Allowed Days:";
 
-        public event EventHandler? Cancel;
+        public event EventHandler? OnEdited;
 
-        public event EventHandler<InputEditEventArgs>? Save;
+        public event EventHandler? OnCancel;
+
+        public event EventHandler<InputEditEventArgs>? OnSave;
 
         private ConditionModel ConditionModelValue;
 
@@ -45,12 +49,11 @@ namespace AppManager.Settings.EditorControls
 
             LoadFromModel();
 
-            AttachEventHandlers();
         }
 
         private void InitTypeSelector()
         {
-            int tspI = TypeSelectionPanel.Children.Add(new TypeSelectParameter(typeof(ConditionTypeEnum), null, null, "Choose:"));
+            int tspI = TypeSelectionPanel!.Children.Add(new TypeSelectParameter(typeof(ConditionTypeEnum), null, null, "Choose:"));
             int notI = TypeSelectionPanel.Children.Add(new CheckBox() { Content = "Invert condition (NOT)", Margin = new Thickness(85, 5, 0, 0) });
 
             (TypeSelectionPanel.Children[tspI] as TypeSelectParameter)!.Selected = ConditionModelValue.ConditionType;
@@ -69,115 +72,321 @@ namespace AppManager.Settings.EditorControls
 
                 if (TypeSelectionPanel!.Children[0] is TypeSelectParameter { Selected: ConditionTypeEnum conditionType })
                 {
-                    switch (conditionType)
+                    foreach (PropertyInfo prop in GetConditionType(conditionType).GetProperties())
                     {
-                        case ConditionTypeEnum.DayOfWeek:
-                            //AddParametersFromInterface(typeof(IDayOfWeekCondition));
-                            break;
-                        case ConditionTypeEnum.FileExists:
-                            AddParametersFromInterface(typeof(IFileExistsCondition));
-                            break;
-                        case ConditionTypeEnum.NetworkPortOpen:
-                            //AddParametersFromInterface(typeof(INetworkPortOpenCondition));
-                            break;
-                        case ConditionTypeEnum.PreviousActionSuccess:
-                            AddParametersFromInterface(typeof(IPreviousActionSuccessCondition));
-                            break;
-                        case ConditionTypeEnum.ProcessRunning:
-                            AddParametersFromInterface(typeof(IProcessRunningCondition));
-                            break;
-                        case ConditionTypeEnum.SystemUptime:
-                            //AddParametersFromInterface(typeof(ISystemUptimeCondition));
-                            break;
-                        case ConditionTypeEnum.TimeRange:
-                            //AddParametersFromInterface(typeof(ITimeRangeCondition));
-                            break;
-                        
-                        case ConditionTypeEnum.WindowExists:
-                            //AddParametersFromInterface(typeof(IWindowExistsCondition));
-                            break;
-                        case ConditionTypeEnum.WindowFocused:
-                            //AddParametersFromInterface(typeof(IWindowFocusedCondition));
-                            break;
-                        case ConditionTypeEnum.WindowMinimized:
-                            //AddParametersFromInterface(typeof(IWindowMinimizedCondition));
-                            break;
+                        AddParameterFromProperty(prop);
                     }
                 }
 
             }
             catch (Exception ex)
             {
-                Log.WriteLine($"Loading Condition data error: {ex.Message}");
+                Log.WriteLine($"Loading Condition data error: {ex.Message}\n{ex.StackTrace}");
                 throw;
             }
-
-            // Process Parameters
-            ProcessNameTextBox.Text = ConditionModelValue.ProcessName ?? string.Empty;
-            ExecutablePathTextBox.Text = ConditionModelValue.ExecutablePath ?? string.Empty;
-            IncludeChildProcessesCheckBox.IsChecked = ConditionModelValue.IncludeChildProcesses ?? false;
-
-            // File Parameters
-            FilePathTextBox.Text = ConditionModelValue.FilePath ?? string.Empty;
-
-            // Window Parameters
-            WindowTitleTextBox.Text = ConditionModelValue.WindowTitle ?? string.Empty;
-
-            // Network Parameters
-            PortTextBox.Text = ConditionModelValue.Port?.ToString() ?? string.Empty;
-            IPAddressTextBox.Text = ConditionModelValue.IPAddress ?? string.Empty;
-
-            // Time Parameters
-            StartTimeTextBox.Text = ConditionModelValue.StartTime?.ToString(@"hh\:mm\:ss") ?? string.Empty;
-            EndTimeTextBox.Text = ConditionModelValue.EndTime?.ToString(@"hh\:mm\:ss") ?? string.Empty;
-            
-            // Days of week
-            var allowedDays = ConditionModelValue.AllowedDays ?? Array.Empty<DayOfWeek>();
-            MondayCheckBox.IsChecked = allowedDays.Contains(DayOfWeek.Monday);
-            TuesdayCheckBox.IsChecked = allowedDays.Contains(DayOfWeek.Tuesday);
-            WednesdayCheckBox.IsChecked = allowedDays.Contains(DayOfWeek.Wednesday);
-            ThursdayCheckBox.IsChecked = allowedDays.Contains(DayOfWeek.Thursday);
-            FridayCheckBox.IsChecked = allowedDays.Contains(DayOfWeek.Friday);
-            SaturdayCheckBox.IsChecked = allowedDays.Contains(DayOfWeek.Saturday);
-            SundayCheckBox.IsChecked = allowedDays.Contains(DayOfWeek.Sunday);
-
-            // System Parameters
-            MinSystemUptimeTextBox.Text = ConditionModelValue.MinSystemUptimeMinutes?.ToString() ?? string.Empty;
-            MaxSystemUptimeTextBox.Text = ConditionModelValue.MaxSystemUptimeMinutes?.ToString() ?? string.Empty;
-            TimeoutMsTextBox.Text = ConditionModelValue.TimeoutMs?.ToString() ?? string.Empty;
         }
 
-        private void AddParametersFromInterface(Type modelType)
+        private Type GetConditionType(ConditionTypeEnum conditionType)
         {
-            foreach (PropertyInfo prop in modelType.GetProperties())
+            switch (conditionType)
             {
-                switch (prop.Name)
-                {
-                    case nameof(ConditionModel.ProcessName):
+                case ConditionTypeEnum.DayOfWeek:
+                    //AddParametersFromInterface(typeof(IDayOfWeekCondition));
+                    break;
 
-                        ProcessParameter pp = new(ConditionModelValue.ProcessName);
-                        UseParameterGroupBox("App Name:").Content = pp;
-                        pp.PropertyChanged += ProcessNameTextBox_TextChanged;
-                        break;
+                case ConditionTypeEnum.FileExists:
+                    return typeof(IFileExistsCondition);
 
-                    case nameof(ConditionModel.ExecutablePath):
+                case ConditionTypeEnum.NetworkPortOpen:
+                    //AddParametersFromInterface(typeof(INetworkPortOpenCondition));
+                    break;
 
-                        FilePathParameter fpp = new(ConditionModelValue.ExecutablePath);
-                        UseParameterGroupBox("Executable Path:").Content = fpp;
-                        fpp.PropertyChanged += ExecutablePathTextBox_TextChanged;
-                        break;
+                case ConditionTypeEnum.PreviousActionSuccess:
+                    return typeof(IPreviousActionSuccessCondition);
 
-                    case nameof(ConditionModel.AllowedDays):
+                case ConditionTypeEnum.ProcessRunning:
+                    return typeof(IProcessRunningCondition);
 
-                        //ExeArgumentsParameter fpp = new(ConditionModelValue.Arguments);
-                        //UseParameterGroupBox("Executable Path:").Content = fpp;
-                        //fpp.PropertyChanged += ExecutablePathTextBox_TextChanged;
-                        //AddTextBoxRow(ConditionModelValue.WindowTitle ?? String.Empty, "Arguments:");
-                        break;
+                case ConditionTypeEnum.SystemUptime:
+                    //AddParametersFromInterface(typeof(ISystemUptimeCondition));
+                    break;
 
-                    
-                }
+                case ConditionTypeEnum.TimeRange:
+                    //AddParametersFromInterface(typeof(ITimeRangeCondition));
+                    break;
+
+                case ConditionTypeEnum.WindowExists:
+                    //AddParametersFromInterface(typeof(IWindowExistsCondition));
+                    break;
+
+                case ConditionTypeEnum.WindowFocused:
+                    //AddParametersFromInterface(typeof(IWindowFocusedCondition));
+                    break;
+
+                case ConditionTypeEnum.WindowMinimized:
+                    //AddParametersFromInterface(typeof(IWindowMinimizedCondition));
+                    break;
             }
+
+            throw new InvalidOperationException($"Unsupported {nameof(ConditionTypeEnum)}: {conditionType}");
+        }
+
+        private void AddParameterFromProperty(PropertyInfo prop)
+        {
+            switch (prop.Name)
+            {
+                case nameof(ConditionModel.AllowedDays):
+
+                    var allowedDays = ConditionModelValue.AllowedDays ?? Array.Empty<DayOfWeek>();
+
+                    var daysPanel = UseParameterStackPanel(AllowedDaysPanelName, Orientation.Horizontal);
+
+                    foreach (DayOfWeek day in Enum.GetValues<DayOfWeek>())
+                    {
+                        daysPanel.Children.Add(new BooleanParameter(
+                            allowedDays.Contains(day),
+                            (s, e) => { 
+                                UpdateAllowedDays(); 
+                                AnnounceEdited(); 
+                            },
+                            prop.Name,
+                            null,
+                            day.ToString()));
+                    }
+
+                    break;
+                /*
+                                case nameof(ConditionModel.ConditionType):
+
+                                    UseParameterGroupBox("Condition Type:").Content = new StringParameter(
+                                        ConditionModelValue.ConditionType.ToString(),
+                                        (s, e) =>
+                                        {
+                                            if (s is StringParameter { Value: string pv })
+                                            {
+                                                if (Enum.TryParse<ConditionTypeEnum>(pv, out var conditionType))
+                                                {
+                                                    ConditionModelValue.ConditionType = conditionType;
+                                                    AnnounceEdited();
+                                                }
+                                            }
+                                        },
+                                        prop.Name);
+                                    break;
+                */
+                case nameof(ConditionModel.CustomProperties):
+
+                    UseParameterGroupBox("Custom Properties:").Content = new StringParameter(
+                        ConditionModelValue.CustomProperties?.ToString(),
+                        (s, e) => {
+                            if (s is StringParameter { Value: string pv })
+                            {
+                                // Handle CustomProperties as needed
+                                AnnounceEdited();
+                            }
+                        },
+                        prop.Name);
+                    break;
+
+                case nameof(ConditionModel.EndTime):
+
+                    UseParameterGroupBox("End Time:").Content = new StringParameter(
+                        ConditionModelValue.EndTime?.ToString(@"hh\:mm\:ss"),
+                        (s, e) => {
+                            if (s is StringParameter { Value: string pv })
+                            {
+                                if (TimeSpan.TryParse(pv, out var endTime))
+                                {
+                                    ConditionModelValue.EndTime = endTime;
+                                }
+                                else
+                                {
+                                    ConditionModelValue.EndTime = null;
+                                }
+                                AnnounceEdited();
+                            }
+                        },
+                        prop.Name);
+                    break;
+
+                case nameof(ConditionModel.FilePath):
+
+                    UseParameterGroupBox("Executable Path:").Content = new FilePathParameter(
+                        ConditionModelValue.FilePath,
+                        (s,e)=> {
+                            if (s is FilePathParameter { Value: string pv })
+                            {
+                                ConditionModelValue.FilePath = string.IsNullOrWhiteSpace(pv) ? null : pv;
+                                AnnounceEdited();
+                            }
+                        },
+                        prop.Name);
+                    break;
+
+                case nameof(ConditionModel.IncludeChildProcesses):
+
+                    UseParameterStackPanel("Process / App:").Children.Add(new BooleanParameter(
+                        ConditionModelValue.IncludeChildProcesses,
+                        (s,e)=> {
+                            if (s is BooleanParameter { Value: bool pv })
+                            {
+                                ConditionModelValue.IncludeChildProcesses = pv is not true ? null : true;
+                                AnnounceEdited();
+                            }
+                        },
+                        prop.Name,
+                        null,
+                        "Include child processes"));
+                    break;
+
+                case nameof(ConditionModel.IPAddress):
+
+                    UseParameterStackPanel("Network:").Children.Add(new MultiIntParameter(
+                        ConditionModelValue.IPAddress,
+                        (s, e) => {
+                            if (s is MultiIntParameter { Value: string pv })
+                            {
+                                ConditionModelValue.IPAddress = string.IsNullOrWhiteSpace(pv) ? null : pv;
+                                AnnounceEdited();
+                            }
+                        },
+                        prop.Name,
+                        null,
+                        "IP Address:"));
+                    break;
+                /*
+                                case nameof(ConditionModel.IsNot):
+
+                                    UseParameterGroupBox("Invert Condition:").Content = new BooleanParameter(
+                                        ConditionModelValue.IsNot,
+                                        (s, e) => {
+                                            if (s is BooleanParameter { Value: bool pv })
+                                            {
+                                                ConditionModelValue.IsNot = pv;
+                                                AnnounceEdited();
+                                            }
+                                        },
+                                        prop.Name,
+                                        null,
+                                        "NOT condition");
+                                    break;
+                */
+                case nameof(ConditionModel.MaxSystemUptimeMinutes):
+
+                    UseParameterStackPanel("System Uptime:").Children.Add(new IntegerParameter(
+                        ConditionModelValue.MaxSystemUptimeMinutes,
+                        (s, e) => {
+                            if (s is IntegerParameter { Value: int pv })
+                            {
+                                ConditionModelValue.MaxSystemUptimeMinutes = pv < 1 ? null : pv;
+                                AnnounceEdited();
+                            }
+                        },
+                        prop.Name,
+                        null,
+                        "Max Minutes:"));
+                    break;
+
+                case nameof(ConditionModel.MinSystemUptimeMinutes):
+
+                    UseParameterStackPanel("System Uptime:").Children.Add(new IntegerParameter(
+                        ConditionModelValue.MinSystemUptimeMinutes,
+                        (s, e) => {
+                            if (s is IntegerParameter { Value: int pv })
+                            {
+                                ConditionModelValue.MinSystemUptimeMinutes = pv < 1 ? null : pv;
+                                AnnounceEdited();
+                            }
+                        },
+                        prop.Name,
+                        null,
+                        "Min Minutes:"));
+                    break;
+
+                case nameof(ConditionModel.Port):
+
+                    UseParameterStackPanel("Network:").Children.Add(new IntegerParameter(
+                        ConditionModelValue.Port,
+                        (s,e)=> {
+                            if (s is IntegerParameter { Value: int pv })
+                            {
+                                ConditionModelValue.Port = pv < 1 ? null : pv;
+                                AnnounceEdited();
+                            }
+                        },
+                        prop.Name,
+                        null,
+                        "Port:"));
+                    break;
+
+                case nameof(ConditionModel.ProcessName):
+
+                    UseParameterStackPanel("Process / App:").Children.Add(new ProcessParameter(
+                        ConditionModelValue.ProcessName,
+                        (s,e) => {
+                            if (s is ProcessParameter { Value: string pv })
+                            {
+                                ConditionModelValue.ProcessName = string.IsNullOrWhiteSpace(pv) ? null : pv;
+                                AnnounceEdited();
+                            }
+                        },
+                        prop.Name,
+                        null,
+                        "Name:"));
+                    break;
+
+                case nameof(ConditionModel.StartTime):
+
+                    UseParameterGroupBox("Start Time:").Content = new StringParameter(
+                        ConditionModelValue.StartTime?.ToString(@"hh\:mm\:ss"),
+                        (s, e) => {
+                            if (s is StringParameter { Value: string pv })
+                            {
+                                if (TimeSpan.TryParse(pv, out var startTime))
+                                {
+                                    ConditionModelValue.StartTime = startTime;
+                                }
+                                else
+                                {
+                                    ConditionModelValue.StartTime = null;
+                                }
+                                AnnounceEdited();
+                            }
+                        },
+                        prop.Name);
+                    break;
+
+                case nameof(ConditionModel.TimeoutMs):
+
+                    UseParameterGroupBox("Timeout:").Content = new IntegerParameter(
+                        ConditionModelValue.TimeoutMs,
+                        (s, e) => {
+                            if (s is IntegerParameter { Value: int pv })
+                            {
+                                ConditionModelValue.TimeoutMs = pv < 1 ? null : pv;
+                                AnnounceEdited();
+                            }
+                        },
+                        prop.Name,
+                        null,
+                        "Milliseconds:");
+                    break;
+
+                case nameof(ConditionModel.WindowTitle):
+
+                    UseParameterGroupBox("Window Title:").Content = new StringParameter(
+                        ConditionModelValue.WindowTitle,
+                        (s, e) => {
+                            if (s is StringParameter { Value: string pv })
+                            {
+                                ConditionModelValue.WindowTitle = string.IsNullOrWhiteSpace(pv) ? null : pv;
+                                AnnounceEdited();
+                            }
+                        },
+                        prop.Name );
+                    break;
+            }
+            
         }
 
         private GroupBox UseParameterGroupBox(string header)
@@ -232,51 +441,6 @@ namespace AppManager.Settings.EditorControls
 
         
 
-
-
-
-        private void AttachEventHandlers()
-        {
-            
-            IncludeChildProcessesCheckBox.Checked += IncludeChildProcessesCheckBox_Checked;
-            IncludeChildProcessesCheckBox.Unchecked += IncludeChildProcessesCheckBox_Unchecked;
-
-            // File Parameters
-            FilePathTextBox.TextChanged += FilePathTextBox_TextChanged;
-
-            // Window Parameters
-            WindowTitleTextBox.TextChanged += WindowTitleTextBox_TextChanged;
-
-            // Network Parameters
-            PortTextBox.TextChanged += PortTextBox_TextChanged;
-            IPAddressTextBox.TextChanged += IPAddressTextBox_TextChanged;
-
-            // Time Parameters
-            StartTimeTextBox.TextChanged += StartTimeTextBox_TextChanged;
-            EndTimeTextBox.TextChanged += EndTimeTextBox_TextChanged;
-
-            // Day checkboxes
-            MondayCheckBox.Checked += DayCheckBox_CheckedChanged;
-            MondayCheckBox.Unchecked += DayCheckBox_CheckedChanged;
-            TuesdayCheckBox.Checked += DayCheckBox_CheckedChanged;
-            TuesdayCheckBox.Unchecked += DayCheckBox_CheckedChanged;
-            WednesdayCheckBox.Checked += DayCheckBox_CheckedChanged;
-            WednesdayCheckBox.Unchecked += DayCheckBox_CheckedChanged;
-            ThursdayCheckBox.Checked += DayCheckBox_CheckedChanged;
-            ThursdayCheckBox.Unchecked += DayCheckBox_CheckedChanged;
-            FridayCheckBox.Checked += DayCheckBox_CheckedChanged;
-            FridayCheckBox.Unchecked += DayCheckBox_CheckedChanged;
-            SaturdayCheckBox.Checked += DayCheckBox_CheckedChanged;
-            SaturdayCheckBox.Unchecked += DayCheckBox_CheckedChanged;
-            SundayCheckBox.Checked += DayCheckBox_CheckedChanged;
-            SundayCheckBox.Unchecked += DayCheckBox_CheckedChanged;
-
-            // System Parameters
-            MinSystemUptimeTextBox.TextChanged += MinSystemUptimeTextBox_TextChanged;
-            MaxSystemUptimeTextBox.TextChanged += MaxSystemUptimeTextBox_TextChanged;
-            TimeoutMsTextBox.TextChanged += TimeoutMsTextBox_TextChanged;
-        }
-
         private void ConditionTypeComboBox_SelectionChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (sender is TypeSelectParameter tsp && tsp.Selected is ConditionTypeEnum typeEnum)
@@ -305,134 +469,50 @@ namespace AppManager.Settings.EditorControls
             AnnounceEdited();
         }
 
-        private void ProcessNameTextBox_TextChanged(object? sender, PropertyChangedEventArgs e)
-        {
-            if (sender is ProcessParameter pp)
-            {
-                ConditionModelValue.ProcessName = string.IsNullOrWhiteSpace(pp.Value) ? null : pp.Value;
-                AnnounceEdited();
-            }
-        }
-
-        private void ExecutablePathTextBox_TextChanged(object? sender, PropertyChangedEventArgs e)
-        {
-            if (sender is FilePathParameter pp)
-            {
-                ConditionModelValue.ExecutablePath = string.IsNullOrWhiteSpace(pp.Value) ? null : pp.Value;
-                AnnounceEdited();
-            }
-        }
-
-        private void IncludeChildProcessesCheckBox_Checked(object sender, RoutedEventArgs e)
-        {
-            ConditionModelValue.IncludeChildProcesses = true;
-            AnnounceEdited();
-        }
-
-        private void IncludeChildProcessesCheckBox_Unchecked(object sender, RoutedEventArgs e)
-        {
-            ConditionModelValue.IncludeChildProcesses = false;
-            AnnounceEdited();
-        }
-
-        private void FilePathTextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            ConditionModelValue.FilePath = string.IsNullOrWhiteSpace(FilePathTextBox.Text) ? null : FilePathTextBox.Text;
-            AnnounceEdited();
-        }
-
-        private void WindowTitleTextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            ConditionModelValue.WindowTitle = string.IsNullOrWhiteSpace(WindowTitleTextBox.Text) ? null : WindowTitleTextBox.Text;
-            AnnounceEdited();
-        }
-
-        private void PortTextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            ConditionModelValue.Port = int.TryParse(PortTextBox.Text, out int port) ? port : null;
-            AnnounceEdited();
-        }
-
-        private void IPAddressTextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            ConditionModelValue.IPAddress = string.IsNullOrWhiteSpace(IPAddressTextBox.Text) ? null : IPAddressTextBox.Text;
-            AnnounceEdited();
-        }
-
-        private void StartTimeTextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            ConditionModelValue.StartTime = TimeSpan.TryParse(StartTimeTextBox.Text, out TimeSpan startTime) ? startTime : null;
-            AnnounceEdited();
-        }
-
-        private void EndTimeTextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            ConditionModelValue.EndTime = TimeSpan.TryParse(EndTimeTextBox.Text, out TimeSpan endTime) ? endTime : null;
-            AnnounceEdited();
-        }
-
-        private void DayCheckBox_CheckedChanged(object sender, RoutedEventArgs e)
-        {
-            UpdateAllowedDays();
-        }
-
-        private void MinSystemUptimeTextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            ConditionModelValue.MinSystemUptimeMinutes = int.TryParse(MinSystemUptimeTextBox.Text, out int minUptime) ? minUptime : null;
-            AnnounceEdited();
-        }
-
-        private void MaxSystemUptimeTextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            ConditionModelValue.MaxSystemUptimeMinutes = int.TryParse(MaxSystemUptimeTextBox.Text, out int maxUptime) ? maxUptime : null;
-            AnnounceEdited();
-        }
-
-        private void TimeoutMsTextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            ConditionModelValue.TimeoutMs = int.TryParse(TimeoutMsTextBox.Text, out int timeout) ? timeout : null;
-            AnnounceEdited();
-        }
-
         private void UpdateAllowedDays()
         {
             var selectedDays = new List<DayOfWeek>();
-            
-            if (MondayCheckBox.IsChecked == true) selectedDays.Add(DayOfWeek.Monday);
-            if (TuesdayCheckBox.IsChecked == true) selectedDays.Add(DayOfWeek.Tuesday);
-            if (WednesdayCheckBox.IsChecked == true) selectedDays.Add(DayOfWeek.Wednesday);
-            if (ThursdayCheckBox.IsChecked == true) selectedDays.Add(DayOfWeek.Thursday);
-            if (FridayCheckBox.IsChecked == true) selectedDays.Add(DayOfWeek.Friday);
-            if (SaturdayCheckBox.IsChecked == true) selectedDays.Add(DayOfWeek.Saturday);
-            if (SundayCheckBox.IsChecked == true) selectedDays.Add(DayOfWeek.Sunday);
+            StackPanel panel = UseParameterStackPanel(AllowedDaysPanelName);
 
-            ConditionModelValue.AllowedDays = selectedDays.Count > 0 ? selectedDays.ToArray() : null;
-            AnnounceEdited();
+            foreach(object child in panel.Children)
+            {
+                    if (child is CheckBox cb && cb.Content is string dayStr && Enum.TryParse<DayOfWeek>(dayStr, out var day))
+                    {
+                        if (cb.IsChecked == true)
+                        {
+                            selectedDays.Add(day);
+                        }
+                }
+            }
+
+            ConditionModelValue.AllowedDays = 0 < selectedDays.Count ? selectedDays.ToArray() : null;
+            
         }
+
 
         private void SaveButton_Click(object sender, RoutedEventArgs e) 
         { 
-            DoSave();
+            AnnounceSave();
         }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
-            DoCancel();
+            AnnounceCancel();
         }
 
         protected void AnnounceEdited()
         {
-            Edited?.Invoke(this, EventArgs.Empty);
+            OnEdited?.Invoke(this, EventArgs.Empty);
         }
 
-        protected void DoCancel()
+        protected void AnnounceCancel()
         {
-            Cancel?.Invoke(this, EventArgs.Empty);
+            OnCancel?.Invoke(this, EventArgs.Empty);
         }
 
-        protected void DoSave()
+        protected void AnnounceSave()
         {
-            Save?.Invoke(this, new InputEditEventArgs(ConditionModelValue.Clone()));
+            OnSave?.Invoke(this, new InputEditEventArgs(ConditionModelValue.Clone()));
         }
     }
 }

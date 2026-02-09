@@ -27,6 +27,33 @@ namespace AppManager.Core.Utilities
             bool includeChildProcesses = false,
             int excludeId = -1)
         {
+            bool looseBefore = false;
+            bool looseAfter = false;
+
+            {
+                IEnumerable<char> newName = Enumerable.Empty<char>();
+                bool nameReached = false;
+
+                foreach (char c in appName)
+                {
+                    if ('*' == c) 
+                    {
+                        if (!nameReached) 
+                        { looseBefore = true; }
+                        else 
+                        { looseAfter = true; }
+                    }
+                    else
+                    {
+                        nameReached = true;
+                        newName = newName.Append(c);
+                    }
+                }
+
+                appName = new string([..newName]);
+            }
+            
+
             ValidateProcessName(appName, nameof(appName));
 
             IEnumerable<Process> processes = Enumerable.Empty<Process>();
@@ -62,40 +89,25 @@ namespace AppManager.Core.Utilities
 
                 foreach (var p in processesTemp)
                 {
-                    if ((includeSimilarNames && -1 < p.ProcessName.IndexOf(appName, StringComparison.OrdinalIgnoreCase)) || p.ProcessName.Equals(appName, StringComparison.OrdinalIgnoreCase))
-                    {
-                        processes = processes.Append(p);
-                    }
-                    else
-                    {
-                        p.Dispose();
-                    }
-                }
+                    int nameIndex = p.ProcessName.IndexOf(appName, StringComparison.OrdinalIgnoreCase);
 
-                processesTemp = processes;
-
-                processes = Enumerable.Empty<Process>();
-
-                foreach (var p in processesTemp)
-                {
-                    if (p.Id == excludeId)
-                    {
-                        p.Dispose();
-                        continue;
+                    if ( -1 == nameIndex 
+                        || (!looseBefore && 0 != nameIndex) 
+                        || (!looseAfter && 0 != p.ProcessName.Length - (nameIndex + appName.Length))
+                        || p.Id == excludeId
+                        || !(!requireMainWindow
+                            || (!p.HasExited
+                            && IntPtr.Zero != p.MainWindowHandle
+                            && (string.IsNullOrEmpty(windowTitle)
+                            || -1 < p.MainWindowTitle.IndexOf(windowTitle, StringComparison.OrdinalIgnoreCase)))
+                            )
+                        )
+                    { 
+                        p.Dispose(); 
+                        continue; 
                     }
 
-                    if (!requireMainWindow
-                        || ( !p.HasExited
-                        && IntPtr.Zero != p.MainWindowHandle 
-                        && (string.IsNullOrEmpty(windowTitle)
-                            || -1 < p.MainWindowTitle.IndexOf(windowTitle, StringComparison.OrdinalIgnoreCase))))
-                    {
-                        processes = processes.Append(p);
-                    }
-                    else
-                    {
-                        p.Dispose();
-                    }
+                    processes = processes.Append(p);
 
                     if (includeChildProcesses)
                     {
@@ -124,18 +136,19 @@ namespace AppManager.Core.Utilities
                         }
                     }
                 }
+
             }
             catch (Exception ex)
             {
                 try
                 {
-                    foreach (var p in processes)
-                    {
-                        p.Dispose();
-                    }
                     foreach (var p in processesTemp)
                     {
-                        p.Dispose();
+                        try
+                        {
+                            p.Dispose();
+                        }
+                        catch { }
                     }
                 }
                 catch { }
@@ -215,14 +228,12 @@ namespace AppManager.Core.Utilities
         /// <returns>True if the process is running, false otherwise</returns>
         public static bool IsProcessRunning(string processName)
         {
-            ValidateProcessName(processName, nameof(processName));
-
             try
             {
-                Process[] processes = Process.GetProcessesByName(processName);
+                Process[] processes = FindProcesses(processName);
                 try
                 {
-                    return processes.Any();
+                    return 0 < processes.Length;
                 }
                 finally
                 {

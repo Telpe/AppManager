@@ -22,7 +22,7 @@ namespace AppManager.Settings.ParameterControls
                 _filePath = value;
 
                 UpdateFilePathDisplay();
-                BroadcastPropertyChanged(ValueName);
+                AnnouncePropertyChanged(ValueName);
             }
         }
 
@@ -130,23 +130,23 @@ namespace AppManager.Settings.ParameterControls
                 MessageBox.Show($"Error clearing file path: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
-/*
-        private void FilePathTextBox_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            try
+        /*
+            private void FilePathTextBox_TextChanged(object sender, TextChangedEventArgs e)
             {
-                if (sender is TextBox textBox)
+                try
                 {
-                    Value = textBox.Text;
-                    BroadcastFilePathChanged();
+                    if (sender is TextBox textBox)
+                    {
+                        Value = textBox.Text;
+                        AnnounceFilePathChanged();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Log.WriteLine($"FilePathTextBox_TextChanged error: {ex.Message}");
                 }
             }
-            catch (Exception ex)
-            {
-                Log.WriteLine($"FilePathTextBox_TextChanged error: {ex.Message}");
-            }
-        }
-*/
+        */
 
 
         public void RefreshFilePath()

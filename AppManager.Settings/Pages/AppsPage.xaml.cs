@@ -197,7 +197,7 @@ namespace AppManager.Settings.Pages
                     var triggerEditor = new TriggerEditorControl(viewModel.Model);
                     
                     // Subscribe to save event
-                    triggerEditor.Save += (s, updatedTrigger) =>
+                    triggerEditor.OnSave += (s, updatedTrigger) =>
                     {
                         if (null == updatedTrigger.TriggerModel) { return; }
 
@@ -214,13 +214,13 @@ namespace AppManager.Settings.Pages
                         ((MainWindow)Application.Current.MainWindow)?.HideOverlay();
                     };
 
-                    triggerEditor.Edited += (s, args) =>
+                    triggerEditor.OnEdited += (s, args) =>
                     {
                         Log.WriteLine($"Trigger edited for {viewModel.DisplayName}");
                         Edited();
                     };
 
-                    triggerEditor.Cancel += (s, args) =>
+                    triggerEditor.OnCancel += (s, args) =>
                     {
                         Log.WriteLine($"Trigger editing cancelled for {viewModel.DisplayName}");
                         ((MainWindow)Application.Current.MainWindow)?.HideOverlay();

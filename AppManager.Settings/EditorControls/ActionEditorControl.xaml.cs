@@ -22,11 +22,11 @@ namespace AppManager.Settings.EditorControls
     {
         private ActionModel CurrentActionModelValue;
 
-        public event EventHandler? Edited;
+        public event EventHandler? OnEdited;
 
-        public event EventHandler? Cancel;
+        public event EventHandler? OnCancel;
 
-        public event EventHandler<InputEditEventArgs>? Save;
+        public event EventHandler<InputEditEventArgs>? OnSave;
 
         public ActionModel CurrentActionModel
         {
@@ -197,16 +197,16 @@ namespace AppManager.Settings.EditorControls
 
                         UseParameterGroupBox("App Name:").Content = new ProcessParameter(
                             CurrentActionModel.AppName, 
-                            ParameterChanged, 
-                            nameof(ActionModel.AppName));
+                            ParameterChanged,
+                            prop.Name);
                         break;
 
                     case nameof(ActionModel.ExecutablePath):
 
                         UseParameterGroupBox("Executable Path:").Content = new FilePathParameter(
                             CurrentActionModel.ExecutablePath, 
-                            ParameterChanged, 
-                            nameof(ActionModel.ExecutablePath));
+                            ParameterChanged,
+                            prop.Name);
                         break;
 
                     case nameof(ActionModel.Arguments):
@@ -214,7 +214,7 @@ namespace AppManager.Settings.EditorControls
                         UseParameterStackPanel("Arguments:").Children.Add(new ExeArgumentsParameter(
                             CurrentActionModel.WindowTitle,
                             ParameterChanged,
-                            nameof(ActionModel.Arguments)));
+                            prop.Name));
                         break;
 
                     case nameof(ActionModel.ForceOperation):
@@ -222,7 +222,7 @@ namespace AppManager.Settings.EditorControls
                         UseParameterStackPanel("Advanced:").Children.Add(new BooleanParameter(
                             CurrentActionModel.ForceOperation,
                             ParameterChanged,
-                            nameof(ActionModel.ForceOperation),
+                            prop.Name,
                             "Advanced:",
                             "Force Operation:"));
                         break;
@@ -232,7 +232,7 @@ namespace AppManager.Settings.EditorControls
                         UseParameterStackPanel("Advanced:").Children.Add(new BooleanParameter(
                             CurrentActionModel.IncludeChildProcesses,
                             ParameterChanged,
-                            nameof(ActionModel.IncludeChildProcesses),
+                            prop.Name,
                             "Advanced:",
                             "Include Child Processes:"));
                         break;
@@ -242,7 +242,7 @@ namespace AppManager.Settings.EditorControls
                         UseParameterStackPanel("Advanced:").Children.Add(new BooleanParameter(
                             CurrentActionModel.IncludeSimilarNames,
                             ParameterChanged,
-                            nameof(ActionModel.IncludeSimilarNames),
+                            prop.Name,
                             "Advanced:",
                             "Include Similar Names:"));
                         break;
@@ -252,7 +252,7 @@ namespace AppManager.Settings.EditorControls
                         UseParameterGroupBox("Timeout (ms):").Content = new TimerParameter(
                             CurrentActionModel.TimeoutMs,
                             ParameterChanged,
-                            nameof(ActionModel.TimeoutMs));
+                            prop.Name);
                         break;
 
                     case nameof(ActionModel.WindowTitle):
@@ -260,7 +260,7 @@ namespace AppManager.Settings.EditorControls
                         UseParameterGroupBox("Window Title:").Content = new StringParameter(
                             CurrentActionModel.WindowTitle,
                             ParameterChanged,
-                            nameof(ActionModel.WindowTitle));
+                            prop.Name);
                         break;
 
                     
@@ -319,19 +319,19 @@ namespace AppManager.Settings.EditorControls
         }
        
 
-        protected void BroadcastEdited()
+        protected void AnnounceEdited()
         {
-            Edited?.Invoke(this, EventArgs.Empty);
+            OnEdited?.Invoke(this, EventArgs.Empty);
         }
 
-        protected void BroadcastCancel()
+        protected void AnnounceCancel()
         {
-            Cancel?.Invoke(this, EventArgs.Empty);
+            OnCancel?.Invoke(this, EventArgs.Empty);
         }
 
-        protected void BroadcastSave()
+        protected void AnnounceSave()
         {
-            Save?.Invoke(this, new InputEditEventArgs(CurrentActionModelValue.Clone()));
+            OnSave?.Invoke(this, new InputEditEventArgs(CurrentActionModelValue.Clone()));
         }
 
 
@@ -372,12 +372,12 @@ namespace AppManager.Settings.EditorControls
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
         {
-            BroadcastSave();
+            AnnounceSave();
         }
 
         private void CancelButton_Click(object sender, RoutedEventArgs e)
         {
-            BroadcastCancel();
+            AnnounceCancel();
         }
 
 
@@ -389,7 +389,8 @@ namespace AppManager.Settings.EditorControls
 
                 LoadActionData();
 
-                BroadcastEdited();
+                UpdatePreview();
+                AnnounceEdited();
 
                 return;
             }
@@ -399,65 +400,61 @@ namespace AppManager.Settings.EditorControls
 
         private void ParameterChanged(object? sender, PropertyChangedEventArgs e)
         {
-            if (sender is not null)
+            if(sender is not BaseParameterControl) { throw new InvalidOperationException($"{nameof(ParameterChanged)}: {nameof(sender)} is not {nameof(BaseParameterControl)}"); }
+            
+            switch (e.PropertyName)
             {
-                switch (e.PropertyName)
-                {
-                    case nameof(ActionModel.ActionType):
-                        ActionTypeComboBox_SelectionChanged(sender, e);
-                        break;
+                case nameof(ActionModel.ActionType):
+                    ActionTypeComboBox_SelectionChanged(sender, e);
+                    break;
 
-                    case nameof(ActionModel.AppName):
-                        CurrentActionModelValue.AppName = (sender as ProcessParameter)!.Value ;
-                        break;
+                case nameof(ActionModel.AppName):
+                    CurrentActionModelValue.AppName = (sender as ProcessParameter)!.Value ;
+                    break;
 
-                    case nameof(ActionModel.Arguments):
-                        CurrentActionModelValue.Arguments = (sender as ExeArgumentsParameter)!.Value;
-                        break;
+                case nameof(ActionModel.Arguments):
+                    CurrentActionModelValue.Arguments = (sender as ExeArgumentsParameter)!.Value;
+                    break;
 
-                    case nameof(ActionModel.Conditions):
-                        CurrentActionModelValue.Conditions = (sender as ConditionsParameter)!.Value;
-                        break;
+                case nameof(ActionModel.Conditions):
+                    CurrentActionModelValue.Conditions = (sender as ConditionsParameter)!.Value;
+                    break;
 
-                    case nameof(ActionModel.ExecutablePath):
-                        CurrentActionModelValue.ExecutablePath = (sender as FilePathParameter)!.Value;
-                        break;
+                case nameof(ActionModel.ExecutablePath):
+                    CurrentActionModelValue.ExecutablePath = (sender as FilePathParameter)!.Value;
+                    break;
 
-                    case nameof(ActionModel.ForceOperation):
-                        CurrentActionModelValue.ForceOperation = (sender as BooleanParameter)!.Value;
-                        break;
+                case nameof(ActionModel.ForceOperation):
+                    CurrentActionModelValue.ForceOperation = (sender as BooleanParameter)!.Value;
+                    break;
 
-                    case nameof(ActionModel.Inactive):
-                        CurrentActionModelValue.Inactive = (sender as BooleanParameter)!.Value;
-                        break;
+                case nameof(ActionModel.Inactive):
+                    CurrentActionModelValue.Inactive = (sender as BooleanParameter)!.Value;
+                    break;
 
-                    case nameof(ActionModel.IncludeChildProcesses):
-                        CurrentActionModelValue.IncludeChildProcesses = (sender as BooleanParameter)!.Value;
-                        break;
+                case nameof(ActionModel.IncludeChildProcesses):
+                    CurrentActionModelValue.IncludeChildProcesses = (sender as BooleanParameter)!.Value;
+                    break;
 
-                    case nameof(ActionModel.IncludeSimilarNames):
-                        CurrentActionModelValue.IncludeSimilarNames = (sender as BooleanParameter)!.Value;
-                        break;
+                case nameof(ActionModel.IncludeSimilarNames):
+                    CurrentActionModelValue.IncludeSimilarNames = (sender as BooleanParameter)!.Value;
+                    break;
 
-                    case nameof(ActionModel.ProcessLastId):
-                        break;
+                case nameof(ActionModel.ProcessLastId):
+                    break;
 
-                    case nameof(ActionModel.TimeoutMs):
-                        CurrentActionModelValue.TimeoutMs = (sender as TimerParameter)!.Value;
-                        break;
-                    case nameof(ActionModel.WindowTitle):
-                        CurrentActionModelValue.WindowTitle = (sender as StringParameter)!.Value;
-                        break;
+                case nameof(ActionModel.TimeoutMs):
+                    CurrentActionModelValue.TimeoutMs = (sender as TimerParameter)!.Value;
+                    break;
+                case nameof(ActionModel.WindowTitle):
+                    CurrentActionModelValue.WindowTitle = (sender as StringParameter)!.Value;
+                    break;
 
-                }
-
-                UpdatePreview();
-                BroadcastEdited();
-
-                return;
             }
 
-            throw new InvalidOperationException($"{nameof(ParameterChanged)}: {nameof(sender)} is not {nameof(TypeSelectParameter)} or {nameof(TypeSelectParameter.Selected)} is not {nameof(AppActionTypeEnum)}");
+            UpdatePreview();
+            AnnounceEdited();
+            
         }
     }
 }

@@ -25,7 +25,7 @@ namespace AppManager.Settings.ParameterControls
                 {
                     _value = newValue;
                     ArgumentsTextBox.Text = _value;
-                    BroadcastPropertyChanged(ValueName);
+                    AnnouncePropertyChanged(ValueName);
                 }
             }
         }

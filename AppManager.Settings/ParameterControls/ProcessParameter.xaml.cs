@@ -22,7 +22,7 @@ namespace AppManager.Settings.ParameterControls
                 {
                     _processName = value;
                     UpdateProcessDisplay();
-                    BroadcastPropertyChanged(ValueName);
+                    AnnouncePropertyChanged(ValueName);
                 }
             }
         }
@@ -39,7 +39,7 @@ namespace AppManager.Settings.ParameterControls
             UpdateProcessDisplay();
         }
 
-        public ProcessParameter(string? processName, PropertyChangedEventHandler? eventHandler = null, string? customValueName = null) : this()
+        public ProcessParameter(string? processName, PropertyChangedEventHandler? eventHandler = null, string? customValueName = null, string? headerText = null, string? labelText = null) : this()
         {
             if (processName is not null) { _processName = processName; }
 
@@ -48,6 +48,9 @@ namespace AppManager.Settings.ParameterControls
             UpdateProcessDisplay();
 
             if(eventHandler is not null) { PropertyChanged += eventHandler; }
+
+            if(headerText is string headerTextTemp) { _headerText = headerTextTemp; }
+            if(labelText is string labelTextTemp) { _labelText = labelTextTemp; }
         }
 
         private void UpdateProcessDisplay()
@@ -74,7 +77,7 @@ namespace AppManager.Settings.ParameterControls
             {
                 try
                 {
-                    var processes = Process.GetProcessesByName(_processName.Replace(".exe", ""));
+                    var processes = ProcessManager.FindProcesses(_processName.Replace(".exe", ""));
                     if (processes.Length > 0)
                     {
                         ProcessStatusTextBlock.Text = $"Running ({processes.Length} instance{(processes.Length > 1 ? "s" : "")})";

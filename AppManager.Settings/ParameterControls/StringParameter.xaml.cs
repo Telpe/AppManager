@@ -41,7 +41,7 @@ namespace AppManager.Settings.ParameterControls
                 if (_value != newValue)
                 {
                     _value = newValue;
-                    BroadcastPropertyChanged(ValueName);
+                    AnnouncePropertyChanged(ValueName);
                 }
             }
         }

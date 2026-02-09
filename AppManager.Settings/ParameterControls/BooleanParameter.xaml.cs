@@ -18,7 +18,7 @@ namespace AppManager.Settings.ParameterControls
                 {
                     _value = value;
                     ValueCheckBox.IsChecked = _value;
-                    BroadcastPropertyChanged(ValueName);
+                    AnnouncePropertyChanged(ValueName);
                 }
             }
         }

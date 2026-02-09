@@ -26,7 +26,7 @@ namespace AppManager.Settings.ParameterControls
                 ConditionsValue = value;
 
                 UpdateConditionsList();
-                BroadcastPropertyChanged(ValueName);
+                AnnouncePropertyChanged(ValueName);
             }
         }
 
@@ -131,7 +131,7 @@ namespace AppManager.Settings.ParameterControls
 
                 var conditionEditor = new ConditionEditorControl(conditionModel);
 
-                conditionEditor.Save += (s, args) =>
+                conditionEditor.OnSave += (s, args) =>
                 {
                     if (args.ConditionModel is ConditionModel updatedCondition)
                     {
@@ -141,13 +141,13 @@ namespace AppManager.Settings.ParameterControls
                     }
                 };
 
-                conditionEditor.Edited += (s, args) =>
+                conditionEditor.OnEdited += (s, args) =>
                 {
                     Log.WriteLine($"Condition edited for {conditionModel.ConditionType}");
                     
                 };
 
-                conditionEditor.Cancel += (s, args) =>
+                conditionEditor.OnCancel += (s, args) =>
                 {
                     Log.WriteLine($"Condition cancelled for {conditionModel.ConditionType}");
                     ((MainWindow)Application.Current.MainWindow)?.HideOverlay();
@@ -184,7 +184,7 @@ namespace AppManager.Settings.ParameterControls
                 {
                     var conditionEditor = new ConditionEditorControl(condition.Clone());
 
-                    conditionEditor.Save += (s, args) =>
+                    conditionEditor.OnSave += (s, args) =>
                     {
                         if (args.ConditionModel is ConditionModel updatedCondition && null != ConditionsValue)
                         {
@@ -193,20 +193,20 @@ namespace AppManager.Settings.ParameterControls
                             {
                                 ConditionsValue[index] = updatedCondition;
                                 UpdateConditionsList();
-                                BroadcastPropertyChanged(ValueName);
+                                AnnouncePropertyChanged(ValueName);
                                 Log.WriteLine($"Condition {updatedCondition.ConditionType} updated successfully");
                             }
                             ((MainWindow)Application.Current.MainWindow)?.HideOverlay();
                         }
                     };
 
-                    conditionEditor.Edited += (s, args) =>
+                    conditionEditor.OnEdited += (s, args) =>
                     {
                         Log.WriteLine($"Condition edited for {condition.ConditionType}");
                         
                     };
 
-                    conditionEditor.Cancel += (s, args) =>
+                    conditionEditor.OnCancel += (s, args) =>
                     {
                         Log.WriteLine($"Condition edit cancelled for {condition.ConditionType}");
                         ((MainWindow)Application.Current.MainWindow)?.HideOverlay();

@@ -11,7 +11,6 @@ namespace AppManager.Core.Models
 
         // Process-related parameters
         public string? ProcessName { get; set; }
-        public string? ExecutablePath { get; set; }
         public bool? IncludeChildProcesses { get; set; }
         
         // File-related parameters
@@ -50,7 +49,6 @@ namespace AppManager.Core.Models
                 ConditionType = this.ConditionType,
                 IsNot = this.IsNot,
                 ProcessName = this.ProcessName,
-                ExecutablePath = this.ExecutablePath,
                 IncludeChildProcesses = this.IncludeChildProcesses,
                 FilePath = this.FilePath,
                 WindowTitle = this.WindowTitle,

@@ -51,7 +51,7 @@ namespace AppManager.Settings.ParameterControls
                 if (TimerValue != validatedValue)
                 {
                     TimerValue = validatedValue;
-                    BroadcastPropertyChanged(ValueName);
+                    AnnouncePropertyChanged(ValueName);
                 }
             }
         }

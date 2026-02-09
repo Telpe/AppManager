@@ -44,7 +44,7 @@ namespace AppManager.Settings.ParameterControls
             }
         }
 
-        protected virtual void BroadcastPropertyChanged(string propertyName)
+        protected virtual void AnnouncePropertyChanged(string propertyName)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }

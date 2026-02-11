@@ -1,4 +1,4 @@
-using AppManager.Core.Actions.Minimize;
+using AppManager.Core.Actions;
 using AppManager.Core.Models;
 using AppManager.Core.Utilities;
 using System;
@@ -7,7 +7,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
-namespace AppManager.Core.Actions
+namespace AppManager.Core.Actions.Minimize
 {
     public partial class MinimizeAction : BaseAction, IMinimizeAction
     {

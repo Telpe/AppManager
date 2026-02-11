@@ -6,7 +6,7 @@ using System.Windows.Controls;
 using AppManager.Core.Utilities;
 using Microsoft.Win32;
 
-namespace AppManager.Settings.ParameterControls
+namespace AppManager.Config.ParameterControls
 {
     public partial class FilePathParameter : BaseParameterControl
     {

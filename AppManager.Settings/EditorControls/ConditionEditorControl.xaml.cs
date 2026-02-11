@@ -1,9 +1,9 @@
 ﻿using AppManager.Core.Actions;
 using AppManager.Core.Conditions;
 using AppManager.Core.Models;
-using AppManager.Settings.Interfaces;
-using AppManager.Settings.ParameterControls;
-using AppManager.Settings.Utilities;
+using AppManager.Config.Interfaces;
+using AppManager.Config.ParameterControls;
+using AppManager.Config.Utilities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -22,7 +22,7 @@ using System.Windows.Navigation;
 using System.Windows.Shapes;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
-namespace AppManager.Settings.EditorControls
+namespace AppManager.Config.EditorControls
 {
     /// <summary>
     /// Interaction logic for ConditionEditorControl.xaml

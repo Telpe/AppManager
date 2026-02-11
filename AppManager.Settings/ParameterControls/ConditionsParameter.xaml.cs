@@ -1,8 +1,8 @@
 using AppManager.Core.Conditions;
 using AppManager.Core.Models;
 using AppManager.Core.Utilities;
-using AppManager.Settings.EditorControls;
-using AppManager.Settings.Utilities;
+using AppManager.Config.EditorControls;
+using AppManager.Config.Utilities;
 using System;
 using System.ComponentModel;
 using System.Linq;
@@ -10,7 +10,7 @@ using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
 
-namespace AppManager.Settings.ParameterControls
+namespace AppManager.Config.ParameterControls
 {
     public partial class ConditionsParameter : BaseParameterControl
     {

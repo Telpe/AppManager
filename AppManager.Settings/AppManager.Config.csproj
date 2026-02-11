@@ -6,7 +6,7 @@
     <LangVersion>latest</LangVersion>
     <UseWPF>true</UseWPF>
     <SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
-    <StartupObject>AppManager.Settings.App</StartupObject>
+    <StartupObject>AppManager.Config.App</StartupObject>
     
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -17,7 +17,7 @@
     <PublishSingleFile>true</PublishSingleFile>
     -->
     <!-- Additional metadata -->
-    <Product>AppManager.Settings</Product>
+    <Product>AppManager.Config</Product>
     <Company>Telpe</Company>
     <Copyright>Telpe</Copyright>
     <Description>Application Manager for Windows</Description>

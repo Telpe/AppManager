@@ -1,7 +1,7 @@
 ﻿using AppManager.Core.Actions;
 using AppManager.Core.Models;
 using AppManager.Core.Triggers;
-using AppManager.Settings.Utilities;
+using AppManager.Config.Utilities;
 using AppManager.Core.Utilities;
 using System;
 using System.Collections.Generic;
@@ -12,11 +12,11 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Navigation;
-using AppManager.Settings.EditorControls;
-using AppManager.Settings.Models;
-using AppManager.Settings.Interfaces;
+using AppManager.Config.EditorControls;
+using AppManager.Config.Models;
+using AppManager.Config.Interfaces;
 
-namespace AppManager.Settings.Pages
+namespace AppManager.Config.Pages
 {
     /// <summary>
     /// Interaction logic for Apps.xaml

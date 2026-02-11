@@ -7,7 +7,7 @@ using System.Windows;
 using System.Windows.Data;
 using AppManager.Core.Utilities;
 
-namespace AppManager.Settings.Dialogs
+namespace AppManager.Config.Dialogs
 {
     public partial class ProcessSelectionWindow : Window, INotifyPropertyChanged
     {

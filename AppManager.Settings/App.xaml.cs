@@ -1,5 +1,5 @@
 ﻿global using AppManager.Core.Utilities;
-using AppManager.Settings.Utilities;
+using AppManager.Config.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,7 +10,7 @@ using AppManager.Core.Keybinds;
 using AppManager.Core.Actions;
 using AppManager.Core.Models;
 
-namespace AppManager.Settings
+namespace AppManager.Config
 {
     /// <summary>
     /// Interaction logic for App.xaml
@@ -30,7 +30,7 @@ namespace AppManager.Settings
         {
             // Load version from version.json file
             Version = FileManager.LoadVersion();
-            Log.WriteLine($"AppManager Version: {Version}");
+            Log.WriteLine($"AppManager Config Version: {Version}");
         }
 
         public App()

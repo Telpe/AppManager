@@ -1,4 +1,4 @@
-using AppManager.Settings.Interfaces;
+using AppManager.Config.Interfaces;
 using System;
 using System.Numerics;
 using System.Windows;
@@ -6,7 +6,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 
-namespace AppManager.Settings.Utilities
+namespace AppManager.Config.Utilities
 {
     /// <summary>
     /// Manages application-wide overlay functionality

@@ -5,9 +5,9 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using AppManager.Core.Utilities;
-using AppManager.Settings.Dialogs;
+using AppManager.Config.Dialogs;
 
-namespace AppManager.Settings.ParameterControls
+namespace AppManager.Config.ParameterControls
 {
     public partial class ProcessParameter : BaseParameterControl
     {

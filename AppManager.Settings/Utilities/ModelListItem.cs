@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AppManager.Settings.Utilities
+namespace AppManager.Config.Utilities
 {
     internal class ModelListItem<T> : INotifyPropertyChanged where T : ConditionalModel
     {

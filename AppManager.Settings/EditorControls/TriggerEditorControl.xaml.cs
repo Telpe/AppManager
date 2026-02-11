@@ -3,10 +3,10 @@ using AppManager.Core.Conditions;
 using AppManager.Core.Models;
 using AppManager.Core.Triggers;
 using AppManager.Core.Utilities;
-using AppManager.Settings.Interfaces;
-using AppManager.Settings.ParameterControls;
-using AppManager.Settings.Utilities;
-using AppManager.Settings.Utilities;
+using AppManager.Config.Interfaces;
+using AppManager.Config.ParameterControls;
+using AppManager.Config.Utilities;
+using AppManager.Config.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -19,7 +19,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 
-namespace AppManager.Settings.EditorControls
+namespace AppManager.Config.EditorControls
 {
     public partial class TriggerEditorControl : UserControl, IInputEditControl
     {

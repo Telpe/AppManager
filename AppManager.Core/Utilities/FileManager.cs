@@ -404,7 +404,7 @@ namespace AppManager.Core.Utilities
                 int iop = Array.IndexOf(otherPaths, "AppManager");
                 string basePath = Path.Combine(otherPaths.Where((a, i) => i <= iop).ToArray());
                 string devCorePath = Path.GetDirectoryName(FindExecutables("AppManager.Core.exe", [Path.Combine(basePath, "AppManager.Core")], false, true).First())!;
-                string devSettingsPath = Path.GetDirectoryName(FindExecutables("AppManager.Settings.exe", [Path.Combine(basePath, "AppManager.Settings")], false, true).First())!;
+                string devSettingsPath = Path.GetDirectoryName(FindExecutables("AppManager.Config.exe", [Path.Combine(basePath, "AppManager.Config")], false, true).First())!;
                 string devAppManagerPath = Path.GetDirectoryName(FindExecutables("AppManager.exe", [Path.Combine(basePath, "AppManager")], false, true).First())!;
 #endif
                 //var pathEnv = Environment.GetEnvironmentVariable("PATH")?.Split(Path.PathSeparator) ?? Array.Empty<string>();

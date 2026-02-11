@@ -70,7 +70,7 @@ namespace AppManager.Core.Utilities
 
         private void OnSettings(object? sender, EventArgs? e)
         {
-            ActionFactory.CreateAction(new() { ActionType = AppActionTypeEnum.Launch, AppName = "AppManager.Settings" }).Execute();
+            ActionFactory.CreateAction(new() { ActionType = AppActionTypeEnum.Launch, AppName = "AppManager.Config" }).Execute();
         }
 
         private void OnAbout(object? sender, EventArgs? e)

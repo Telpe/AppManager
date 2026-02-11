@@ -2,9 +2,9 @@
 using AppManager.Core.Conditions;
 using AppManager.Core.Models;
 using AppManager.Core.Utilities;
-using AppManager.Settings.Interfaces;
-using AppManager.Settings.ParameterControls;
-using AppManager.Settings.Utilities;
+using AppManager.Config.Interfaces;
+using AppManager.Config.ParameterControls;
+using AppManager.Config.Utilities;
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
@@ -16,7 +16,7 @@ using System.Windows;
 using System.Windows.Controls;
 using static System.Net.Mime.MediaTypeNames;
 
-namespace AppManager.Settings.EditorControls
+namespace AppManager.Config.EditorControls
 {
     public partial class ActionEditorControl : UserControl, IInputEditControl
     {

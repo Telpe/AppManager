@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AppManager.Settings.Models
+namespace AppManager.Config.Models
 {
     internal class AppPageModel
     {

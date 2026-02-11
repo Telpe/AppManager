@@ -1,4 +1,4 @@
-namespace AppManager.Settings.Interfaces
+namespace AppManager.Config.Interfaces
 {
     /// <summary>
     /// Interface that defines the contract for pages that accept parameters

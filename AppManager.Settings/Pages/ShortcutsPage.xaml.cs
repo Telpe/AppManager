@@ -1,8 +1,8 @@
-using AppManager.Settings.Interfaces;
+using AppManager.Config.Interfaces;
 using System.Diagnostics;
 using System.Windows.Controls;
 
-namespace AppManager.Settings.Pages
+namespace AppManager.Config.Pages
 {
     /// <summary>
     /// Interaction logic for ShortcutsPage.xaml

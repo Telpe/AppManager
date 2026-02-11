@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace AppManager.Settings.ParameterControls
+namespace AppManager.Config.ParameterControls
 {
     public partial class StringParameter : BaseParameterControl
     {

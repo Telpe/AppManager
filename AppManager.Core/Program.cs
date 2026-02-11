@@ -361,7 +361,7 @@ namespace AppManager.Core
                     ActionFactory.CreateAction(new()
                     {
                         ActionType = AppActionTypeEnum.Close,
-                        AppName = "AppManager.Settings"
+                        AppName = "AppManager.Config"
                     }).Execute();
                 }
                 catch { }

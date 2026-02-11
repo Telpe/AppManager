@@ -26,7 +26,7 @@
   <ItemGroup>
     <ProjectReference Include="..\AppManager\AppManager.csproj" />
     <ProjectReference Include="..\AppManager.Core\AppManager.Core.csproj" />
-    <ProjectReference Include="..\AppManager.Settings\AppManager.Settings.csproj" />
+    <ProjectReference Include="..\AppManager.Config\AppManager.Config.csproj" />
   </ItemGroup>
 
   <ItemGroup>

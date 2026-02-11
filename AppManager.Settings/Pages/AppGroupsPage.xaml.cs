@@ -6,9 +6,9 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using AppManager.Settings.Interfaces;
+using AppManager.Config.Interfaces;
 
-namespace AppManager.Settings.Pages
+namespace AppManager.Config.Pages
 {
     /// <summary>
     /// Interaction logic for AppGroupsPage.xaml

@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Text;
 using System.Windows.Controls;
 
-namespace AppManager.Settings.ParameterControls
+namespace AppManager.Config.ParameterControls
 {
     public class BaseParameterControl : UserControl, INotifyPropertyChanged
     {

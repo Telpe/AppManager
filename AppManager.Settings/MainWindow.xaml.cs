@@ -1,10 +1,10 @@
 ﻿using AppManager.Core.Actions;
 using AppManager.Core.Models;
 using AppManager.Core.Utilities;
-using AppManager.Settings.Interfaces;
-using AppManager.Settings.Pages;
-using AppManager.Settings.Utilities;
-using AppManager.Settings.Utilities;
+using AppManager.Config.Interfaces;
+using AppManager.Config.Pages;
+using AppManager.Config.Utilities;
+using AppManager.Config.Utilities;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -16,7 +16,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 
-namespace AppManager.Settings
+namespace AppManager.Config
 {
     public delegate AppManagedModel[] AppsManagedToModelsCallback();
 
@@ -165,7 +165,7 @@ namespace AppManager.Settings
                 }
                 else
                 {
-                    iconPath = FileManager.FindExecutables("AppManager.Settings.exe").FirstOrDefault() ?? "";
+                    iconPath = FileManager.FindExecutables("AppManager.Config.exe").FirstOrDefault() ?? "";
 
                     if (File.Exists(iconPath))
                     {

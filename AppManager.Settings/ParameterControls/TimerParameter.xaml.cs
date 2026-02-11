@@ -7,7 +7,7 @@ using System.Windows.Input;
 using System.Windows.Threading;
 using AppManager.Core.Utilities;
 
-namespace AppManager.Settings.ParameterControls
+namespace AppManager.Config.ParameterControls
 {
     public enum TimerEditMode
     {

@@ -1,4 +1,7 @@
 using AppManager.Core.Actions;
+using AppManager.Core.Actions.BringToFront;
+using AppManager.Core.Actions.Close;
+using AppManager.Core.Actions.Launch;
 using AppManager.Core.Models;
 using AppManager.Core.Utilities;
 using AppManager.Tests.TestUtilities;

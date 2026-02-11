@@ -1,4 +1,6 @@
 using AppManager.Core.Actions;
+using AppManager.Core.Actions.Close;
+using AppManager.Core.Actions.Launch;
 using AppManager.Core.Models;
 using AppManager.Tests.TestUtilities;
 using FluentAssertions;

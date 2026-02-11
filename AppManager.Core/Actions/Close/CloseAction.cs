@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace AppManager.Core.Actions
+namespace AppManager.Core.Actions.Close
 {
     public class CloseAction : BaseAction, ICloseAction
     {

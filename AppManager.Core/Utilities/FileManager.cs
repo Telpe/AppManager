@@ -9,6 +9,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media;
@@ -23,7 +24,8 @@ namespace AppManager.Core.Utilities
         private static readonly JsonSerializerOptions JsonOptions = new()
         {
             WriteIndented = true,
-            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
+            Converters = { new JsonStringEnumConverter() }
         };
         private static string[]? DefaultSearchPaths = null;
         public static readonly string IconfileDefault = "AppManagerIcon_temp.png";

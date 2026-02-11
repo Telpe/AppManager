@@ -5,6 +5,7 @@ using AppManager.Tests.TestUtilities;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Diagnostics;
+using AppManager.Core.Actions.Close;
 
 namespace AppManager.Tests.Integration
 {

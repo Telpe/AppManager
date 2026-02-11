@@ -1,3 +1,4 @@
+using AppManager.Core.Actions.Minimize;
 using AppManager.Core.Models;
 using AppManager.Core.Utilities;
 using System;

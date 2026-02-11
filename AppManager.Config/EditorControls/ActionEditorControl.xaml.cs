@@ -15,6 +15,12 @@ using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using static System.Net.Mime.MediaTypeNames;
+using AppManager.Core.Actions.BringToFront;
+using AppManager.Core.Actions.Launch;
+using AppManager.Core.Actions.Minimize;
+using AppManager.Core.Actions.Close;
+using AppManager.Core.Actions.Focus;
+using AppManager.Core.Actions.Restart;
 
 namespace AppManager.Config.EditorControls
 {

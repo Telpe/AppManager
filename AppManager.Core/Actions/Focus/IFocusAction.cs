@@ -1,6 +1,6 @@
-namespace AppManager.Core.Actions
+namespace AppManager.Core.Actions.Focus
 {
-    public interface IMinimizeAction
+    public interface IFocusAction
     {
         string? AppName { get; set; }
         bool? IncludeSimilarNames { get; set; }

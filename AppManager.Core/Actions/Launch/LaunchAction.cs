@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using static System.Net.Mime.MediaTypeNames;
 
-namespace AppManager.Core.Actions
+namespace AppManager.Core.Actions.Launch
 {
     public class LaunchAction : BaseAction, ILaunchAction
     {

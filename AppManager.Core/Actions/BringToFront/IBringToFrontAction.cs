@@ -1,4 +1,4 @@
-namespace AppManager.Core.Actions
+namespace AppManager.Core.Actions.BringToFront
 {
     public interface IBringToFrontAction
     {

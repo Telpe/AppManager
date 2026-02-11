@@ -1,3 +1,5 @@
+using AppManager.Core.Actions.Close;
+using AppManager.Core.Actions.Launch;
 using AppManager.Core.Models;
 using AppManager.Core.Utilities;
 using System;
@@ -6,7 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace AppManager.Core.Actions
+namespace AppManager.Core.Actions.Restart
 {
     public class RestartAction : BaseAction, IRestartAction
     {

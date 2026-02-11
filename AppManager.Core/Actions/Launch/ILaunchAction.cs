@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace AppManager.Core.Actions
+namespace AppManager.Core.Actions.Launch
 {
     public interface ILaunchAction
     {

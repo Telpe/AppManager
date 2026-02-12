@@ -421,10 +421,9 @@ namespace AppManager.Core
         {
             try
             {
-                TriggerModel[] triggers = ProfileManager.CurrentProfile.Apps.Where(a => null != a.Triggers).SelectMany(a => a.Triggers!.Select(a => a.Value)).ToArray();
                 int loadCounter = 0;
 
-                foreach (TriggerModel model in triggers) // ProfileManager.CurrentProfile.Triggers
+                foreach (TriggerModel model in ProfileManager.CurrentProfile.Triggers) // ProfileManager.CurrentProfile.Triggers
                 {
                     try
                     {
@@ -437,7 +436,7 @@ namespace AppManager.Core
                     }
                 }
 
-                Log.WriteLine($"Loaded {loadCounter}/{triggers.Length} triggers from profile: {ProfileManager.CurrentProfile.Name}");
+                Log.WriteLine($"Loaded {loadCounter}/{ProfileManager.CurrentProfile.Triggers.Length} triggers from profile: {ProfileManager.CurrentProfile.Name}");
 
                 ProfileManager.ClearCache();
             }

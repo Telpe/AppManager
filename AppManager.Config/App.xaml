@@ -2,8 +2,8 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:AppManager.Config"
-             StartupUri="MainWindow.xaml">
-    <Application.Resources>
+			 Startup="App_Startup">
+	<Application.Resources>
 		<ResourceDictionary>
 			<ResourceDictionary.MergedDictionaries>
 				<ResourceDictionary Source="ListTemplates/ActionListItemTemplate.xaml" />

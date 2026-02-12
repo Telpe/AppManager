@@ -15,16 +15,17 @@
 	</Window.Resources>
 	<Grid>
 		<Grid.RowDefinitions>
-			<RowDefinition MinHeight="32" Height="Auto"/>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="Auto"/>
 			<RowDefinition Height="*"/>
+			<RowDefinition Height="auto"/>
 		</Grid.RowDefinitions>
 		<Grid.ColumnDefinitions>
-			<ColumnDefinition Width="auto"/>
 			<ColumnDefinition Width="*"/>
 		</Grid.ColumnDefinitions>
 		
 		<!-- Top Row with Title and Browser Button -->
-		<Grid Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
+		<Grid Grid.Row="0" Grid.Column="0">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="*"/>
 				<ColumnDefinition Width="Auto"/>
@@ -63,21 +64,26 @@
 			<StackPanel x:Name="ConsolePanel" Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0" />
 		</Grid>
 		
-		<StackPanel Orientation="Vertical" Grid.Row="1" Grid.Column="0" Background="#D0D0D0" Height="auto">
-			<!-- Nav 1 menu -->
-			<StackPanel Orientation="Horizontal" Background="#F0F0F0">
-				<Button x:Name="AppsButton" Content="Apps" Width="100" Height="30" Margin="5" Click="Nav1MenuButton_Click"/>
-				<Button x:Name="AppGroupsButton" Content="Groups" Width="100" Height="30" Margin="5" Click="Nav1MenuButton_Click"/>
-				<Button x:Name="ShortcutsButton" Content="Shortcuts" Width="100" Height="30" Margin="5" Click="Nav1MenuButton_Click"/>
-			</StackPanel>
-			<!-- Nav 1 List -->
-			<ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="auto">
-				<ListBox x:Name="Nav1List" ItemTemplate="{StaticResource Nav1ListItemTemplate}" Background="#F0F0F0" Width="auto" HorizontalAlignment="Left" />
-			</ScrollViewer>
-			<TextBox x:Name="Nav1NewItemTextBox" Margin="5" Width="100" HorizontalAlignment="Left" Foreground="Gray" />
+		<!-- Nav 1 menu -->
+		<StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="0" Background="#F0F0F0" Height="auto">
+			<Button x:Name="AppsButton" Content="Apps" Width="100" Height="30" Margin="5" Click="Nav1MenuButton_Click"/>
+			<Button x:Name="AppGroupsButton" Content="Groups" Width="100" Height="30" Margin="5" Click="Nav1MenuButton_Click"/>
+			<Button x:Name="ShortcutsButton" Content="Shortcuts" Width="100" Height="30" Margin="5" Click="Nav1MenuButton_Click"/>
 		</StackPanel>
 
-			<!-- Page Content -->
-		<Frame x:Name="MainFrame" Grid.Row="1" Grid.Column="1" NavigationUIVisibility="Hidden" Margin="10"/>
+		<ScrollViewer Grid.Row="2" Grid.Column="0" Margin="10" VerticalScrollBarVisibility="Auto">
+			<Frame x:Name="MainFrame"/>
+		</ScrollViewer>
+
+
+		<DockPanel Grid.Row="3" Grid.Column="0" Background="#F0F0F0" Height="32">
+			<Label Content="Status: Ready" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,0"/>
+			<StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10,0">
+				<Label Content="Version: " Margin="0" Padding="0" />
+				<Label Content="{Binding Version, RelativeSource={RelativeSource AncestorType=Window}}" Margin="0" Padding="0" />
+			</StackPanel>
+			
+			<Label Content="© 2024 App Manager" VerticalAlignment="Center" HorizontalAlignment="Right" Margin="0,0,10,0"/>
+		</DockPanel>
 	</Grid>
 </Window>

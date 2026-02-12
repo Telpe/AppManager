@@ -26,6 +26,10 @@ namespace AppManager.Config
 
         public static readonly AppManager.Core.Version Version;
 
+        public const string CommandPrefix = "/";
+        public const string PageCommand = CommandPrefix + "page";
+        public const string ItemCommand = CommandPrefix + "item";
+
         static App()
         {
             // Load version from version.json file
@@ -35,15 +39,7 @@ namespace AppManager.Config
 
         public App()
         {
-            if (Shared.ShouldITerminateBringingOtherToFront())
-            {
-                Application.Current.Shutdown();
-                return;
-            }
-
             InitializeComponent();
-
-            SetCoreRunning();
 
             //string profileToLoad = !string.IsNullOrEmpty(SettingsManager.CurrentSettings.LastUsedProfileName) 
             //    ? SettingsManager.CurrentSettings.LastUsedProfileName 
@@ -65,6 +61,63 @@ namespace AppManager.Config
             //CheckIfAppsRunningValue.AutoReset = true;
             //CheckIfAppsRunningValue.Elapsed += new ElapsedEventHandler(CheckRunningHandler);
             //CheckIfAppsRunningValue.Start();
+        }
+
+        public void App_Startup(object sender, StartupEventArgs e)
+        {
+            string? page = null;
+            string? item = null;
+
+            
+
+            for (int i = 0; i < e.Args.Length; i++)
+            {
+                int argsCount = 0;
+
+                switch (e.Args[i].ToLower())
+                {
+                    case PageCommand:
+
+                        argsCount = CountNonCommandArgs(e.Args, i + 1);
+                        page = string.Join(" ", e.Args, i + 1, argsCount);
+                        break;
+
+                    case ItemCommand:
+
+                        argsCount = CountNonCommandArgs(e.Args, i + 1);
+                        item = string.Join(" ", e.Args, i + 1, argsCount);
+                        break;
+                }
+
+                i += argsCount;
+            }
+
+            if (Shared.ShouldITerminateBringingOtherToFront())
+            {
+                Application.Current.Shutdown();
+                return;
+            }
+
+            MainWindow mainWindow = new();
+            mainWindow.Show();
+
+            SetCoreRunning();
+        }
+
+        private int CountNonCommandArgs(string[] args, int startIndex)
+        {
+            int i = FindNextCommandArgIndex(args, startIndex);
+
+            return -1 == i ? args.Length - startIndex : i - startIndex;
+        }
+
+        private int FindNextCommandArgIndex(string[] args, int startIndex)
+        {
+            for (; startIndex < args.Length; startIndex++)
+            {
+                if (args[startIndex].StartsWith(CommandPrefix)) { return startIndex; }
+            }
+            return -1;
         }
 
         protected void SetCoreRunning()

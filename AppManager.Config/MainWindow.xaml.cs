@@ -25,6 +25,7 @@ namespace AppManager.Config
     /// </summary>
     public partial class MainWindow : Window
     {
+        public AppManager.Core.Version Version => App.Version;
         private readonly Pages.AppsPage AppsPage = new();
         private readonly Pages.AppGroupsPage AppGroupsPage = new();
         private readonly ShortcutsPage ShortcutsPage = new();
@@ -55,7 +56,7 @@ namespace AppManager.Config
             // Initialize profile selector
             InitializeProfileSelector();
 
-            InitiateNav1();
+            //InitiateNav1();
         }
 
         /// <summary>
@@ -262,7 +263,7 @@ namespace AppManager.Config
             }
         }
 
-        private void InitiateNav1()
+        /*private void InitiateNav1()
         {
             Nav1List.ItemsSource = Nav1ListValue;
             Nav1List.AddHandler(Button.ClickEvent, new RoutedEventHandler(Nav1ListButton_Click));
@@ -303,7 +304,7 @@ namespace AppManager.Config
                     Nav1List.Focus();
                 }
             };
-        }
+        }*/
 
         private void AddNew(string category, string name)
         {
@@ -392,7 +393,7 @@ namespace AppManager.Config
                 }
             }
 
-            Nav1NewItemTextBox.Text = Nav1NewItemPlaceholderValue;
+            //Nav1NewItemTextBox.Text = Nav1NewItemPlaceholderValue;
         }
 
         private void LoadPage()

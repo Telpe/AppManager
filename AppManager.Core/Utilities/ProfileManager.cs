@@ -109,6 +109,11 @@ namespace AppManager.Core.Utilities
             }
         }
 
+        /// <summary>
+        /// Uses CurrentProfile if no profile is provided.<br/>
+        /// Updates the version in the profile and saves it to disk.
+        /// </summary>
+        /// <param name="profile"></param>
         public static void SaveProfile(ProfileModel? profile = null)
         {
             profile ??= CurrentProfileValue;

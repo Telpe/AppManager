@@ -11,7 +11,7 @@ namespace AppManager.Core.Actions.Focus
 {
     public partial class FocusAction : BaseAction, IFocusAction
     {
-        public override AppActionTypeEnum ActionType => AppActionTypeEnum.Focus;
+        public override ActionTypeEnum ActionType => ActionTypeEnum.Focus;
         public override string Description => "Brings an application window to the foreground";
         public string? AppName { get; set; }
 

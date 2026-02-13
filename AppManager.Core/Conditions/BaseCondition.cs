@@ -1,5 +1,6 @@
 using AppManager.Core.Models;
 using System;
+using System.Linq;
 using System.Reflection;
 
 namespace AppManager.Core.Conditions

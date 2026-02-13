@@ -9,6 +9,8 @@ namespace AppManager.Core.Models
         public ConditionTypeEnum ConditionType { get; set; }
         public bool IsNot { get; set; } = false;
 
+        public string Id { get; set; } = string.Empty;
+
         // Process-related parameters
         public string? ProcessName { get; set; }
         public bool? IncludeChildProcesses { get; set; }
@@ -48,6 +50,7 @@ namespace AppManager.Core.Models
             {
                 ConditionType = this.ConditionType,
                 IsNot = this.IsNot,
+                Id = this.Id,
                 ProcessName = this.ProcessName,
                 IncludeChildProcesses = this.IncludeChildProcesses,
                 FilePath = this.FilePath,

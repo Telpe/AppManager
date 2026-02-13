@@ -33,7 +33,7 @@ namespace AppManager.Core.Utilities
                 {
                     ActionFactory.CreateAction(new()
                     {
-                        ActionType = AppActionTypeEnum.BringToFront,
+                        ActionType = ActionTypeEnum.BringToFront,
                         AppName = notSelf!.ProcessName,
                         ProcessLastId = notSelf.Id
 
@@ -64,5 +64,17 @@ namespace AppManager.Core.Utilities
                 currentProcess.Dispose();
             }
         }
+
+        public static string ToShortString(Guid guid)
+        {
+            return Convert.ToBase64String(guid.ToByteArray())[0..^2].Replace('+', '-').Replace('/', '_');
+        }
+
+        public static Guid FromShortString(string str)
+        {
+            str = str.Replace('_', '/').Replace('-', '+');
+            return new Guid(Convert.FromBase64String(str + "=="));
+        }
+
     }
 }

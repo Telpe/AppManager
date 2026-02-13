@@ -1,6 +1,7 @@
 ﻿using AppManager.Core.Utilities;
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Text.Json.Serialization;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 

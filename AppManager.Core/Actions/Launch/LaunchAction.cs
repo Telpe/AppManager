@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using static System.Net.Mime.MediaTypeNames;
@@ -14,7 +15,7 @@ namespace AppManager.Core.Actions.Launch
     public class LaunchAction : BaseAction, ILaunchAction
     {
         public string? AppName { get; set; }
-        public override AppActionTypeEnum ActionType => AppActionTypeEnum.Launch;
+        public override ActionTypeEnum ActionType => ActionTypeEnum.Launch;
         public override string Description => "Launches an application";
 
         public string? ExecutablePath { get; set; }

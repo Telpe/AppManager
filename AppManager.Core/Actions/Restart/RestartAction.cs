@@ -12,7 +12,7 @@ namespace AppManager.Core.Actions.Restart
 {
     public class RestartAction : BaseAction, IRestartAction
     {
-        public override AppActionTypeEnum ActionType => AppActionTypeEnum.Restart;
+        public override ActionTypeEnum ActionType => ActionTypeEnum.Restart;
         public override string Description => "Restarts an application by closing and launching it";
         public string? AppName { get; set; }
         public bool? IncludeChildProcesses { get; set; }
@@ -41,8 +41,8 @@ namespace AppManager.Core.Actions.Restart
             var closeM = ToModel();
             var launchM = ToModel();
 
-            closeM.ActionType = AppActionTypeEnum.Close;
-            launchM.ActionType = AppActionTypeEnum.Launch;
+            closeM.ActionType = ActionTypeEnum.Close;
+            launchM.ActionType = ActionTypeEnum.Launch;
 
             _Close = new CloseAction(closeM);
             _Launch = new LaunchAction(launchM);

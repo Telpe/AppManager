@@ -11,7 +11,7 @@ namespace AppManager.Core.Actions
 {
     public abstract class BaseAction : IAction
     {
-        public abstract AppActionTypeEnum ActionType { get; }
+        public abstract ActionTypeEnum ActionType { get; }
 
         private ICondition[] ConditionsValue = Array.Empty<ICondition>();
 

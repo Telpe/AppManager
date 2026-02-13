@@ -58,7 +58,7 @@ namespace AppManager.Config.EditorControls
         {
             try
             {
-                TypeSelectionGroupBox!.Content = new TypeSelectParameter(typeof(AppActionTypeEnum), null, null, "Choose:");
+                TypeSelectionGroupBox!.Content = new TypeSelectParameter(typeof(ActionTypeEnum), null, null, "Choose:");
                 (TypeSelectionGroupBox!.Content as TypeSelectParameter)!.PropertyChanged += ActionTypeComboBox_SelectionChanged;
 
                 (TypeSelectionGroupBox!.Content as TypeSelectParameter)!.Selected = CurrentActionModelValue.ActionType;
@@ -96,26 +96,26 @@ namespace AppManager.Config.EditorControls
 
                 (ActionConditions.Content as ConditionsParameter)!.PropertyChanged += ParameterChanged;
 
-                if (TypeSelectionGroupBox!.Content is TypeSelectParameter { Selected: AppActionTypeEnum actionType })
+                if (TypeSelectionGroupBox!.Content is TypeSelectParameter { Selected: ActionTypeEnum actionType })
                 {
                     switch (actionType)
                     {
-                        case AppActionTypeEnum.Launch:
+                        case ActionTypeEnum.Launch:
                             AddParametersFromInterface(typeof(ILaunchAction));
                             break;
-                        case AppActionTypeEnum.Close:
+                        case ActionTypeEnum.Close:
                             AddParametersFromInterface(typeof(ICloseAction));
                             break;
-                        case AppActionTypeEnum.Restart:
+                        case ActionTypeEnum.Restart:
                             AddParametersFromInterface(typeof(IRestartAction));
                             break;
-                        case AppActionTypeEnum.Minimize:
+                        case ActionTypeEnum.Minimize:
                             AddParametersFromInterface(typeof(IMinimizeAction));
                             break;
-                        case AppActionTypeEnum.Focus:
+                        case ActionTypeEnum.Focus:
                             AddParametersFromInterface(typeof(IFocusAction));
                             break;
-                        case AppActionTypeEnum.BringToFront:
+                        case ActionTypeEnum.BringToFront:
                             AddParametersFromInterface(typeof(IBringToFrontAction));
                             break;
                     }
@@ -389,7 +389,7 @@ namespace AppManager.Config.EditorControls
 
         private void ActionTypeComboBox_SelectionChanged(object? sender, PropertyChangedEventArgs e)
         {
-            if (sender is TypeSelectParameter tsp && tsp.Selected is AppActionTypeEnum typeEnum)
+            if (sender is TypeSelectParameter tsp && tsp.Selected is ActionTypeEnum typeEnum)
             {
                 CurrentActionModelValue.ActionType = typeEnum;
 
@@ -401,7 +401,7 @@ namespace AppManager.Config.EditorControls
                 return;
             }
 
-            throw new InvalidOperationException($"{nameof(ActionTypeComboBox_SelectionChanged)}: {nameof(sender)} is not {nameof(TypeSelectParameter)} or {nameof(TypeSelectParameter.Selected)} is not {nameof(AppActionTypeEnum)}");
+            throw new InvalidOperationException($"{nameof(ActionTypeComboBox_SelectionChanged)}: {nameof(sender)} is not {nameof(TypeSelectParameter)} or {nameof(TypeSelectParameter.Selected)} is not {nameof(ActionTypeEnum)}");
         }
 
         private void ParameterChanged(object? sender, PropertyChangedEventArgs e)

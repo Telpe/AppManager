@@ -19,14 +19,14 @@ namespace AppManager.Tests.Unit.Actions
         public void Constructor_WithValidModel_ShouldCreateInstance()
         {
             // Arrange
-            var model = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Close);
+            var model = TestDataBuilder.CreateBasicActionModel(ActionTypeEnum.Close);
 
             // Act
             var action = new CloseAction(model);
 
             // Assert
             action.Should().NotBeNull();
-            action.ActionType.Should().Be(AppActionTypeEnum.Close);
+            action.ActionType.Should().Be(ActionTypeEnum.Close);
             action.Description.Should().NotBeNullOrEmpty();
         }
 
@@ -36,7 +36,7 @@ namespace AppManager.Tests.Unit.Actions
         public void Constructor_WithWrongActionType_ShouldThrowArgumentException()
         {
             // Arrange
-            var model = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Launch);
+            var model = TestDataBuilder.CreateBasicActionModel(ActionTypeEnum.Launch);
 
             // Act & Assert
             Action act = () => new CloseAction(model);
@@ -50,7 +50,7 @@ namespace AppManager.Tests.Unit.Actions
         public void CanExecute_WithValidConfiguration_ShouldReturnTrue()
         {
             // Arrange
-            var model = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Close, "notepad");
+            var model = TestDataBuilder.CreateBasicActionModel(ActionTypeEnum.Close, "notepad");
             var action = new CloseAction(model);
 
             // Act
@@ -67,10 +67,10 @@ namespace AppManager.Tests.Unit.Actions
         {
             // Arrange - First launch notepad
             var appName = "notepad";
-            var launchAction = new LaunchAction(TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Launch, appName));
+            var launchAction = new LaunchAction(TestDataBuilder.CreateBasicActionModel(ActionTypeEnum.Launch, appName));
             launchAction.Execute();
             
-            var closeAction = new CloseAction(TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Close, appName));
+            var closeAction = new CloseAction(TestDataBuilder.CreateBasicActionModel(ActionTypeEnum.Close, appName));
 
             Task.Delay(CoreConstants.DefaultActionDelay).Wait();
             try
@@ -97,7 +97,7 @@ namespace AppManager.Tests.Unit.Actions
             try
             {
                 // Arrange
-                var model = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Close, "nonexistentapp");
+                var model = TestDataBuilder.CreateBasicActionModel(ActionTypeEnum.Close, "nonexistentapp");
                 var action = new CloseAction(model);
 
                 // Act
@@ -117,7 +117,7 @@ namespace AppManager.Tests.Unit.Actions
         public void ToModel_ShouldReturnCorrectActionModel()
         {
             // Arrange
-            var originalModel = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Close, "notepad");
+            var originalModel = TestDataBuilder.CreateBasicActionModel(ActionTypeEnum.Close, "notepad");
             originalModel.TimeoutMs = 5000;
             originalModel.ForceOperation = true;
             var action = new CloseAction(originalModel);
@@ -127,7 +127,7 @@ namespace AppManager.Tests.Unit.Actions
 
             // Assert
             returnedModel.Should().NotBeNull();
-            returnedModel.ActionType.Should().Be(AppActionTypeEnum.Close);
+            returnedModel.ActionType.Should().Be(ActionTypeEnum.Close);
             returnedModel.AppName.Should().Be(originalModel.AppName);
             returnedModel.TimeoutMs.Should().Be(originalModel.TimeoutMs);
             returnedModel.ForceOperation.Should().Be(originalModel.ForceOperation);
@@ -139,7 +139,7 @@ namespace AppManager.Tests.Unit.Actions
         public void Properties_ShouldBeSetCorrectlyFromModel()
         {
             // Arrange
-            var model = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Close, "test");
+            var model = TestDataBuilder.CreateBasicActionModel(ActionTypeEnum.Close, "test");
             model.TimeoutMs = 3000;
             model.ForceOperation = true;
             model.IncludeChildProcesses = true;

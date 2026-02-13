@@ -1,19 +1,13 @@
 ﻿using AppManager.Core.Actions;
-using AppManager.Core.Conditions;
 using AppManager.Core.Models;
 using AppManager.Core.Triggers;
-using AppManager.Core.Utilities;
 using AppManager.Config.Interfaces;
 using AppManager.Config.ParameterControls;
 using AppManager.Config.Utilities;
-using AppManager.Config.Utilities;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -418,7 +412,7 @@ namespace AppManager.Config.EditorControls
             var newAction = new ActionModel
             {
                 AppName = ProfileManager.CurrentProfile.SelectedNav1List, // TODO: Consider purpose.
-                ActionType = AppActionTypeEnum.Launch // Default action
+                ActionType = ActionTypeEnum.Launch // Default action
             };
 
             CurrentTriggerModelValue.Actions ??= [];

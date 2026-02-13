@@ -17,7 +17,7 @@ namespace AppManager.Tests.TestUtilities
         /// Creates a basic ActionModel for testing
         /// </summary>
         public static ActionModel CreateBasicActionModel(
-            AppActionTypeEnum actionType = AppActionTypeEnum.Launch,
+            ActionTypeEnum actionType = ActionTypeEnum.Launch,
             string appName = "notepad")
         {
             return new ActionModel
@@ -90,7 +90,7 @@ namespace AppManager.Tests.TestUtilities
         public static ActionModel[] CreateMultipleActionModels(int count = 3)
         {
             var actions = new List<ActionModel>();
-            var actionTypes = Enum.GetValues<AppActionTypeEnum>();
+            var actionTypes = Enum.GetValues<ActionTypeEnum>();
             var appNames = new[] { "notepad", "CalculatorApp", "mspaint", "cmd", "explorer" };
 
             for (int i = 0; i < count; i++)

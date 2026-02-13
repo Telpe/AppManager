@@ -18,7 +18,7 @@ namespace AppManager.Tests.Unit.Models
             var model = new ActionModel();
 
             // Assert
-            model.ActionType.Should().Be(default(AppActionTypeEnum));
+            model.ActionType.Should().Be(default(ActionTypeEnum));
             model.AppName.Should().BeNull();
             model.ExecutablePath.Should().BeNull();
             model.Arguments.Should().BeNull();
@@ -38,7 +38,7 @@ namespace AppManager.Tests.Unit.Models
             // Arrange & Act
             var model = new ActionModel
             {
-                ActionType = AppActionTypeEnum.Launch,
+                ActionType = ActionTypeEnum.Launch,
                 AppName = "TestApp",
                 Arguments = "--test",
                 WindowTitle = "Test Window",
@@ -50,7 +50,7 @@ namespace AppManager.Tests.Unit.Models
             };
 
             // Assert
-            model.ActionType.Should().Be(AppActionTypeEnum.Launch);
+            model.ActionType.Should().Be(ActionTypeEnum.Launch);
             model.AppName.Should().Be("TestApp");
             model.ExecutablePath.Should().Be(@"C:\Test\app.exe");
             model.Arguments.Should().Be("--test");
@@ -73,7 +73,7 @@ namespace AppManager.Tests.Unit.Models
             // Act
             var model = new ActionModel
             {
-                ActionType = AppActionTypeEnum.Launch,
+                ActionType = ActionTypeEnum.Launch,
                 AppName = "TestApp",
                 Conditions = conditions
             };
@@ -94,12 +94,12 @@ namespace AppManager.Tests.Unit.Models
 
             // Act
             model.AppName = "UpdatedApp";
-            model.ActionType = AppActionTypeEnum.Close;
+            model.ActionType = ActionTypeEnum.Close;
             model.TimeoutMs = 10000;
 
             // Assert
             model.AppName.Should().Be("UpdatedApp");
-            model.ActionType.Should().Be(AppActionTypeEnum.Close);
+            model.ActionType.Should().Be(ActionTypeEnum.Close);
             model.TimeoutMs.Should().Be(10000);
         }
 

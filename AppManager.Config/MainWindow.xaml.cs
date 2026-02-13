@@ -1,9 +1,6 @@
-﻿using AppManager.Core.Actions;
-using AppManager.Core.Models;
-using AppManager.Core.Utilities;
+﻿using AppManager.Core.Models;
 using AppManager.Config.Interfaces;
 using AppManager.Config.Pages;
-using AppManager.Config.Utilities;
 using AppManager.Config.Utilities;
 using System;
 using System.Collections.ObjectModel;
@@ -14,7 +11,6 @@ using System.Linq;
 using System.Numerics;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
 
 namespace AppManager.Config
 {
@@ -312,7 +308,7 @@ namespace AppManager.Config
             {
                 case "apps":
                     {
-                        var newApp = new AppManagedModel(name, false);
+                        var newApp = new AppManagedModel(name);
 
                         ProfileManager.CurrentProfile.Apps = ProfileManager.CurrentProfile.Apps.Append(newApp).ToArray();
 
@@ -496,6 +492,15 @@ namespace AppManager.Config
         private void ShowQuickActions()
         {
             Log.WriteLine("Showing quick actions");
+        }
+
+        public void Close(bool ignoreClosing)
+        {
+            if (ignoreClosing)
+            {
+                this.Closing -= Window_Closing;
+            }
+            this.Dispatcher.Invoke(Close);
         }
 
         private void Window_Closing(object? sender, CancelEventArgs e)

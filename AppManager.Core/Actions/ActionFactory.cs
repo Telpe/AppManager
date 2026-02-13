@@ -16,14 +16,14 @@ namespace AppManager.Core.Actions
 {
     public static class ActionFactory
     {
-        private static readonly Dictionary<AppActionTypeEnum, Func<ActionModel, IAction>> ActionFactories = new Dictionary<AppActionTypeEnum, Func<ActionModel, IAction>>
+        private static readonly Dictionary<ActionTypeEnum, Func<ActionModel, IAction>> ActionFactories = new Dictionary<ActionTypeEnum, Func<ActionModel, IAction>>
         {
-            {AppActionTypeEnum.Launch, (model) => new LaunchAction(model)},
-            {AppActionTypeEnum.Close, (model) => new CloseAction(model)},
-            {AppActionTypeEnum.Restart, (model) => new RestartAction(model)},
-            {AppActionTypeEnum.Focus, (model) => new FocusAction(model)},
-            {AppActionTypeEnum.BringToFront, (model) => new BringToFrontAction(model)},
-            {AppActionTypeEnum.Minimize, (model) => new MinimizeAction(model)}
+            {ActionTypeEnum.Launch, (model) => new LaunchAction(model)},
+            {ActionTypeEnum.Close, (model) => new CloseAction(model)},
+            {ActionTypeEnum.Restart, (model) => new RestartAction(model)},
+            {ActionTypeEnum.Focus, (model) => new FocusAction(model)},
+            {ActionTypeEnum.BringToFront, (model) => new BringToFrontAction(model)},
+            {ActionTypeEnum.Minimize, (model) => new MinimizeAction(model)}
         };
 
         public static IAction CreateAction(ActionModel model)
@@ -36,17 +36,17 @@ namespace AppManager.Core.Actions
             throw new NotSupportedException($"Action type {model.ActionType} is not supported");
         }
 
-        public static bool IsActionTypeSupported(AppActionTypeEnum conditionType)
+        public static bool IsActionTypeSupported(ActionTypeEnum conditionType)
         {
             return ActionFactories.ContainsKey(conditionType);
         }
 
-        public static void SetActionFactory(AppActionTypeEnum conditionType, Func<ActionModel, IAction> factoryFunc)
+        public static void SetActionFactory(ActionTypeEnum conditionType, Func<ActionModel, IAction> factoryFunc)
         {
             ActionFactories[conditionType] = factoryFunc;
         }
 
-        public static IEnumerable<AppActionTypeEnum> GetSupportedActionTypes()
+        public static IEnumerable<ActionTypeEnum> GetSupportedActionTypes()
         {
             return ActionFactories.Keys;
         }

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using AppManager.Core.Actions;
 using System.Collections.Generic;
 using AppManager.Core.Models;
+using System.IO;
 
 namespace AppManager.Core.Triggers
 {

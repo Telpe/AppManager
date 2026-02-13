@@ -29,7 +29,7 @@ namespace AppManager.Core.Utilities
         private ContextMenuStrip InitializeTrayMenu()
         {
             ContextMenuStrip contextMenu = new ContextMenuStrip();
-            contextMenu.Items.Add("Open AppManager", null, OnOpen);
+            contextMenu.Items.Add("AppManager", null, OnOpen);
             contextMenu.Items.Add("Triggers", null, OnTriggers);
             contextMenu.Items.Add("-");
             contextMenu.Items.Add("About", null, OnAbout);
@@ -65,12 +65,12 @@ namespace AppManager.Core.Utilities
 
         private void OnOpen(object? sender, EventArgs? e)
         {
-            ActionFactory.CreateAction(new() { ActionType = AppActionTypeEnum.Launch, AppName = "AppManager" }).Execute();
+            ActionFactory.CreateAction(new() { ActionType = ActionTypeEnum.Launch, AppName = "AppManager" }).Execute();
         }
 
         private void OnTriggers(object? sender, EventArgs? e)
         {
-            ActionFactory.CreateAction(new() { ActionType = AppActionTypeEnum.Launch, AppName = "AppManager.Config" }).Execute();
+            ActionFactory.CreateAction(new() { ActionType = ActionTypeEnum.Launch, AppName = "AppManager.Config" }).Execute();
         }
 
         private void OnAbout(object? sender, EventArgs? e)

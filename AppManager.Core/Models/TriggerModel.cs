@@ -1,5 +1,6 @@
 using AppManager.Core.Triggers;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Input;
 
 namespace AppManager.Core.Models
@@ -7,6 +8,7 @@ namespace AppManager.Core.Models
     public class TriggerModel : ConditionalModel, IAppCloseTrigger, IAppLaunchTrigger, IKeybindTrigger, ISystemEventTrigger, INetworkPortTrigger, IButtonTrigger
     {
         public TriggerTypeEnum TriggerType { get; set; }
+        public string Id { get; set; } = string.Empty;
 
         // Shortcut-specific parameters
         public Key? Key { get; set; }
@@ -40,6 +42,7 @@ namespace AppManager.Core.Models
             return new()
             {
                 TriggerType = TriggerType,
+                Id = Id,
                 Key = Key,
                 Modifiers = Modifiers,
                 KeybindCombination = KeybindCombination,

@@ -1,4 +1,7 @@
 using AppManager.Core.Conditions;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace AppManager.Core.Models
 {
@@ -19,6 +22,44 @@ namespace AppManager.Core.Models
                 ConditionTypeEnum.PreviousActionSuccess => $"Previous action result. Only when trigger has multiple actions.",
                 _ => $"Unknown Condition: {model.ConditionType}"
             };
+        }
+
+        public bool TryGetConditionFromId(string itemId, out ConditionModel? conditionModel)
+        {
+            conditionModel = null;
+
+            foreach (ConditionModel condition in Conditions ?? [])
+            {
+                if (itemId == condition.Id)
+                {
+                    conditionModel = condition;
+                    break;
+                }
+            }
+
+            return conditionModel is not null;
+        }
+
+        /// <summary>
+        /// Only update if Id matches, otherwise return false.
+        /// </summary>
+        /// <param name="item"></param>
+        /// <param name="conditionalModel"></param>
+        /// <returns></returns>
+        public bool TryUpdateCondition(ConditionModel conditionModel)
+        {
+            if (Conditions is null) { return false; }
+
+            for (int i = 0; i < Conditions!.Length; i++)
+            {
+                if (Conditions[i].Id == conditionModel.Id)
+                {
+                    Conditions[i] = conditionModel;
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>

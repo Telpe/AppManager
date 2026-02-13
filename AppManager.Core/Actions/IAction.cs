@@ -6,7 +6,7 @@ namespace AppManager.Core.Actions
 {
     public interface IAction
     {
-        public AppActionTypeEnum ActionType { get; }
+        public ActionTypeEnum ActionType { get; }
         string Description { get; }
         bool Execute();
         bool CanExecute();

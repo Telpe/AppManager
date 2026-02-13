@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace AppManager.Core.Keybinds
 {
     public static class KeyboardHookConstants

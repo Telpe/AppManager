@@ -21,14 +21,14 @@ namespace AppManager.Tests.Unit.Actions
         public void Constructor_WithValidModel_ShouldCreateInstance()
         {
             // Arrange
-            var model = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.BringToFront);
+            var model = TestDataBuilder.CreateBasicActionModel(ActionTypeEnum.BringToFront);
 
             // Act
             var action = new BringToFrontAction(model);
 
             // Assert
             action.Should().NotBeNull();
-            action.ActionType.Should().Be(AppActionTypeEnum.BringToFront);
+            action.ActionType.Should().Be(ActionTypeEnum.BringToFront);
             action.Description.Should().NotBeNullOrEmpty();
         }
 
@@ -38,7 +38,7 @@ namespace AppManager.Tests.Unit.Actions
         public void Constructor_WithWrongActionType_ShouldThrowArgumentException()
         {
             // Arrange
-            var model = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Launch);
+            var model = TestDataBuilder.CreateBasicActionModel(ActionTypeEnum.Launch);
 
             // Act & Assert
             Action act = () => new BringToFrontAction(model);
@@ -52,14 +52,14 @@ namespace AppManager.Tests.Unit.Actions
         public async Task ExecuteAsync_WithRunningApplication_ShouldBringToFront()
         {
             // Arrange - Launch an application first
-            var launchModel = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Launch, "CalculatorApp");
+            var launchModel = TestDataBuilder.CreateBasicActionModel(ActionTypeEnum.Launch, "CalculatorApp");
             var launchAction = new LaunchAction(launchModel);
             launchAction.Execute();
             
             // Wait for CalculatorApp to start
             Task.Delay(CoreConstants.DefaultActionDelay).Wait();
 
-            var model = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.BringToFront, "CalculatorApp");
+            var model = TestDataBuilder.CreateBasicActionModel(ActionTypeEnum.BringToFront, "CalculatorApp");
             var action = new BringToFrontAction(model);
 
             try
@@ -73,7 +73,7 @@ namespace AppManager.Tests.Unit.Actions
             finally
             {
                 // Cleanup
-                var closeModel = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Close, "CalculatorApp");
+                var closeModel = TestDataBuilder.CreateBasicActionModel(ActionTypeEnum.Close, "CalculatorApp");
                 var closeAction = new CloseAction(closeModel);
                 closeAction.Execute();
             }
@@ -85,7 +85,7 @@ namespace AppManager.Tests.Unit.Actions
         public void ToModel_ShouldReturnCorrectActionModel()
         {
             // Arrange
-            var originalModel = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.BringToFront, "notepad");
+            var originalModel = TestDataBuilder.CreateBasicActionModel(ActionTypeEnum.BringToFront, "notepad");
             originalModel.WindowTitle = "Test Window";
             var action = new BringToFrontAction(originalModel);
 
@@ -94,7 +94,7 @@ namespace AppManager.Tests.Unit.Actions
 
             // Assert
             returnedModel.Should().NotBeNull();
-            returnedModel.ActionType.Should().Be(AppActionTypeEnum.BringToFront);
+            returnedModel.ActionType.Should().Be(ActionTypeEnum.BringToFront);
             returnedModel.AppName.Should().Be(originalModel.AppName);
             returnedModel.WindowTitle.Should().Be(originalModel.WindowTitle);
         }
@@ -105,7 +105,7 @@ namespace AppManager.Tests.Unit.Actions
         public void Properties_ShouldBeSetCorrectlyFromModel()
         {
             // Arrange
-            var model = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.BringToFront, "test");
+            var model = TestDataBuilder.CreateBasicActionModel(ActionTypeEnum.BringToFront, "test");
             model.WindowTitle = "Test Window Title";
 
             // Act

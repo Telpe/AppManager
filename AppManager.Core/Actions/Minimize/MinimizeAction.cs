@@ -11,7 +11,7 @@ namespace AppManager.Core.Actions.Minimize
 {
     public partial class MinimizeAction : BaseAction, IMinimizeAction
     {
-        public override AppActionTypeEnum ActionType => AppActionTypeEnum.Minimize;
+        public override ActionTypeEnum ActionType => ActionTypeEnum.Minimize;
         public override string Description => "Minimizes an application window";
 
         public string? AppName { get; set; }

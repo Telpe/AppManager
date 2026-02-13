@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace AppManager.Core.Actions.BringToFront
@@ -12,7 +13,7 @@ namespace AppManager.Core.Actions.BringToFront
     public partial class BringToFrontAction : BaseAction, IBringToFrontAction
     {
         public string? AppName { get; set; }
-        public override AppActionTypeEnum ActionType => AppActionTypeEnum.BringToFront;
+        public override ActionTypeEnum ActionType => ActionTypeEnum.BringToFront;
         public override string Description => "Brings an application window to the front and makes it topmost temporarily";
 
         public string? WindowTitle { get; set; }

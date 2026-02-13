@@ -1,5 +1,6 @@
 using AppManager.Config.Interfaces;
 using System;
+using System.Collections.Generic;
 using System.Numerics;
 using System.Windows;
 using System.Windows.Controls;

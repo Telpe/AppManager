@@ -1,6 +1,7 @@
 ﻿global using AppManager.Core.Utilities;
 using AppManager.Core.Actions;
 using AppManager.Core.Models;
+using System;
 using System.Configuration;
 using System.Data;
 using System.Diagnostics;
@@ -56,7 +57,7 @@ namespace AppManager
                 
                 ActionFactory.CreateAction(new()
                 {
-                    ActionType = AppActionTypeEnum.Launch,
+                    ActionType = ActionTypeEnum.Launch,
                     AppName = "AppManager.Core"
                 }).Execute();
             }

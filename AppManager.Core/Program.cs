@@ -350,7 +350,7 @@ namespace AppManager.Core
                 {
                     ActionFactory.CreateAction(new()
                     {
-                        ActionType = AppActionTypeEnum.Close,
+                        ActionType = ActionTypeEnum.Close,
                         AppName = "AppManager"
                     }).Execute();
                 }
@@ -360,7 +360,7 @@ namespace AppManager.Core
                 {
                     ActionFactory.CreateAction(new()
                     {
-                        ActionType = AppActionTypeEnum.Close,
+                        ActionType = ActionTypeEnum.Close,
                         AppName = "AppManager.Config"
                     }).Execute();
                 }

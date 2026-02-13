@@ -21,12 +21,12 @@ namespace AppManager.Tests.Unit.Actions
 
             // Assert
             actions.Should().NotBeEmpty();
-            actions.Should().Contain(AppActionTypeEnum.Launch);
-            actions.Should().Contain(AppActionTypeEnum.Close);
-            actions.Should().Contain(AppActionTypeEnum.Restart);
-            actions.Should().Contain(AppActionTypeEnum.Focus);
-            actions.Should().Contain(AppActionTypeEnum.BringToFront);
-            actions.Should().Contain(AppActionTypeEnum.Minimize);
+            actions.Should().Contain(ActionTypeEnum.Launch);
+            actions.Should().Contain(ActionTypeEnum.Close);
+            actions.Should().Contain(ActionTypeEnum.Restart);
+            actions.Should().Contain(ActionTypeEnum.Focus);
+            actions.Should().Contain(ActionTypeEnum.BringToFront);
+            actions.Should().Contain(ActionTypeEnum.Minimize);
         }
 
         [TestMethod]
@@ -35,7 +35,7 @@ namespace AppManager.Tests.Unit.Actions
         public void CreateAction_WithLaunchAction_ShouldReturnLaunchAction()
         {
             // Arrange
-            var model = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Launch);
+            var model = TestDataBuilder.CreateBasicActionModel(ActionTypeEnum.Launch);
 
             // Act
             var action = ActionFactory.CreateAction(model);
@@ -43,7 +43,7 @@ namespace AppManager.Tests.Unit.Actions
             // Assert
             action.Should().NotBeNull();
             action.Should().BeOfType<LaunchAction>();
-            action.ActionType.Should().Be(AppActionTypeEnum.Launch);
+            action.ActionType.Should().Be(ActionTypeEnum.Launch);
         }
 
         [TestMethod]
@@ -52,7 +52,7 @@ namespace AppManager.Tests.Unit.Actions
         public void CreateAction_WithCloseAction_ShouldReturnCloseAction()
         {
             // Arrange
-            var model = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Close);
+            var model = TestDataBuilder.CreateBasicActionModel(ActionTypeEnum.Close);
 
             // Act
             var action = ActionFactory.CreateAction(model);
@@ -60,7 +60,7 @@ namespace AppManager.Tests.Unit.Actions
             // Assert
             action.Should().NotBeNull();
             action.Should().BeOfType<CloseAction>();
-            action.ActionType.Should().Be(AppActionTypeEnum.Close);
+            action.ActionType.Should().Be(ActionTypeEnum.Close);
         }
 
         [TestMethod]
@@ -70,7 +70,7 @@ namespace AppManager.Tests.Unit.Actions
         {
             // Arrange
             var model = TestDataBuilder.CreateBasicActionModel();
-            model.ActionType = (AppActionTypeEnum)999; // Invalid action type
+            model.ActionType = (ActionTypeEnum)999; // Invalid action type
 
             // Act & Assert
             Action act = () => ActionFactory.CreateAction(model);
@@ -83,7 +83,7 @@ namespace AppManager.Tests.Unit.Actions
         public void CanExecuteAction_WithValidAppName_ShouldReturnBoolean()
         {
             // Act
-            var result = ActionFactory.CreateAction(new() { ActionType = AppActionTypeEnum.Launch, AppName = "notepad" }).CanExecute();
+            var result = ActionFactory.CreateAction(new() { ActionType = ActionTypeEnum.Launch, AppName = "notepad" }).CanExecute();
 
             // Assert
             result.Should().Be(true);

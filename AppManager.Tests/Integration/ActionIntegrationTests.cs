@@ -63,9 +63,9 @@ namespace AppManager.Tests.Integration
         public async Task LaunchAndCloseAction_Integration_ShouldWorkTogether()
         {
             // Arrange
-            var launchModel = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Launch, "CalculatorApp");
+            var launchModel = TestDataBuilder.CreateBasicActionModel(ActionTypeEnum.Launch, "CalculatorApp");
             var closeModel = new ActionModel() { 
-                ActionType = AppActionTypeEnum.Close
+                ActionType = ActionTypeEnum.Close
                 , AppName = "CalculatorApp"
                 , ForceOperation = true
             };
@@ -84,9 +84,9 @@ namespace AppManager.Tests.Integration
         public async Task RestartAction_Integration_ShouldCloseAndRelaunch()
         {
             // Arrange
-            var launchModel = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Launch, "notepad");
-            var restartModel = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Restart, "notepad");
-            var closeModel = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Close, "notepad");
+            var launchModel = TestDataBuilder.CreateBasicActionModel(ActionTypeEnum.Launch, "notepad");
+            var restartModel = TestDataBuilder.CreateBasicActionModel(ActionTypeEnum.Restart, "notepad");
+            var closeModel = TestDataBuilder.CreateBasicActionModel(ActionTypeEnum.Close, "notepad");
 
             var launchAction = new LaunchAction(launchModel);
             var restartAction = new RestartAction(restartModel);
@@ -114,7 +114,7 @@ namespace AppManager.Tests.Integration
 
             IAction action = ActionFactory.CreateAction(new()
             {
-                ActionType = AppActionTypeEnum.BringToFront,
+                ActionType = ActionTypeEnum.BringToFront,
                 AppName = TestAppManagerProcess.ProcessName,
                 ProcessLastId = TestAppManagerProcess.Id
             });
@@ -143,8 +143,8 @@ namespace AppManager.Tests.Integration
         {
             // Arrange
             ActionModel[] actions = [
-                TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Launch, "CalculatorApp"),
-                TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Launch, "notepad")
+                TestDataBuilder.CreateBasicActionModel(ActionTypeEnum.Launch, "CalculatorApp"),
+                TestDataBuilder.CreateBasicActionModel(ActionTypeEnum.Launch, "notepad")
             ];
 
             /*try

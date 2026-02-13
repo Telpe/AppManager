@@ -27,7 +27,7 @@ namespace AppManager.Config.Pages
         private static int MaxBackupModelsValue = 5;
 
         private Dictionary<string, AppPageModel> LoadedPagesValue = new();
-        private AppPageModel CurrentPageValue { get; set; } = new AppPageModel(new AppManagedModel("None", false));
+        private AppPageModel CurrentPageValue { get; set; } = new AppPageModel(new AppManagedModel("None"));
         private AppManagedModel CurrentModelValue
         { 
             get { return CurrentPageValue.CurrentModel; } 
@@ -36,11 +36,6 @@ namespace AppManager.Config.Pages
 
         public AppManagedModel CurrentModel { get { return CurrentModelValue; } }
 
-        public bool IsActive
-        {
-            get { return CurrentModelValue.Active; }
-            set { CurrentModelValue.Active = value; }
-        }
 
         private ObservableCollection<ModelListItem<TriggerModel>> TriggerListItemsValue = new();
         
@@ -49,8 +44,6 @@ namespace AppManager.Config.Pages
         {
             InitializeComponent();
 
-            TriggersListBox.ItemsSource = TriggerListItemsValue;
-            TriggersListBox.AddHandler(Button.ClickEvent, new RoutedEventHandler(EditTriggerButton_Click));
 
             DisableButtons();
         }
@@ -114,21 +107,11 @@ namespace AppManager.Config.Pages
             DisableButtons();
 
             AppNameBox.Text = CurrentModelValue.AppName;
-            ActiveBox.IsChecked = CurrentModelValue.Active;
             
-            RefreshTriggersListBox();
 
             EnableButtons();
         }
 
-        private void RefreshTriggersListBox()
-        {
-            ClearTriggers();
-            foreach (var kvp in CurrentModelValue?.Triggers ?? [])
-            {
-                TriggerListItemsValue.Add(new ModelListItem<TriggerModel>(kvp.Key, kvp.Value, this));
-            }
-        }
 
         private void DisableButtons()   
         {
@@ -166,7 +149,6 @@ namespace AppManager.Config.Pages
 
         private void ActiveBox_Changed(object sender, RoutedEventArgs e)
         {
-            CurrentModelValue.Active = ActiveBox.IsChecked ?? false;
 
             Edited();
         }
@@ -178,62 +160,9 @@ namespace AppManager.Config.Pages
                 TriggerType = TriggerTypeEnum.Keybind
             };
 
-            CurrentModelValue.AddTrigger(newTrigger);
 
 
-            RefreshTriggersListBox();
             Edited();
-        }
-
-        private void EditTriggerButton_Click(object? sender, RoutedEventArgs e)
-        {
-            if (e.OriginalSource is Button button && button.Tag is ModelListItem<TriggerModel> viewModel)
-            {
-                Log.WriteLine($"Edit trigger: {viewModel.DisplayName}");
-                
-                try
-                {
-                    // Create trigger editor control directly
-                    var triggerEditor = new TriggerEditorControl(viewModel.Model);
-                    
-                    // Subscribe to save event
-                    triggerEditor.OnSave += (s, updatedTrigger) =>
-                    {
-                        if (null == updatedTrigger.TriggerModel) { return; }
-
-                        // Update the model in the dictionary
-                        CurrentModelValue.Triggers?[viewModel.Id] = updatedTrigger.TriggerModel;
-
-                        // Refresh the UI to show changes
-                        RefreshTriggersListBox();
-                        
-                        // Mark as edited
-                        Edited();
-                        
-                        Log.WriteLine($"Trigger {viewModel.DisplayName} updated successfully");
-                        ((MainWindow)Application.Current.MainWindow)?.HideOverlay();
-                    };
-
-                    triggerEditor.OnEdited += (s, args) =>
-                    {
-                        Log.WriteLine($"Trigger edited for {viewModel.DisplayName}");
-                        Edited();
-                    };
-
-                    triggerEditor.OnCancel += (s, args) =>
-                    {
-                        Log.WriteLine($"Trigger editing cancelled for {viewModel.DisplayName}");
-                        ((MainWindow)Application.Current.MainWindow)?.HideOverlay();
-                    };
-                    
-                    ((MainWindow)Application.Current.MainWindow)?.ShowOverlay(triggerEditor);
-                }
-                catch (Exception ex)
-                {
-                    Log.WriteLine($"Error opening trigger editor: {ex.Message}");
-                    MessageBox.Show($"Error opening trigger editor: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-            }
         }
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)

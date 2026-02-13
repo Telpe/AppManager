@@ -10,7 +10,7 @@ namespace AppManager.Core.Actions.Close
     public class CloseAction : BaseAction, ICloseAction
     {
         public string? AppName { get; set; }
-        public override AppActionTypeEnum ActionType => AppActionTypeEnum.Close;
+        public override ActionTypeEnum ActionType => ActionTypeEnum.Close;
         public override string Description => "Closes an application gracefully";
 
         public int? TimeoutMs { get; set; }

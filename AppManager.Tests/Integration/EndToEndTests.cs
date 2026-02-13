@@ -57,7 +57,7 @@ namespace AppManager.Tests.Integration
         public async Task CompleteWorkflow_CreateTriggerWithAction_ShouldExecuteSuccessfully()
         {
             // Arrange - Create a button trigger (safer for testing than keybind)
-            var actionModel = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Launch, "CalculatorApp");
+            var actionModel = TestDataBuilder.CreateBasicActionModel(ActionTypeEnum.Launch, "CalculatorApp");
             var triggerModel = TestDataBuilder.CreateBasicTriggerModel(TriggerTypeEnum.Button, "TestButtonTrigger");
             triggerModel.Actions =  [actionModel];
 
@@ -89,7 +89,7 @@ namespace AppManager.Tests.Integration
                     CalculatorAppProcesses.Should().NotBeEmpty();
 
                     // Clean up - close CalculatorApp
-                    var closeModel = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Close, "CalculatorApp");
+                    var closeModel = TestDataBuilder.CreateBasicActionModel(ActionTypeEnum.Close, "CalculatorApp");
                     var closeAction = new CloseAction(closeModel);
                     closeAction.Execute();
                 }

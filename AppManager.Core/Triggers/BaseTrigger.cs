@@ -3,7 +3,9 @@ using AppManager.Core.Conditions;
 using AppManager.Core.Keybinds;
 using AppManager.Core.Models;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 

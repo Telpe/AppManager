@@ -14,8 +14,9 @@ namespace AppManager.Core.Models
 {
     public class ActionModel : ConditionalModel, ILaunchAction, IMinimizeAction, IFocusAction, ICloseAction, IRestartAction, IBringToFrontAction
     {
+        public ActionTypeEnum ActionType { get; set; }
+        public string Id { get; set; } = string.Empty;
         public string? AppName { get; set; }
-        public AppActionTypeEnum ActionType { get; set; }
         public bool? ForceOperation { get; set; }
         public bool? IncludeChildProcesses { get; set; }
         public bool? IncludeSimilarNames { get; set; }
@@ -29,8 +30,9 @@ namespace AppManager.Core.Models
         {
             return new()
             {
-                AppName = this.AppName,
                 ActionType = this.ActionType,
+                Id = this.Id,
+                AppName = this.AppName,
                 ForceOperation = this.ForceOperation,
                 IncludeChildProcesses = this.IncludeChildProcesses,
                 IncludeSimilarNames = this.IncludeSimilarNames,

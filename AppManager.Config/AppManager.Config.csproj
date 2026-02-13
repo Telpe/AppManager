@@ -9,7 +9,7 @@
     <StartupObject>AppManager.Config.App</StartupObject>
     
     <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
+    <ImplicitUsings>disable</ImplicitUsings>
 
     <!-- Publish settings 
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>

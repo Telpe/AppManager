@@ -17,14 +17,14 @@ namespace AppManager.Tests.Unit.Actions
         public void Constructor_WithValidModel_ShouldCreateInstance()
         {
             // Arrange
-            var model = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Launch);
+            var model = TestDataBuilder.CreateBasicActionModel(ActionTypeEnum.Launch);
 
             // Act
             var action = new LaunchAction(model);
 
             // Assert
             action.Should().NotBeNull();
-            action.ActionType.Should().Be(AppActionTypeEnum.Launch);
+            action.ActionType.Should().Be(ActionTypeEnum.Launch);
             action.Description.Should().NotBeNullOrEmpty();
         }
 
@@ -34,7 +34,7 @@ namespace AppManager.Tests.Unit.Actions
         public void Constructor_WithWrongActionType_ShouldThrowArgumentException()
         {
             // Arrange
-            var model = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Close);
+            var model = TestDataBuilder.CreateBasicActionModel(ActionTypeEnum.Close);
 
             // Act & Assert
             Action act = () => new LaunchAction(model);
@@ -48,7 +48,7 @@ namespace AppManager.Tests.Unit.Actions
         public void CanExecute_WithValidExecutablePath_ShouldReturnTrue()
         {
             // Arrange
-            var model = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Launch, "notepad");
+            var model = TestDataBuilder.CreateBasicActionModel(ActionTypeEnum.Launch, "notepad");
             var action = new LaunchAction(model);
 
             // Act
@@ -64,7 +64,7 @@ namespace AppManager.Tests.Unit.Actions
         public void CanExecute_WithInvalidExecutablePath_ShouldReturnFalse()
         {
             // Arrange
-            var model = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Launch);
+            var model = TestDataBuilder.CreateBasicActionModel(ActionTypeEnum.Launch);
             model.ExecutablePath = "nonexistent.exe";
             model.AppName = "nonexistent";
             var action = new LaunchAction(model);
@@ -82,7 +82,7 @@ namespace AppManager.Tests.Unit.Actions
         public async Task ExecuteAsync_WithValidApplication_ShouldLaunchApplication()
         {
             // Arrange
-            var model = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Launch, "CalculatorApp");
+            var model = TestDataBuilder.CreateBasicActionModel(ActionTypeEnum.Launch, "CalculatorApp");
             var action = new LaunchAction(model);
 
             try
@@ -101,7 +101,7 @@ namespace AppManager.Tests.Unit.Actions
             finally
             {
                 // Cleanup - close CalculatorApp
-                var closeModel = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Close, "CalculatorApp");
+                var closeModel = TestDataBuilder.CreateBasicActionModel(ActionTypeEnum.Close, "CalculatorApp");
                 var closeAction = new CloseAction(closeModel);
                 closeAction.Execute();
             }
@@ -113,7 +113,7 @@ namespace AppManager.Tests.Unit.Actions
         public void ToModel_ShouldReturnCorrectActionModel()
         {
             // Arrange
-            var originalModel = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Launch, "notepad");
+            var originalModel = TestDataBuilder.CreateBasicActionModel(ActionTypeEnum.Launch, "notepad");
             var action = new LaunchAction(originalModel);
 
             // Act
@@ -121,7 +121,7 @@ namespace AppManager.Tests.Unit.Actions
 
             // Assert
             returnedModel.Should().NotBeNull();
-            returnedModel.ActionType.Should().Be(AppActionTypeEnum.Launch);
+            returnedModel.ActionType.Should().Be(ActionTypeEnum.Launch);
             returnedModel.AppName.Should().Be(originalModel.AppName);
             returnedModel.ExecutablePath.Should().Be(originalModel.ExecutablePath);
         }
@@ -134,7 +134,7 @@ namespace AppManager.Tests.Unit.Actions
             try
             {
                 // Arrange
-                var model = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Launch);
+                var model = TestDataBuilder.CreateBasicActionModel(ActionTypeEnum.Launch);
                 model.ExecutablePath = "invalid_path.exe";
                 model.AppName = "invalid";
                 var action = new LaunchAction(model);
@@ -156,7 +156,7 @@ namespace AppManager.Tests.Unit.Actions
         public void Properties_ShouldBeSetCorrectlyFromModel()
         {
             // Arrange
-            var model = TestDataBuilder.CreateBasicActionModel(AppActionTypeEnum.Launch, "test");
+            var model = TestDataBuilder.CreateBasicActionModel(ActionTypeEnum.Launch, "test");
             model.Arguments = "--test-mode";
             model.ExecutablePath = @"C:\Test";
 

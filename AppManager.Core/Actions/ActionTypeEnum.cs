@@ -1,6 +1,6 @@
 ﻿namespace AppManager.Core.Actions
 {
-    public enum AppActionTypeEnum
+    public enum ActionTypeEnum
     {
         Launch,
         Close,

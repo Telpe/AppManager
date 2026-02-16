@@ -63,22 +63,22 @@ namespace AppManager.Core.Utilities
             return FileManager.GetDefaultIcon();
         }
 
-        private void OnOpen(object? sender, EventArgs? e)
+        private void OnOpen(object sender, EventArgs? e)
         {
             ActionFactory.CreateAction(new() { ActionType = ActionTypeEnum.Launch, AppName = "AppManager" }).Execute();
         }
 
-        private void OnTriggers(object? sender, EventArgs? e)
+        private void OnTriggers(object sender, EventArgs? e)
         {
             ActionFactory.CreateAction(new() { ActionType = ActionTypeEnum.Launch, AppName = "AppManager.Config" }).Execute();
         }
 
-        private void OnAbout(object? sender, EventArgs? e)
+        private void OnAbout(object sender, EventArgs? e)
         {
             MessageBox.Show("AppManager v1.0\nApplication Manager", "About AppManager", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
-        private void OnExit(object? sender, EventArgs? e)
+        private void OnExit(object sender, EventArgs? e)
         {
             Application.Exit();
         }

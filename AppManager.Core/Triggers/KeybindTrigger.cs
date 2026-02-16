@@ -205,7 +205,7 @@ namespace AppManager.Core.Triggers
             return KeyboardHookConstants.KeyToDixMap[key];
         }
 
-        private void OnKeyboardPressed(object? sender, GlobalKeyboardHookEventArgs? e)
+        private void OnKeyboardPressed(object sender, GlobalKeyboardHookEventArgs? e)
         {
             if (e == null) { return; }
             try

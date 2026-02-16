@@ -1,4 +1,5 @@
 using AppManager.Core.Triggers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Input;
@@ -32,8 +33,10 @@ namespace AppManager.Core.Models
         public int? PollingIntervalMs { get; set; }
         public int? TimeoutMs { get; set; }
         
-        // Additional configuration
+        [Obsolete("All properties should be defined.")]
         public Dictionary<string, object>? CustomProperties { get; set; }
+
+        public Dictionary<string,string>? Tags { get; set; }
 
         public ActionModel[]? Actions { get; set; }
 
@@ -55,11 +58,10 @@ namespace AppManager.Core.Models
                 IPAddress = IPAddress,
                 PollingIntervalMs = PollingIntervalMs,
                 TimeoutMs = TimeoutMs,
-                CustomProperties = null != CustomProperties ? new Dictionary<string, object>(CustomProperties) : null,
                 Conditions = this.Conditions?.Select(c => c.Clone()).ToArray(),
-                Actions = this.Actions?.Select(a => a.Clone()).ToArray()
+                Actions = this.Actions?.Select(a => a.Clone()).ToArray(),
+                Tags = this.Tags is not null ? new(this.Tags) : null
             };
-
         }
     }
 }

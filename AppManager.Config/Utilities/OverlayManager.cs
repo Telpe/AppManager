@@ -148,7 +148,7 @@ namespace AppManager.Config.Utilities
             mainGrid.Children.Add(_overlayContainer);
         }
 
-        private void OnWindowSizeChanged(object? sender, SizeChangedEventArgs e)
+        private void OnWindowSizeChanged(object sender, SizeChangedEventArgs e)
         {
             UpdateSize();
         }

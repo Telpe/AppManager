@@ -79,7 +79,7 @@ namespace AppManager.Core.Triggers
             return TriggersValue.Where(t => t.Name == name).FirstOrDefault();
         }
 
-        private static void OnTriggerActivated(object? sender, EventArgs eve)
+        private static void OnTriggerActivated(object sender, EventArgs eve)
         {
             if (sender is ITrigger trigger)
             {

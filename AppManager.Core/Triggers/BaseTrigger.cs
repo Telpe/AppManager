@@ -31,7 +31,7 @@ namespace AppManager.Core.Triggers
             set => ActionsValue = value;
         }
 
-        public event EventHandler? TriggerActivated;
+        public event TrueEventHandler? TriggerActivated;
 
         protected BaseTrigger(TriggerModel model)
         {

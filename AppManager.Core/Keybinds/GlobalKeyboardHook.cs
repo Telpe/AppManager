@@ -16,7 +16,7 @@ namespace AppManager.Core.Keybinds
 {
     public partial class GlobalKeyboardHook
     {
-        public event EventHandler<GlobalKeyboardHookEventArgs>? KeyboardPressed;
+        public event TrueEventHandler<GlobalKeyboardHookEventArgs>? KeyboardPressed;
 
         // EDT: Replaced VkSnapshot(int) with RegisteredKeys(Key[])
         public static Key[]? RegisteredKeys;

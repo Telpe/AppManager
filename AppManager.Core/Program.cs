@@ -313,7 +313,7 @@ namespace AppManager.Core
             }
         }
 
-        private static void OnSessionEnding(object? sender, SessionEndingEventArgs e)
+        private static void OnSessionEnding(object sender, SessionEndingEventArgs e)
         {
             Log.WriteLine("AppManager.Core: Session ending.");
             try 

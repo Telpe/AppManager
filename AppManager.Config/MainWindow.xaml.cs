@@ -52,7 +52,7 @@ namespace AppManager.Config
             // Initialize profile selector
             InitializeProfileSelector();
 
-            //InitiateNav1();
+            LoadPage();
         }
 
         /// <summary>
@@ -103,9 +103,9 @@ namespace AppManager.Config
                         
                         // Clear profile cache and reload
                         ProfileManager.ClearCache();
-                        
+
                         // Reload the navigation and page content
-                        LoadNav1List(ProfileManager.CurrentProfile.SelectedNav1Menu);
+                        LoadPage();
                         
                         Log.WriteLine($"Profile switched to: {selectedProfile}");
                     }
@@ -201,7 +201,7 @@ namespace AppManager.Config
         /// </summary>
         public void HideOverlay()
         {
-            if (true == OverlayManagerValue?.HideOverlay())
+            if (OverlayManagerValue?.HideOverlay() is true)
             {
                 OverlayManagerValue = null;
             }
@@ -259,239 +259,21 @@ namespace AppManager.Config
             }
         }
 
-        /*private void InitiateNav1()
+
+        private void LoadPage(string pageName = "Triggers", string? itemId = null)
         {
-            Nav1List.ItemsSource = Nav1ListValue;
-            Nav1List.AddHandler(Button.ClickEvent, new RoutedEventHandler(Nav1ListButton_Click));
-
-            LoadNav1List(ProfileManager.CurrentProfile.SelectedNav1Menu);
-
-            Nav1NewItemTextBox.GotFocus += (s, e) =>
-            {
-                if (Nav1NewItemTextBox.Text == Nav1NewItemPlaceholderValue)
-                {
-                    Nav1NewItemTextBox.Text = "";
-                    Nav1NewItemTextBox.Foreground = Brushes.Black;
-                }
-            };
-
-            Nav1NewItemTextBox.LostFocus += (s, e) =>
-            {
-                if (string.IsNullOrWhiteSpace(Nav1NewItemTextBox.Text))
-                {
-                    Nav1NewItemTextBox.Text = Nav1NewItemPlaceholderValue;
-                    Nav1NewItemTextBox.Foreground = Brushes.Gray;
-                }
-            };
-
-            Nav1NewItemTextBox.KeyDown += (s, e) =>
-            {
-                if (e.Key == System.Windows.Input.Key.Enter && 
-                    !string.IsNullOrWhiteSpace(Nav1NewItemTextBox.Text) &&
-                    Nav1NewItemTextBox.Text != Nav1NewItemPlaceholderValue)
-                {
-                    // Call the provided action with the entered text
-                    AddNew(ProfileManager.CurrentProfile.SelectedNav1Menu, Nav1NewItemTextBox.Text.Trim());
-
-                    // Reset the text box
-                    Nav1NewItemTextBox.Text = "";
-                    //Nav1NewItemTextBox.Text = Nav1NewItemPlaceholderValue;
-                    //Nav1NewItemTextBox.Foreground = Brushes.Gray;
-                    Nav1List.Focus();
-                }
-            };
-        }*/
-
-        private void AddNew(string category, string name)
-        {
-            switch (category.ToLower())
-            {
-                case "apps":
-                    {
-                        var newApp = new AppManagedModel(name);
-
-                        ProfileManager.CurrentProfile.Apps = ProfileManager.CurrentProfile.Apps.Append(newApp).ToArray();
-
-                        // Reload the navigation list
-                        LoadNav1List("apps");
-
-                        Log.WriteLine($"Added new app: {newApp.AppName}");
-
-                        break;
-                    }
-                case "groups":
-                    {
-                        var newGroup = new GroupManagedModel
-                        {
-                            GroupName = name,
-                            Description = "New group"
-                        };
-
-                        // Add to current profile's app groups
-                        ProfileManager.CurrentProfile.AppGroups = ProfileManager.CurrentProfile.AppGroups.Append(newGroup).ToArray();
-
-                        // Reload the navigation list
-                        LoadNav1List("groups");
-
-                        Log.WriteLine($"Added new group: {newGroup.GroupName}");
-
-                        break;
-                    }
-            }
-        }
-
-        private void LoadNav1List(string pageName)
-        {
-            Nav1ListValue.Clear();
-
-            switch (pageName.ToLower())
-            {
-                case "apps":
-                {
-                    foreach (AppManagedModel app in ProfileManager.CurrentProfile.Apps)
-                    {
-                        Nav1ListValue.Add(app.AppName);
-                    }
-
-                    Nav1NewItemPlaceholderValue = "Enter app name...";
-
-                    break;
-                }
-                case "groups":
-                {
-                    foreach (GroupManagedModel grp in ProfileManager.CurrentProfile.AppGroups)
-                    {
-                        Nav1ListValue.Add(grp.GroupName);
-                    }
-
-                    Nav1NewItemPlaceholderValue = "Enter group name...";
-
-                    break;
-                }
-                case "shortcuts":
-                {
-                    //LoadNavigation(Nav1List.Children, ProfileManager.CurrentProfile. .Select(a => a.AppName).ToArray(), Nav1ListButton_Click);
-                    
-                    // You can also add shortcuts input here when ready
-                    // var newShortcutTextBox = NewNavigationAddItemTextBox("Enter shortcut name...", (shortcutName) =>
-                    // {
-                    //     // Add shortcut logic here
-                    //     LoadNav1List("shortcuts");
-                    //     Log.WriteLine($"Added new shortcut: {shortcutName}");
-                    // });
-                    // Nav1List.Children.Add(newShortcutTextBox);
-                    break;
-                }
-                default:
-                {
-                    LoadNav1List("apps");
-                    break;
-                }
-            }
-
-            //Nav1NewItemTextBox.Text = Nav1NewItemPlaceholderValue;
-        }
-
-        private void LoadPage()
-        {
-            string pageName = ProfileManager.CurrentProfile.SelectedNav1List;
-            IPageWithParameter page = ProfileManager.CurrentProfile.SelectedNav1Menu.ToLower() switch
+            IPageWithParameter page = pageName.ToLower() switch
             {
                 "apps" => AppsPage,
                 "groups" => AppGroupsPage,
                 "shortcuts" => ShortcutsPage,
+                "triggers" => new TriggersPage(),
                 _ => throw new Exception($"Page not found: {pageName}")
             };
-            
-            page.LoadPageByName(pageName);
+
+            if (itemId is not null) { page.LoadItemById(itemId); }
 
             MainFrame.Navigate(page);
-        }
-
-        private void Nav1MenuButton_Click(object? sender, RoutedEventArgs e)
-        {
-            if(sender is Button fromSender)
-            {
-                Log.WriteLine($"Nav1MenuButton_Click: {fromSender.Content}\nGetting Nav1List");
-                ProfileManager.CurrentProfile.SelectedNav1Menu = fromSender.Content.ToString() ?? "";
-                LoadNav1List(ProfileManager.CurrentProfile.SelectedNav1Menu);
-                Log.WriteLine($"Update profile with selected page");
-                // Update profile with selected page
-                
-            }
-            
-        }
-
-        private void Nav1ListButton_Click(object? sender, RoutedEventArgs e)
-        {
-            if (e.OriginalSource is Button fromSender && fromSender.Content is string selectedNav1ListItem)
-            {
-                ProfileManager.CurrentProfile.SelectedNav1List = selectedNav1ListItem;
-                LoadPage();
-            }
-        }
-
-
-        // Navigation action methods for Apps page
-        private void ShowAllApps()
-        {
-            // Implementation to show all apps in the Apps page
-            Log.WriteLine("Showing all apps");
-        }
-
-        private void ShowRunningApps()
-        {
-            // Implementation to show only running apps
-            Log.WriteLine("Showing running apps");
-        }
-
-        private void ShowFavorites()
-        {
-            // Implementation to show favorite apps from profile
-            Log.WriteLine($"Showing favorite apps: {string.Join(", ", ProfileManager.CurrentProfile.FavoriteApps)}");
-        }
-
-        private void ShowRecentlyUsed()
-        {
-            // Implementation to show recently used apps
-            Log.WriteLine("Showing recently used apps");
-        }
-
-        // Navigation action methods for AppGroups page
-        private void ShowGamingGroup()
-        {
-            Log.WriteLine("Showing gaming group");
-        }
-
-        private void ShowDevelopmentGroup()
-        {
-            Log.WriteLine("Showing development group");
-        }
-
-        private void ShowProductivityGroup()
-        {
-            Log.WriteLine("Showing productivity group");
-        }
-
-        private void ShowMediaGroup()
-        {
-            Log.WriteLine("Showing media group");
-        }
-
-        // Navigation action methods for Shortcuts page
-        private void ShowSystemShortcuts()
-        {
-            Log.WriteLine("Showing system shortcuts");
-        }
-
-        private void ShowCustomShortcuts()
-        {
-            Log.WriteLine("Showing custom shortcuts");
-        }
-
-        private void ShowQuickActions()
-        {
-            Log.WriteLine("Showing quick actions");
         }
 
         public void Close(bool ignoreClosing)
@@ -500,7 +282,8 @@ namespace AppManager.Config
             {
                 this.Closing -= Window_Closing;
             }
-            this.Dispatcher.Invoke(Close);
+
+            Close();
         }
 
         private void Window_Closing(object? sender, CancelEventArgs e)

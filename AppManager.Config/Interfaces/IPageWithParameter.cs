@@ -5,7 +5,7 @@ namespace AppManager.Config.Interfaces
     /// </summary>
     public interface IPageWithParameter
     {
-        void LoadPageByName(string pageName);
+        void LoadItemById(string pageName);
 
         bool HasUnsavedChanges();
     }

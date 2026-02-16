@@ -23,7 +23,7 @@ namespace AppManager.Config.Pages
             InitializeComponent();
         }
 
-        public void LoadPageByName(string pageName)
+        public void LoadItemById(string pageName)
         {
             _PageName = pageName;
             

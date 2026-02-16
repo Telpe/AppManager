@@ -31,11 +31,11 @@ namespace AppManager.Config.EditorControls
     {
         private readonly string AllowedDaysPanelName = "Allowed Days:";
 
-        public event EventHandler? OnEdited;
+        public event TrueEventHandler? OnEdited;
 
-        public event EventHandler? OnCancel;
+        public event TrueEventHandler? OnCancel;
 
-        public event EventHandler<InputEditEventArgs>? OnSave;
+        public event TrueEventHandler<InputEditEventArgs>? OnSave;
 
         private ConditionModel ConditionModelValue;
 
@@ -441,7 +441,7 @@ namespace AppManager.Config.EditorControls
 
         
 
-        private void ConditionTypeComboBox_SelectionChanged(object? sender, PropertyChangedEventArgs e)
+        private void ConditionTypeComboBox_SelectionChanged(object sender, PropertyChangedEventArgs e)
         {
             if (sender is TypeSelectParameter tsp && tsp.Selected is ConditionTypeEnum typeEnum)
             {

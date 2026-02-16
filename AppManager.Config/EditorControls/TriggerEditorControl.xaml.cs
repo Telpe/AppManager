@@ -20,11 +20,11 @@ namespace AppManager.Config.EditorControls
         private TriggerModel CurrentTriggerModelValue;
         private bool IsCapturingKeybindValue = false;
 
-        public event EventHandler? OnEdited;
+        public event TrueEventHandler? OnEdited;
 
-        public event EventHandler? OnCancel;
+        public event TrueEventHandler? OnCancel;
 
-        public event EventHandler<InputEditEventArgs>? OnSave;
+        public event TrueEventHandler<InputEditEventArgs>? OnSave;
 
         private ObservableCollection<ModelListItem<ActionModel>> ActionListItemsValue = new();
 
@@ -396,7 +396,7 @@ namespace AppManager.Config.EditorControls
             UpdatePreview();
         }
 
-        public void ConditionsChanged(object? sender, PropertyChangedEventArgs e)
+        public void ConditionsChanged(object sender, PropertyChangedEventArgs e)
         {
             if (sender is ConditionsParameter conditionsParameter)
             {
@@ -422,7 +422,7 @@ namespace AppManager.Config.EditorControls
             AnnounceEdited();
         }
 
-        private void EditActionButton_Click(object? sender, RoutedEventArgs e)
+        private void EditActionButton_Click(object sender, RoutedEventArgs e)
         {
             if (e.OriginalSource is Button button && button.Tag is ModelListItem<ActionModel> actionModelListItem)
             {

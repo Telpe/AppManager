@@ -64,12 +64,6 @@
 			<StackPanel x:Name="ConsolePanel" Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0" />
 		</Grid>
 		
-		<!-- Nav 1 menu -->
-		<StackPanel Orientation="Horizontal" Grid.Row="1" Grid.Column="0" Background="#F0F0F0" Height="auto">
-			<Button x:Name="AppsButton" Content="Apps" Width="100" Height="30" Margin="5" Click="Nav1MenuButton_Click"/>
-			<Button x:Name="AppGroupsButton" Content="Groups" Width="100" Height="30" Margin="5" Click="Nav1MenuButton_Click"/>
-			<Button x:Name="ShortcutsButton" Content="Shortcuts" Width="100" Height="30" Margin="5" Click="Nav1MenuButton_Click"/>
-		</StackPanel>
 
 		<ScrollViewer Grid.Row="2" Grid.Column="0" Margin="10" VerticalScrollBarVisibility="Auto">
 			<Frame x:Name="MainFrame"/>

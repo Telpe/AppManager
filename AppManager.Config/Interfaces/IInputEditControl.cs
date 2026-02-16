@@ -8,11 +8,11 @@ namespace AppManager.Config.Interfaces
 {
     public interface IInputEditControl
     {
-        public event EventHandler? OnEdited;
+        public event TrueEventHandler? OnEdited;
         
-        public event EventHandler? OnCancel;
+        public event TrueEventHandler? OnCancel;
         
-        public event EventHandler<InputEditEventArgs>? OnSave;
+        public event TrueEventHandler<InputEditEventArgs>? OnSave;
 
     }
 }

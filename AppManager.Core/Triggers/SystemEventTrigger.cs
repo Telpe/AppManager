@@ -80,7 +80,7 @@ namespace AppManager.Core.Triggers
             }
         }
 
-        private void OnSystemEvent(object? sender, EventRecordWrittenEventArgs e)
+        private void OnSystemEvent(object sender, EventRecordWrittenEventArgs e)
         {
             try
             {

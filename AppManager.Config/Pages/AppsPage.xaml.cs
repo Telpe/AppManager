@@ -48,7 +48,7 @@ namespace AppManager.Config.Pages
             DisableButtons();
         }
 
-        public void LoadPageByName(string pageName)
+        public void LoadItemById(string pageName)
         {
             DisableButtons();
 

@@ -1,0 +1,33 @@
+<local:BaseParameterControl 
+    x:Class="AppManager.Config.ParameterControls.KeybindCaptureParameter"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+    xmlns:local="clr-namespace:AppManager.Config.ParameterControls"
+    mc:Ignorable="d" 
+    d:DesignHeight="100" d:DesignWidth="400">
+
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto"/>
+		</Grid.RowDefinitions>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="*"/>
+			<ColumnDefinition Width="Auto"/>
+		</Grid.ColumnDefinitions>
+
+		<TextBox x:Name="KeybindTextBox" 
+                 Grid.Row="0" Grid.Column="0" 
+                 Margin="0,0,5,0" 
+                 VerticalAlignment="Center" 
+                 Height="22" 
+                 IsReadOnly="True"/>
+
+		<Button x:Name="CaptureButton" 
+                Content="Capture" 
+                Grid.Row="0" Grid.Column="1" 
+                Width="80" Height="25"
+                Click="CaptureButton_Click"/>
+	</Grid>
+</local:BaseParameterControl>

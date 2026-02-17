@@ -8,6 +8,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using AppManager.Config.Utilities;
+using AppManager.Core.Triggers;
 
 namespace AppManager.Config.Pages
 {
@@ -17,14 +18,12 @@ namespace AppManager.Config.Pages
     public partial class TriggersPage : Page, IPageWithParameter
     {
         private string _selectedTagFilter = "All";
-        private readonly List<TriggerModel> _triggers;
         private TriggerModel[] NotSaved = [];
         private object EditLock = new();
 
         public TriggersPage()
         {
             InitializeComponent();
-            _triggers = ProfileManager.CurrentProfile.Triggers?.ToList() ?? new List<TriggerModel>();
             InitializeTagFilter();
             RefreshTriggerMenu();
         }
@@ -33,7 +32,7 @@ namespace AppManager.Config.Pages
         {
             if (!string.IsNullOrEmpty(triggerId))
             {
-                var trigger = _triggers.FirstOrDefault(t => t.Id == triggerId);
+                var trigger = ProfileManager.CurrentProfile.Triggers.FirstOrDefault(t => t.Id == triggerId);
                 if (trigger != null)
                 {
                     ShowTriggerEditor(trigger);
@@ -44,7 +43,7 @@ namespace AppManager.Config.Pages
         private void InitializeTagFilter()
         {
             var allTagKeys = new HashSet<string>();
-            foreach (var trigger in _triggers)
+            foreach (var trigger in ProfileManager.CurrentProfile.Triggers)
             {
                 if (trigger.Tags != null)
                 {
@@ -81,26 +80,21 @@ namespace AppManager.Config.Pages
             AnonymousStackPanel.Children.Clear();
             AnonymousGroup.Visibility = Visibility.Collapsed;
 
+            TriggerModel[] triggersWithoutTag;
+
             if (_selectedTagFilter == "All")
             {
-                // Show all triggers in a simple list
-                foreach (var trigger in _triggers.OrderBy(t => t.Id))
-                {
-                    var button = CreateTriggerButton(trigger);
-                    AnonymousStackPanel.Children.Add(button);
-                }
-                AnonymousGroup.Header = "All Triggers";
-                AnonymousGroup.Visibility = Visibility.Visible;
+                triggersWithoutTag = ProfileManager.CurrentProfile.Triggers;
             }
             else
             {
                 // Group by tag values
-                var triggersWithTag = _triggers.Where(t => t.Tags?.ContainsKey(_selectedTagFilter) == true).ToList();
-                var triggersWithoutTag = _triggers.Where(t => t.Tags?.ContainsKey(_selectedTagFilter) != true).ToList();
+                TriggerModel[] triggersWithTag = ProfileManager.CurrentProfile.Triggers.Where(t => t.Tags?.ContainsKey(_selectedTagFilter) is true).ToArray();
+                triggersWithoutTag = ProfileManager.CurrentProfile.Triggers.Where(t => t.Tags?.ContainsKey(_selectedTagFilter) is not true).ToArray();
 
                 // Group triggers by tag value
                 var groups = triggersWithTag
-                    .GroupBy(t => t.Tags[_selectedTagFilter])
+                    .GroupBy(t => t.Tags![_selectedTagFilter])
                     .OrderBy(g => g.Key);
 
                 foreach (var group in groups)
@@ -121,18 +115,18 @@ namespace AppManager.Config.Pages
                     groupBox.Content = groupPanel;
                     GroupsStackPanel.Children.Add(groupBox);
                 }
+            }
 
-                // Add triggers without the selected tag to anonymous group
-                if (triggersWithoutTag.Any())
+            // Add triggers without the selected tag to anonymous group
+            if (0 < triggersWithoutTag.Length)
+            {
+                foreach (var trigger in triggersWithoutTag.OrderBy(t => t.Id))
                 {
-                    foreach (var trigger in triggersWithoutTag.OrderBy(t => t.Id))
-                    {
-                        var button = CreateTriggerButton(trigger);
-                        AnonymousStackPanel.Children.Add(button);
-                    }
-                    AnonymousGroup.Header = $"No '{_selectedTagFilter}' tag";
-                    AnonymousGroup.Visibility = Visibility.Visible;
+                    var button = CreateTriggerButton(trigger);
+                    AnonymousStackPanel.Children.Add(button);
                 }
+                AnonymousGroup.Header = $"No '{_selectedTagFilter}' tag";
+                AnonymousGroup.Visibility = Visibility.Visible;
             }
         }
 
@@ -183,6 +177,16 @@ namespace AppManager.Config.Pages
             {
                 ShowTriggerEditor(trigger);
             }
+        }
+
+        private void AddTriggerButton_Click(object sender, RoutedEventArgs e)
+        {
+            var newTrigger = new TriggerModel
+            {
+                Id = Shared.ToShortString(Guid.NewGuid()),
+                TriggerType = TriggerTypeEnum.Keybind
+            };
+            ShowTriggerEditor(newTrigger);
         }
 
         private void ShowTriggerEditor(TriggerModel trigger)
@@ -256,6 +260,8 @@ namespace AppManager.Config.Pages
 
                     NotSaved = NotSaved.Where(a => editor.CurrentTriggerModel.Id != a.Id).ToArray();
                 }
+
+                RefreshTriggerMenu();
             }
         }
 

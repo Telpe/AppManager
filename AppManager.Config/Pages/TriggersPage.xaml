@@ -17,10 +17,15 @@
 		</Grid.ColumnDefinitions>
 
 		<!-- Left Menu Panel -->
-		<DockPanel Grid.Column="0">
+		<Grid Grid.Column="0" Margin="5">
+			<Grid.RowDefinitions>
+				<RowDefinition Height="auto" />
+				<RowDefinition Height="*" />
+				<RowDefinition Height="auto" />
+			</Grid.RowDefinitions>
 			<!-- Tag Filter ComboBox -->
 			<ComboBox x:Name="TagFilterComboBox" 
-                      DockPanel.Dock="Top"
+                      Grid.Row="0"
                       Margin="0,0,0,10"
                       SelectionChanged="TagFilterComboBox_SelectionChanged">
 				<ComboBox.ItemTemplate>
@@ -30,22 +35,30 @@
 				</ComboBox.ItemTemplate>
 			</ComboBox>
 
-			<!-- Triggers Menu List -->
-			<ScrollViewer VerticalScrollBarVisibility="Auto">
-				<StackPanel>
-					<!-- Main Groups Container -->
-					<StackPanel x:Name="GroupsStackPanel" />
+			<ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="3" HorizontalAlignment="Center" 
+VerticalAlignment="Center"  >
+				<DockPanel>
+					<StackPanel x:Name="GroupsStackPanel" DockPanel.Dock="Top" />
 
-					<!-- Anonymous Group (outside main groups) -->
 					<GroupBox x:Name="AnonymousGroup" 
-                              Header="Other"
-                              Margin="0,5,0,0"
-                              Visibility="Collapsed">
-						<StackPanel x:Name="AnonymousStackPanel" />
+							DockPanel.Dock="Bottom"
+							Header="Other"
+							Margin="0"
+							Visibility="Collapsed"
+							HorizontalAlignment="Center" 
+							VerticalAlignment="Center">
+						<StackPanel x:Name="AnonymousStackPanel" HorizontalAlignment="Center" VerticalAlignment="Stretch" />
 					</GroupBox>
-				</StackPanel>
+				</DockPanel>
+
 			</ScrollViewer>
-		</DockPanel>
+				
+			<Button Content="Add Trigger"
+				Grid.Row="2"
+				Margin="3" 
+				Padding="3"
+				Click="AddTriggerButton_Click" VerticalAlignment="Center" />
+		</Grid>
 
 		<!-- Splitter -->
 		<GridSplitter Grid.Column="1" 
@@ -53,9 +66,8 @@
                       HorizontalAlignment="Stretch" 
                       Background="LightGray" />
 
-		<!-- Right Content Panel -->
-		<Frame x:Name="PageFrame" 
-               Grid.Column="2" 
-               NavigationUIVisibility="Hidden" />
+		<ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" >
+			<Frame x:Name="PageFrame" NavigationUIVisibility="Hidden" />
+		</ScrollViewer>
 	</Grid>
 </Page>

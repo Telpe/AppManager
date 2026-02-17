@@ -63,12 +63,8 @@
 			<!-- Console Panel on Right -->
 			<StackPanel x:Name="ConsolePanel" Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0" />
 		</Grid>
-		
 
-		<ScrollViewer Grid.Row="2" Grid.Column="0" Margin="10" VerticalScrollBarVisibility="Auto">
-			<Frame x:Name="MainFrame"/>
-		</ScrollViewer>
-
+		<Frame x:Name="MainFrame" Grid.Row="2" Grid.Column="0" Margin="10"/>
 
 		<DockPanel Grid.Row="3" Grid.Column="0" Background="#F0F0F0" Height="32">
 			<Label Content="Status: Ready" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="10,0"/>

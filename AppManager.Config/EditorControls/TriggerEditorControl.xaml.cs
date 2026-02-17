@@ -8,17 +8,18 @@ using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using AppManager.Core.Conditions;
 
 namespace AppManager.Config.EditorControls
 {
     public partial class TriggerEditorControl : UserControl, IInputEditControl
     {
         private TriggerModel CurrentTriggerModelValue;
-        private bool IsCapturingKeybindValue = false;
 
         public event TrueEventHandler? OnEdited;
 
@@ -43,90 +44,267 @@ namespace AppManager.Config.EditorControls
             CurrentTriggerModelValue = triggerModel;
 
             InitializeComponent();
-
-            InitializeComboBoxes();
-            LoadTriggerData();
-            UpdatePreview();
+            Initialize();
         }
 
-        private void InitializeComboBoxes()
+        private void Initialize()
         {
-            // Populate Trigger Type ComboBox
-            TriggerTypeComboBox.ItemsSource = Enum.GetValues<TriggerTypeEnum>();
-            TriggerTypeComboBox.SelectedIndex = 0;
+            try
+            {
+                // Initialize trigger type selector using TypeSelectParameter
+                TypeSelectionGroupBox!.Content = new TypeSelectParameter(typeof(TriggerTypeEnum), null, null, "Choose:");
+                (TypeSelectionGroupBox!.Content as TypeSelectParameter)!.PropertyChanged += TriggerTypeChanged;
+                (TypeSelectionGroupBox!.Content as TypeSelectParameter)!.Selected = CurrentTriggerModelValue.TriggerType;
 
-            ActionsListBox.ItemsSource = ActionListItemsValue;
-            ActionsListBox.AddHandler(Button.ClickEvent, new RoutedEventHandler(EditActionButton_Click));
+                ActionsListBox.ItemsSource = ActionListItemsValue;
+                ActionsListBox.AddHandler(Button.ClickEvent, new RoutedEventHandler(EditActionButton_Click));
+
+                LoadTriggerData();
+            }
+            catch (Exception ex)
+            {
+                Log.WriteLine($"TriggerEditorControl initialization error: {ex.Message}");
+                InitializeManually();
+            }
+        }
+
+        private void InitializeManually()
+        {
+            var grid = new Grid();
+            var textBlock = new TextBlock
+            {
+                Text = "TriggerEditorControl - XAML Loading Failed",
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center
+            };
+            grid.Children.Add(textBlock);
+            Content = grid;
         }
 
         private void LoadTriggerData()
         {
-            TriggerTypeComboBox.SelectedItem = CurrentTriggerModelValue.TriggerType;
-            TriggerNameTextBox.Text = GenerateTriggerName(CurrentTriggerModelValue.TriggerType);
-            
-            // Load shortcut data
-            KeybindTextBox.Text = CurrentTriggerModelValue.KeybindCombination ?? string.Empty;
-            CtrlModifierCheckBox.IsChecked = CurrentTriggerModelValue.Modifiers?.HasFlag(ModifierKeys.Control);
-            ShiftModifierCheckBox.IsChecked = CurrentTriggerModelValue.Modifiers?.HasFlag(ModifierKeys.Shift);
-            AltModifierCheckBox.IsChecked = CurrentTriggerModelValue.Modifiers?.HasFlag(ModifierKeys.Alt);
-            WinModifierCheckBox.IsChecked = CurrentTriggerModelValue.Modifiers?.HasFlag(ModifierKeys.Windows);
+            try
+            {
+                // Clear existing parameters
+                TriggerParameters.Children.Clear();
 
-            // Load app monitoring data
-            ProcessNameTextBox.Text = CurrentTriggerModelValue.ProcessName ?? string.Empty;
-            ExecutablePathMonitorTextBox.Text = CurrentTriggerModelValue.ExecutablePath ?? string.Empty;
-            MonitorChildProcessesCheckBox.IsChecked = CurrentTriggerModelValue.MonitorChildProcesses;
+                if(CurrentTriggerModelValue.Tags is not null) { TriggerTags.Value = CurrentTriggerModelValue.Tags; }
+                TriggerTags.ValueName = nameof(TriggerModel.Tags);
+                TriggerTags.PropertyChanged += ParameterChanged;
 
-            // Load network/system data
-            IPAddressTextBox.Text = CurrentTriggerModelValue.IPAddress ?? "127.0.0.1";
-            PortTextBox.Text = CurrentTriggerModelValue.Port.ToString();
-            EventNameTextBox.Text = CurrentTriggerModelValue.EventName ?? string.Empty;
-            EventSourceTextBox.Text = CurrentTriggerModelValue.EventSource ?? string.Empty;
+                // Load conditions
+                TriggerConditions.Content = new ConditionsParameter(CurrentTriggerModelValue.Conditions ?? []);
+                (TriggerConditions.Content as ConditionsParameter)!.PropertyChanged += ParameterChanged;
 
-            // Load timing data
-            PollingIntervalTextBox.Text = CurrentTriggerModelValue.PollingIntervalMs.ToString();
-            TriggerTimeoutTextBox.Text = CurrentTriggerModelValue.TimeoutMs.ToString();
+                // Generate trigger name
+                TriggerNameTextBox.Text = GenerateTriggerName(CurrentTriggerModelValue.TriggerType);
 
-            RefreshActionsListBox();
+                // Add parameters based on trigger type
+                if (TypeSelectionGroupBox!.Content is TypeSelectParameter { Selected: TriggerTypeEnum triggerType })
+                {
+                    AddParametersForTriggerType(triggerType);
+                }
 
-            // Set the conditional model for the condition plugin
-            ConditionPlugin.Value = CurrentTriggerModelValue.Conditions ?? [];
+                RefreshActionsListBox();
+                UpdatePreview();
+            }
+            catch (Exception ex)
+            {
+                Log.WriteLine($"LoadTriggerData error: {ex.Message}");
+            }
+        }
 
-            UpdatePreview();
+        private void AddParametersForTriggerType(TriggerTypeEnum triggerType)
+        {
+            switch (triggerType)
+            {
+                case TriggerTypeEnum.Keybind:
+                    AddKeybindParameters();
+                    break;
+                case TriggerTypeEnum.AppLaunch:
+                case TriggerTypeEnum.AppClose:
+                    AddAppMonitoringParameters();
+                    break;
+                case TriggerTypeEnum.NetworkPort:
+                    AddNetworkParameters();
+                    break;
+                case TriggerTypeEnum.SystemEvent:
+                    AddSystemEventParameters();
+                    break;
+            }
+
+            // Always add timing parameters
+            AddTimingParameters();
+        }
+
+        private void AddKeybindParameters()
+        {
+            UseParameterGroupBox("Keybind Configuration").Content = new KeybindCaptureParameter(
+                CurrentTriggerModel.KeybindCombination,
+                CurrentTriggerModel.Key,
+                CurrentTriggerModel.Modifiers,
+                ParameterChanged,
+                nameof(TriggerModel.KeybindCombination));
+        }
+
+        private void AddAppMonitoringParameters()
+        {
+            UseParameterGroupBox("Process Name:").Content = new ProcessParameter(
+                CurrentTriggerModel.ProcessName,
+                ParameterChanged,
+                nameof(TriggerModel.ProcessName));
+
+            UseParameterGroupBox("Executable Path:").Content = new FilePathParameter(
+                CurrentTriggerModel.ExecutablePath,
+                ParameterChanged,
+                nameof(TriggerModel.ExecutablePath));
+
+            UseParameterStackPanel("App Monitoring:").Children.Add(new BooleanParameter(
+                CurrentTriggerModel.MonitorChildProcesses ?? false,
+                ParameterChanged,
+                nameof(TriggerModel.MonitorChildProcesses),
+                "App Monitoring:",
+                "Monitor Child Processes:"));
+        }
+
+        private void AddNetworkParameters()
+        {
+            UseParameterGroupBox("IP Address:").Content = new StringParameter(
+                CurrentTriggerModel.IPAddress ?? "127.0.0.1",
+                ParameterChanged,
+                nameof(TriggerModel.IPAddress));
+
+            UseParameterGroupBox("Port:").Content = new IntegerParameter(
+                CurrentTriggerModel.Port ?? 80,
+                ParameterChanged,
+                nameof(TriggerModel.Port));
+        }
+
+        private void AddSystemEventParameters()
+        {
+            UseParameterGroupBox("Event Name:").Content = new StringParameter(
+                CurrentTriggerModel.EventName,
+                ParameterChanged,
+                nameof(TriggerModel.EventName));
+
+            UseParameterGroupBox("Event Source:").Content = new StringParameter(
+                CurrentTriggerModel.EventSource,
+                ParameterChanged,
+                nameof(TriggerModel.EventSource));
+        }
+
+        private void AddTimingParameters()
+        {
+            UseParameterGroupBox("Polling Interval (ms):").Content = new TimerParameter(
+                CurrentTriggerModel.PollingIntervalMs ?? 1000,
+                ParameterChanged,
+                nameof(TriggerModel.PollingIntervalMs));
+
+            UseParameterGroupBox("Timeout (ms):").Content = new TimerParameter(
+                CurrentTriggerModel.TimeoutMs ?? 30000,
+                ParameterChanged,
+                nameof(TriggerModel.TimeoutMs));
+        }
+
+        private GroupBox UseParameterGroupBox(string header)
+        {
+            GroupBox? box = null;
+
+            foreach (object aBox in TriggerParameters.Children)
+            {
+                if (aBox is GroupBox gb && gb.Header is string sh && sh == header)
+                {
+                    box = gb;
+                    break;
+                }
+            }
+
+            if (box is null)
+            {
+                box = new GroupBox
+                {
+                    Header = header
+                };
+
+                TriggerParameters.Children.Add(box);
+            }
+
+            return box;
+        }
+
+        private StackPanel UseParameterStackPanel(string header)
+        {
+            GroupBox? groupBox = null;
+
+            foreach (object aBox in TriggerParameters.Children)
+            {
+                if (aBox is GroupBox gb && gb.Header is string sh && sh == header)
+                {
+                    groupBox = gb;
+                    break;
+                }
+            }
+
+            if (groupBox is null)
+            {
+                groupBox = new GroupBox
+                {
+                    Header = header
+                };
+
+                TriggerParameters.Children.Add(groupBox);
+            }
+
+            if (groupBox.Content is not StackPanel stackPanel)
+            {
+                stackPanel = new StackPanel();
+                groupBox.Content = stackPanel;
+            }
+
+            return stackPanel;
+        }
+
+        private void ParameterChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            try
+            {
+                if (sender is BaseParameterControl parameter && !string.IsNullOrEmpty(e.PropertyName))
+                {
+                    var property = typeof(TriggerModel).GetProperty(parameter.ValueName);
+                    if (property != null)
+                    {
+                        var parameterProperty = parameter.GetType().GetProperty(e.PropertyName);
+                        if (parameterProperty != null)
+                        {
+                            var value = parameterProperty.GetValue(parameter);
+                            
+                            // Handle special cases for keybind parameters
+                            if (parameter is KeybindCaptureParameter keybindParam)
+                            {
+                                CurrentTriggerModel.KeybindCombination = keybindParam.KeybindCombination;
+                                CurrentTriggerModel.Key = keybindParam.ValueKey;
+                                CurrentTriggerModel.Modifiers = keybindParam.ValueModifiers;
+                            }
+                            else
+                            {
+                                property.SetValue(CurrentTriggerModel, value);
+                            }
+                        }
+                    }
+                }
+
+                UpdatePreview();
+                AnnounceEdited();
+            }
+            catch (Exception ex)
+            {
+                Log.WriteLine($"Error in ParameterChanged: {ex.Message}");
+            }
         }
 
         private string GenerateTriggerName(TriggerTypeEnum triggerType)
         {
             return $"{triggerType}Trigger_{DateTime.Now:HHmmss}";
-        }
-
-
-        private Key ParseKey(string shortcutText)
-        {
-            if (string.IsNullOrEmpty(shortcutText)) return Key.None;
-            
-            var parts = shortcutText.Split('+');
-            var keyPart = parts.LastOrDefault()?.Trim();
-            
-            if (Enum.TryParse<Key>(keyPart, true, out Key key))
-                return key;
-            
-            return Key.None;
-        }
-
-        private ModifierKeys GetModifierKeys()
-        {
-            ModifierKeys modifiers = ModifierKeys.None;
-            
-            if (CtrlModifierCheckBox.IsChecked == true)
-                modifiers |= ModifierKeys.Control;
-            if (ShiftModifierCheckBox.IsChecked == true)
-                modifiers |= ModifierKeys.Shift;
-            if (AltModifierCheckBox.IsChecked == true)
-                modifiers |= ModifierKeys.Alt;
-            if (WinModifierCheckBox.IsChecked == true)
-                modifiers |= ModifierKeys.Windows;
-            
-            return modifiers;
         }
 
         private void UpdatePreview()
@@ -166,6 +344,20 @@ namespace AppManager.Config.EditorControls
                 previewBuilder.AppendLine($"Polling Interval: {CurrentTriggerModelValue.PollingIntervalMs}ms");
                 previewBuilder.AppendLine($"Timeout: {CurrentTriggerModelValue.TimeoutMs}ms");
 
+                if (CurrentTriggerModelValue.Conditions?.Length > 0)
+                {
+                    previewBuilder.AppendLine("\nConditions:");
+                    foreach (var condition in CurrentTriggerModelValue.Conditions)
+                    {
+                        previewBuilder.AppendLine($"  - {condition.ConditionType}: {GetConditionDescription(condition)}");
+                    }
+                }
+
+                if (CurrentTriggerModelValue.Actions?.Length > 0)
+                {
+                    previewBuilder.AppendLine($"\nActions: {CurrentTriggerModelValue.Actions.Length} configured");
+                }
+
                 TriggerPreviewTextBlock.Text = previewBuilder.ToString();
             }
             catch (Exception ex)
@@ -174,128 +366,24 @@ namespace AppManager.Config.EditorControls
             }
         }
 
-        private void TriggerTypeComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private string GetConditionDescription(ConditionModel condition)
         {
-            if (TriggerTypeComboBox.SelectedItem is TriggerTypeEnum triggerType)
+            return condition.ConditionType switch
             {
+                ConditionTypeEnum.ProcessRunning => $"Process '{condition.ProcessName}' is running",
+                ConditionTypeEnum.FileExists => $"File '{condition.FilePath}' exists",
+                _ => "Unknown condition"
+            };
+        }
+
+        private void TriggerTypeChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (sender is TypeSelectParameter typeSelector && typeSelector.Selected is TriggerTypeEnum triggerType)
+            {
+                CurrentTriggerModel.TriggerType = triggerType;
                 TriggerNameTextBox.Text = GenerateTriggerName(triggerType);
-                
-                // Show/hide relevant configuration groups
-                KeybindConfigGroup.Visibility = triggerType == TriggerTypeEnum.Keybind ? Visibility.Visible : Visibility.Collapsed;
-                
-                AppMonitoringGroup.Visibility = (triggerType == TriggerTypeEnum.AppLaunch || triggerType == TriggerTypeEnum.AppClose) 
-                    ? Visibility.Visible : Visibility.Collapsed;
-                
-                NetworkSystemGroup.Visibility = (triggerType == TriggerTypeEnum.NetworkPort || triggerType == TriggerTypeEnum.SystemEvent) 
-                    ? Visibility.Visible : Visibility.Collapsed;
-            }
-            UpdatePreview();
-        }
-
-        private void CaptureKeybindButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (!IsCapturingKeybindValue)
-            {
-                IsCapturingKeybindValue = true;
-                KeybindCaptureButton.Content = "Press key combination...";
-                KeybindTextBox.Text = "Press key combination...";
-                //KeybindTextBox.Focus();
-
-                // Add key event handler to capture keys
-                KeybindTextBox.KeyDown += OnKeyDown;
-                KeybindTextBox.Focus();
-            }
-            else
-            {
-                StopCapturing();
-            }
-        }
-
-        private void StopCapturing()
-        {
-            IsCapturingKeybindValue = false;
-
-            KeybindCaptureButton.Content = "Capture";
-
-            // Remove key event handler
-            KeybindTextBox.KeyDown -= OnKeyDown;
-        }
-
-        private void OnKeyDown(object sender, KeyEventArgs e)
-        {
-            if (IsCapturingKeybindValue)
-            {
-                var modifiers = Keyboard.Modifiers;
-                var key = e.Key == Key.System ? e.SystemKey : e.Key;
-                
-                // Ignore modifier keys alone
-                if (key == Key.LeftCtrl || key == Key.RightCtrl ||
-                    key == Key.LeftShift || key == Key.RightShift ||
-                    key == Key.LeftAlt || key == Key.RightAlt ||
-                    key == Key.LWin || key == Key.RWin)
-                {
-                    return;
-                }
-
-                var keybindText = BuildKeybindText(modifiers, key);
-                KeybindTextBox.Text = keybindText;
-
-                // Update CurrentTriggerValue
-                CurrentTriggerModelValue.KeybindCombination = keybindText;
-                CurrentTriggerModelValue.Key = key;
-                CurrentTriggerModelValue.Modifiers = modifiers;
-
-                // Update checkboxes
-                CtrlModifierCheckBox.IsChecked = modifiers.HasFlag(ModifierKeys.Control);
-                ShiftModifierCheckBox.IsChecked = modifiers.HasFlag(ModifierKeys.Shift);
-                AltModifierCheckBox.IsChecked = modifiers.HasFlag(ModifierKeys.Alt);
-                WinModifierCheckBox.IsChecked = modifiers.HasFlag(ModifierKeys.Windows);
-                
-                StopCapturing();
-                UpdatePreview();
-                e.Handled = true;
-            }
-            
-            base.OnKeyDown(e);
-        }
-
-        private string BuildKeybindText(ModifierKeys modifiers, Key key)
-        {
-            var parts = new System.Collections.Generic.List<string>();
-            
-            if (modifiers.HasFlag(ModifierKeys.Control))
-                parts.Add("Ctrl");
-            if (modifiers.HasFlag(ModifierKeys.Shift))
-                parts.Add("Shift");
-            if (modifiers.HasFlag(ModifierKeys.Alt))
-                parts.Add("Alt");
-            if (modifiers.HasFlag(ModifierKeys.Windows))
-                parts.Add("Win");
-            
-            parts.Add(key.ToString());
-            
-            return string.Join(" + ", parts);
-        }
-
-        private void BrowseExecutableMonitorButton_Click(object sender, RoutedEventArgs e)
-        {
-            // Use centralized FileManager for file dialog
-            string selectedFile = FileManager.ShowOpenFileDialog(
-                "Executable files (*.exe)|*.exe|All files (*.*)|*.*", 
-                "Select Executable to Monitor");
-
-            if (!string.IsNullOrEmpty(selectedFile))
-            {
-                ExecutablePathMonitorTextBox.Text = selectedFile;
-                
-                // Auto-populate process name if empty
-                if (string.IsNullOrEmpty(ProcessNameTextBox.Text))
-                {
-                    var fileName = System.IO.Path.GetFileNameWithoutExtension(selectedFile);
-                    ProcessNameTextBox.Text = fileName;
-                }
-                
-                UpdatePreview();
+                LoadTriggerData();
+                AnnounceEdited();
             }
         }
 
@@ -384,35 +472,12 @@ namespace AppManager.Config.EditorControls
             OnSave?.Invoke(this, new InputEditEventArgs(CurrentTriggerModelValue));
         }
 
-        // Event handlers for text changes to update preview
-        private void TextBox_TextChanged(object sender, TextChangedEventArgs e) 
-        {
-            AnnounceEdited();
-            UpdatePreview();
-        }
-        private void CheckBox_Changed(object sender, RoutedEventArgs e)
-        {
-            AnnounceEdited();
-            UpdatePreview();
-        }
-
-        public void ConditionsChanged(object sender, PropertyChangedEventArgs e)
-        {
-            if (sender is ConditionsParameter conditionsParameter)
-            {
-                CurrentTriggerModelValue.Conditions = conditionsParameter.Value?.Length == 0 ? null : conditionsParameter.Value;
-            }
-
-            UpdatePreview();
-            AnnounceEdited();
-        }
-
         private void AddActionButton_Click(object sender, RoutedEventArgs e)
         {
             var newAction = new ActionModel
             {
-                AppName = ProfileManager.CurrentProfile.SelectedNav1List, // TODO: Consider purpose.
-                ActionType = ActionTypeEnum.Launch // Default action
+                AppName = ProfileManager.CurrentProfile.SelectedNav1List,
+                ActionType = ActionTypeEnum.Launch
             };
 
             CurrentTriggerModelValue.Actions ??= [];
@@ -430,29 +495,23 @@ namespace AppManager.Config.EditorControls
 
                 try
                 {
-                    // Create action editor control directly
                     var actionEditor = new ActionEditorControl(actionModelListItem.Model.Clone());
 
-                    // Subscribe to save event
                     actionEditor.OnSave += (s, updatedAction) =>
                     {
-                        if (null == updatedAction.ActionModel) { return; }
+                        if (null == updatedAction.ActionModel)
+                        {
+                            return;
+                        }
 
-                        // Update the model in the dictionary
                         if (null != CurrentTriggerModelValue.Actions && actionModelListItem.Id < CurrentTriggerModelValue.Actions.Length)
                         {
                             CurrentTriggerModelValue.Actions[actionModelListItem.Id] = updatedAction.ActionModel;
-
-                            // Refresh the UI to show changes
                             RefreshActionsListBox();
-
-                            // Mark as edited
                             AnnounceEdited();
-
                             Log.WriteLine($"Action {actionModelListItem.DisplayName} updated successfully");
                             ((MainWindow)Application.Current.MainWindow)?.HideOverlay();
                         }
-                        
                     };
 
                     actionEditor.OnEdited += (s, args) =>
@@ -490,9 +549,7 @@ namespace AppManager.Config.EditorControls
 
         public void ClearActions()
         {
-            //ActionsListBox.RemoveHandler(Button.ClickEvent, new RoutedEventHandler(EditActionButton_Click));
             ActionListItemsValue.Clear();
         }
-
     }
 }

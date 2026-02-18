@@ -6,51 +6,25 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
 	xmlns:local="clr-namespace:AppManager.Config.EditorControls"
 	xmlns:parameterControls="clr-namespace:AppManager.Config.ParameterControls"
+	d:DataContext="{d:DesignInstance Type=local:TriggerEditorControl}"
     mc:Ignorable="d" 
     d:DesignHeight="500" d:DesignWidth="600">
 
 	<StackPanel Orientation="Vertical" Margin="10">
+		<GroupBox x:Name="TypeSelectionGroupBox" Header="Trigger Type" Margin="5"/>
 
-		<!-- Trigger Type Selection -->
-		<GroupBox x:Name="TypeSelectionGroupBox" Header="Trigger Type" Margin="5">
-			<!-- Content will be set programmatically with TypeSelectParameter -->
-		</GroupBox>
-
-		<!-- Trigger Name -->
-		<GroupBox Header="Trigger Name" Margin="5">
-			<TextBox x:Name="TriggerNameTextBox" Margin="5" VerticalAlignment="Center" Height="22"/>
-		</GroupBox>
-
-		<parameterControls:TagsParameter x:Name="TriggerTags" Margin="5"/>
+		<GroupBox x:Name="TriggerTags" Header="Tags:" Margin="5"/>
 		
-		<!-- Conditions Section -->
-		<parameterControls:ConditionsParameter x:Name="TriggerConditions" Margin="5"/>
-		
+		<GroupBox x:Name="TriggerConditions" Header="Conditions:" Margin="5"/>
 
-		<!-- Dynamic Parameters Section -->
-		<GroupBox Header="Configuration" Margin="5">
-			<ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="300">
-				<StackPanel x:Name="TriggerParameters" Margin="5"/>
-			</ScrollViewer>
-		</GroupBox>
+		<GroupBox x:Name="TriggerActions" Header="Actions:" Margin="5"/>
 
-		<!-- Actions Section -->
-		<GroupBox Header="Actions" Margin="5">
-			<StackPanel>
-				<ListBox x:Name="ActionsListBox" Height="150" Margin="5" ItemTemplate="{StaticResource ActionListItemTemplate}" />
-				<Button x:Name="AddActionButton" 
-                        Content="Add Action" 
-                        Width="100" 
-                        HorizontalAlignment="Left" 
-                        Margin="5"
-                        Click="AddActionButton_Click" />
-			</StackPanel>
-		</GroupBox>
+		<StackPanel x:Name="TriggerParameters" Orientation="Vertical" Margin="5"/>
 
 		<!-- Preview Section -->
 		<GroupBox Header="Configuration Preview" Margin="5">
 			<ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="200">
-				<TextBlock x:Name="TriggerPreviewTextBlock" 
+				<TextBlock x:Name="PreviewTextBlock" 
                            TextWrapping="Wrap" 
                            Background="LightGray" 
                            Padding="5" 
@@ -64,9 +38,9 @@
 			<Button Content="Run Actions" Width="80" Height="25" Margin="0,0,5,0"
                     Click="TestTriggerButton_Click"/>
 			<Button x:Name="SaveTriggerButton" Content="Save" Width="75" Height="25" 
-                    Margin="5,0,5,0" Click="SaveTriggerButton_Click"/>
+                    Margin="5,0,5,0" Click="SaveButton_Click"/>
 			<Button x:Name="CancelTriggerButton" Content="Cancel" Width="75" Height="25" 
-                    Margin="5,0,0,0" Click="CancelTriggerButton_Click"/>
+                    Margin="5,0,0,0" Click="CancelButton_Click"/>
 		</WrapPanel>
 	</StackPanel>
 </UserControl>

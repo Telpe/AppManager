@@ -1,6 +1,7 @@
 using AppManager.Core.Utilities;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.IO;
 
 namespace AppManager.Tests.Unit.Utilities

@@ -3,6 +3,8 @@ using AppManager.Core.Triggers;
 using AppManager.Tests.TestUtilities;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+using System.Linq;
 
 namespace AppManager.Tests.Unit.Triggers
 {

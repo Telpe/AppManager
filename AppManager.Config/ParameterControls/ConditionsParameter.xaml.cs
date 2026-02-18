@@ -1,13 +1,10 @@
 using AppManager.Core.Conditions;
 using AppManager.Core.Models;
-using AppManager.Core.Utilities;
 using AppManager.Config.EditorControls;
-using AppManager.Config.Utilities;
 using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows;
-using System.Windows.Automation;
 using System.Windows.Controls;
 
 namespace AppManager.Config.ParameterControls
@@ -21,8 +18,10 @@ namespace AppManager.Config.ParameterControls
             get => ConditionsValue;
             set
             {
-                if (ConditionsValue == value) { return; }
-                
+                if (ConditionsValue == value
+                    || ConditionsValue.SequenceEqual(value))
+                { return; }
+
                 ConditionsValue = value;
 
                 UpdateConditionsList();
@@ -39,31 +38,24 @@ namespace AppManager.Config.ParameterControls
             this.DataContext = this;
         }
 
-        public ConditionsParameter(ConditionModel[] Conditions, PropertyChangedEventHandler? eventHandler = null, string? customValueName = null, string? headerText = null, string? labelText = null) : this()
+        public ConditionsParameter(ConditionModel[]? conditions, PropertyChangedEventHandler? eventHandler = null, string? customValueName = null, string? headerText = null, string? labelText = null) : this()
         {
-            if (headerText != null)
-            {
-                _headerText = headerText;
-            }
+            if (headerText is not null)
+            { _headerText = headerText; }
 
-            if (labelText != null)
-            {
-                _labelText = labelText;
-            }
+            if (labelText is not null)
+            { _labelText = labelText; }
 
-            if (customValueName != null)
-            {
-                ValueName = customValueName;
-            }
+            if (customValueName is not null)
+            { ValueName = customValueName; }
 
-            ConditionsValue = Conditions;
+            if (conditions is not null)
+            { ConditionsValue = conditions; }
 
             UpdateConditionsList();
 
-            if (eventHandler != null)
-            {
-                PropertyChanged += eventHandler;
-            }
+            if (eventHandler is not null)
+            { PropertyChanged += eventHandler; }
         }
 
         private void UpdateConditionsList()

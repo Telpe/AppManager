@@ -3,6 +3,8 @@ using AppManager.Core.Conditions;
 using AppManager.Core.Models;
 using AppManager.Core.Triggers;
 using AppManager.Core.Utilities;
+using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Printing;
 

@@ -1,10 +1,12 @@
-﻿using AppManager.Core.Actions;
-using AppManager.Core.Models;
-using AppManager.Core.Triggers;
-using AppManager.Config.Interfaces;
+﻿using AppManager.Config.Interfaces;
 using AppManager.Config.ParameterControls;
 using AppManager.Config.Utilities;
+using AppManager.Core.Actions;
+using AppManager.Core.Conditions;
+using AppManager.Core.Models;
+using AppManager.Core.Triggers;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -13,7 +15,6 @@ using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using AppManager.Core.Conditions;
 
 namespace AppManager.Config.EditorControls
 {
@@ -26,8 +27,6 @@ namespace AppManager.Config.EditorControls
         public event TrueEventHandler? OnCancel;
 
         public event TrueEventHandler<InputEditEventArgs>? OnSave;
-
-        private ObservableCollection<ModelListItem<ActionModel>> ActionListItemsValue = new();
 
         public TriggerModel CurrentTriggerModel
         {
@@ -44,6 +43,7 @@ namespace AppManager.Config.EditorControls
             CurrentTriggerModelValue = triggerModel;
 
             InitializeComponent();
+            this.DataContext = this;
             Initialize();
         }
 
@@ -55,9 +55,6 @@ namespace AppManager.Config.EditorControls
                 TypeSelectionGroupBox!.Content = new TypeSelectParameter(typeof(TriggerTypeEnum), null, null, "Choose:");
                 (TypeSelectionGroupBox!.Content as TypeSelectParameter)!.PropertyChanged += TriggerTypeChanged;
                 (TypeSelectionGroupBox!.Content as TypeSelectParameter)!.Selected = CurrentTriggerModelValue.TriggerType;
-
-                ActionsListBox.ItemsSource = ActionListItemsValue;
-                ActionsListBox.AddHandler(Button.ClickEvent, new RoutedEventHandler(EditActionButton_Click));
 
                 LoadTriggerData();
             }
@@ -85,125 +82,241 @@ namespace AppManager.Config.EditorControls
         {
             try
             {
-                // Clear existing parameters
                 TriggerParameters.Children.Clear();
 
-                if(CurrentTriggerModelValue.Tags is not null) { TriggerTags.Value = CurrentTriggerModelValue.Tags; }
-                TriggerTags.ValueName = nameof(TriggerModel.Tags);
-                TriggerTags.PropertyChanged += ParameterChanged;
+                TriggerTags.Content = new TagsParameter(CurrentTriggerModelValue.Tags, ParameterChanged);
 
-                // Load conditions
-                TriggerConditions.Content = new ConditionsParameter(CurrentTriggerModelValue.Conditions ?? []);
-                (TriggerConditions.Content as ConditionsParameter)!.PropertyChanged += ParameterChanged;
+                TriggerConditions.Content = new ConditionsParameter(CurrentTriggerModelValue.Conditions, ParameterChanged);
 
-                // Generate trigger name
-                TriggerNameTextBox.Text = GenerateTriggerName(CurrentTriggerModelValue.TriggerType);
+                TriggerActions.Content = new ActionsParameter(CurrentTriggerModelValue.Actions, ParameterChanged);
 
-                // Add parameters based on trigger type
                 if (TypeSelectionGroupBox!.Content is TypeSelectParameter { Selected: TriggerTypeEnum triggerType })
                 {
-                    AddParametersForTriggerType(triggerType);
+                    switch (triggerType)
+                    {
+                        case TriggerTypeEnum.Keybind:
+                            AddParametersFromInterface(typeof(IKeybindTrigger));
+                            break;
+                        case TriggerTypeEnum.AppLaunch:
+                            AddParametersFromInterface(typeof(IAppLaunchTrigger));
+                            break;
+                        case TriggerTypeEnum.AppClose:
+                            AddParametersFromInterface(typeof(IAppCloseTrigger));
+                            break;
+                        case TriggerTypeEnum.SystemEvent:
+                            AddParametersFromInterface(typeof(ISystemEventTrigger));
+                            break;
+                        case TriggerTypeEnum.NetworkPort:
+                            AddParametersFromInterface(typeof(INetworkPortTrigger));
+                            break;
+                        case TriggerTypeEnum.Button:
+                            AddParametersFromInterface(typeof(IButtonTrigger));
+                            break;
+                    }
                 }
 
-                RefreshActionsListBox();
                 UpdatePreview();
             }
             catch (Exception ex)
             {
-                Log.WriteLine($"LoadTriggerData error: {ex.Message}");
+                Log.WriteLine($"{nameof(LoadTriggerData)} error: {ex.Message}");
             }
         }
 
-        private void AddParametersForTriggerType(TriggerTypeEnum triggerType)
+        private void UpdatePreview()
         {
-            switch (triggerType)
+            try
             {
-                case TriggerTypeEnum.Keybind:
-                    AddKeybindParameters();
-                    break;
-                case TriggerTypeEnum.AppLaunch:
-                case TriggerTypeEnum.AppClose:
-                    AddAppMonitoringParameters();
-                    break;
-                case TriggerTypeEnum.NetworkPort:
-                    AddNetworkParameters();
-                    break;
-                case TriggerTypeEnum.SystemEvent:
-                    AddSystemEventParameters();
-                    break;
+                if (PreviewTextBlock == null)
+                { return; }
+
+                var preview = $"Trigger Type: {CurrentTriggerModelValue.TriggerType}\n";
+
+                switch (CurrentTriggerModelValue.TriggerType)
+                {
+                    case TriggerTypeEnum.Keybind:
+                        preview += $"Keybind: {CurrentTriggerModelValue.KeybindCombination ?? "Not specified"}\n";
+                        break;
+                    case TriggerTypeEnum.AppLaunch:
+                    case TriggerTypeEnum.AppClose:
+                        preview += $"Process Name: {CurrentTriggerModelValue.ProcessName ?? "Not specified"}\n";
+                        if (!string.IsNullOrEmpty(CurrentTriggerModelValue.ExecutablePath))
+                        {
+                            preview += $"Executable: {CurrentTriggerModelValue.ExecutablePath}\n";
+                        }
+                        preview += $"Monitor Child Processes: {CurrentTriggerModelValue.MonitorChildProcesses}\n";
+                        break;
+                    case TriggerTypeEnum.SystemEvent:
+                        preview += $"Event Name: {CurrentTriggerModelValue.EventName ?? "Not specified"}\n";
+                        preview += $"Event Source: {CurrentTriggerModelValue.EventSource ?? "Not specified"}\n";
+                        break;
+                    case TriggerTypeEnum.NetworkPort:
+                        preview += $"Port: {CurrentTriggerModelValue.Port}\n";
+                        preview += $"IP Address: {CurrentTriggerModelValue.IPAddress ?? "Any"}\n";
+                        break;
+                }
+
+                if (CurrentTriggerModelValue.PollingIntervalMs.HasValue)
+                {
+                    preview += $"Polling Interval: {CurrentTriggerModelValue.PollingIntervalMs}ms\n";
+                }
+
+                if (CurrentTriggerModelValue.TimeoutMs.HasValue)
+                {
+                    preview += $"Timeout: {CurrentTriggerModelValue.TimeoutMs}ms\n";
+                }
+
+                preview += "\n";
+
+                if (CurrentTriggerModelValue.Actions?.Length > 0)
+                {
+                    preview += "Actions:\n";
+                    foreach (var action in CurrentTriggerModelValue.Actions)
+                    {
+                        preview += $"  - {action.ActionType}: {GetActionDescription(action)}\n";
+                    }
+                }
+                else
+                {
+                    preview += "No actions specified\n";
+                }
+
+                preview += "\n";
+
+                if (CurrentTriggerModelValue.Conditions?.Length > 0)
+                {
+                    preview += "Conditions:\n";
+                    foreach (var condition in CurrentTriggerModelValue.Conditions)
+                    {
+                        preview += $"  - {condition.ConditionType}: {GetConditionDescription(condition)}\n";
+                    }
+                }
+                else
+                {
+                    preview += "No conditions specified";
+                }
+
+                PreviewTextBlock.Text = preview;
             }
-
-            // Always add timing parameters
-            AddTimingParameters();
+            catch (Exception ex)
+            {
+                if (PreviewTextBlock != null)
+                {
+                    PreviewTextBlock.Text = $"Error generating preview: {ex.Message}";
+                }
+            }
         }
 
-        private void AddKeybindParameters()
+        private string GetActionDescription(ActionModel action)
         {
-            UseParameterGroupBox("Keybind Configuration").Content = new KeybindCaptureParameter(
-                CurrentTriggerModel.KeybindCombination,
-                CurrentTriggerModel.Key,
-                CurrentTriggerModel.Modifiers,
-                ParameterChanged,
-                nameof(TriggerModel.KeybindCombination));
+            return action.ActionType switch
+            {
+                ActionTypeEnum.Launch => $"Launch '{action.AppName ?? action.ExecutablePath ?? "Unknown"}'",
+                ActionTypeEnum.Close => $"Close '{action.AppName ?? "Unknown"}'",
+                ActionTypeEnum.Focus => $"Focus '{action.AppName ?? "Unknown"}'",
+                _ => "Unknown action"
+            };
         }
 
-        private void AddAppMonitoringParameters()
+        private string GetConditionDescription(ConditionModel condition)
         {
-            UseParameterGroupBox("Process Name:").Content = new ProcessParameter(
-                CurrentTriggerModel.ProcessName,
-                ParameterChanged,
-                nameof(TriggerModel.ProcessName));
-
-            UseParameterGroupBox("Executable Path:").Content = new FilePathParameter(
-                CurrentTriggerModel.ExecutablePath,
-                ParameterChanged,
-                nameof(TriggerModel.ExecutablePath));
-
-            UseParameterStackPanel("App Monitoring:").Children.Add(new BooleanParameter(
-                CurrentTriggerModel.MonitorChildProcesses ?? false,
-                ParameterChanged,
-                nameof(TriggerModel.MonitorChildProcesses),
-                "App Monitoring:",
-                "Monitor Child Processes:"));
+            return condition.ConditionType switch
+            {
+                ConditionTypeEnum.ProcessRunning => $"Process '{condition.ProcessName}' is running",
+                ConditionTypeEnum.FileExists => $"File '{condition.FilePath}' exists",
+                _ => "Unknown condition"
+            };
         }
 
-        private void AddNetworkParameters()
+        private void AddParametersFromInterface(Type modelType)
         {
-            UseParameterGroupBox("IP Address:").Content = new StringParameter(
-                CurrentTriggerModel.IPAddress ?? "127.0.0.1",
-                ParameterChanged,
-                nameof(TriggerModel.IPAddress));
+            foreach (PropertyInfo prop in modelType.GetProperties())
+            {
+                switch (prop.Name)
+                {
+                    case nameof(TriggerModel.ProcessName):
+                        UseParameterGroupBox("Process Name:").Content = new ProcessParameter(
+                            CurrentTriggerModelValue.ProcessName,
+                            ParameterChanged,
+                            prop.Name);
+                        break;
 
-            UseParameterGroupBox("Port:").Content = new IntegerParameter(
-                CurrentTriggerModel.Port ?? 80,
-                ParameterChanged,
-                nameof(TriggerModel.Port));
-        }
+                    case nameof(TriggerModel.ExecutablePath):
+                        UseParameterGroupBox("Executable Path:").Content = new FilePathParameter(
+                            CurrentTriggerModelValue.ExecutablePath,
+                            ParameterChanged,
+                            prop.Name);
+                        break;
 
-        private void AddSystemEventParameters()
-        {
-            UseParameterGroupBox("Event Name:").Content = new StringParameter(
-                CurrentTriggerModel.EventName,
-                ParameterChanged,
-                nameof(TriggerModel.EventName));
+                    case nameof(TriggerModel.KeybindCombination):
+                        UseParameterGroupBox("Keybind:").Content = new KeybindCaptureParameter(
+                            CurrentTriggerModelValue.KeybindCombination,
+                            null,null,
+                            ParameterChanged,
+                            prop.Name);
+                        break;
 
-            UseParameterGroupBox("Event Source:").Content = new StringParameter(
-                CurrentTriggerModel.EventSource,
-                ParameterChanged,
-                nameof(TriggerModel.EventSource));
-        }
+                    case nameof(TriggerModel.EventName):
+                        UseParameterGroupBox("Event Name:").Content = new StringParameter(
+                            CurrentTriggerModelValue.EventName,
+                            ParameterChanged,
+                            prop.Name);
+                        break;
 
-        private void AddTimingParameters()
-        {
-            UseParameterGroupBox("Polling Interval (ms):").Content = new TimerParameter(
-                CurrentTriggerModel.PollingIntervalMs ?? 1000,
-                ParameterChanged,
-                nameof(TriggerModel.PollingIntervalMs));
+                    case nameof(TriggerModel.EventSource):
+                        UseParameterGroupBox("Event Source:").Content = new StringParameter(
+                            CurrentTriggerModelValue.EventSource,
+                            ParameterChanged,
+                            prop.Name);
+                        break;
 
-            UseParameterGroupBox("Timeout (ms):").Content = new TimerParameter(
-                CurrentTriggerModel.TimeoutMs ?? 30000,
-                ParameterChanged,
-                nameof(TriggerModel.TimeoutMs));
+                    case nameof(TriggerModel.Port):
+                        UseParameterGroupBox("Port:").Content = new IntegerParameter(
+                            CurrentTriggerModelValue.Port,
+                            ParameterChanged,
+                            prop.Name,
+                            null,null,
+                            0, 65535);
+                        break;
+
+                    case nameof(TriggerModel.IPAddress):
+                        UseParameterGroupBox("IP Address:").Content = new StringParameter(
+                            CurrentTriggerModelValue.IPAddress,
+                            ParameterChanged,
+                            prop.Name);
+                        break;
+
+                    case nameof(TriggerModel.MonitorChildProcesses):
+                        UseParameterStackPanel("Advanced:").Children.Add(new BooleanParameter(
+                            CurrentTriggerModelValue.MonitorChildProcesses,
+                            ParameterChanged,
+                            prop.Name,
+                            "Advanced:",
+                            "Monitor Child Processes:"));
+                        break;
+
+                    case nameof(TriggerModel.PollingIntervalMs):
+                        UseParameterGroupBox("Polling Interval (ms):").Content = new TimerParameter(
+                            CurrentTriggerModelValue.PollingIntervalMs,
+                            ParameterChanged,
+                            prop.Name);
+                        break;
+
+                    case nameof(TriggerModel.TimeoutMs):
+                        UseParameterGroupBox("Timeout (ms):").Content = new TimerParameter(
+                            CurrentTriggerModelValue.TimeoutMs,
+                            ParameterChanged,
+                            prop.Name);
+                        break;
+
+                    case nameof(TriggerModel.Tags):
+                        UseParameterGroupBox("Tags:").Content = new TagsParameter(
+                            CurrentTriggerModelValue.Tags,
+                            ParameterChanged,
+                            prop.Name);
+                        break;
+                }
+            }
         }
 
         private GroupBox UseParameterGroupBox(string header)
@@ -212,7 +325,9 @@ namespace AppManager.Config.EditorControls
 
             foreach (object aBox in TriggerParameters.Children)
             {
-                if (aBox is GroupBox gb && gb.Header is string sh && sh == header)
+                if (aBox is GroupBox gb
+                    && gb.Header is string sh
+                    && sh == header)
                 {
                     box = gb;
                     break;
@@ -232,230 +347,27 @@ namespace AppManager.Config.EditorControls
             return box;
         }
 
-        private StackPanel UseParameterStackPanel(string header)
+        private StackPanel UseParameterStackPanel(string header, Orientation orientation = Orientation.Vertical)
         {
-            GroupBox? groupBox = null;
+            GroupBox box = UseParameterGroupBox(header);
 
-            foreach (object aBox in TriggerParameters.Children)
+            if (box.Content is StackPanel sp)
             {
-                if (aBox is GroupBox gb && gb.Header is string sh && sh == header)
-                {
-                    groupBox = gb;
-                    break;
-                }
+                return sp;
             }
 
-            if (groupBox is null)
+            if (box.Content is null)
             {
-                groupBox = new GroupBox
+                box.Content = new StackPanel
                 {
-                    Header = header
+                    Orientation = orientation
                 };
 
-                TriggerParameters.Children.Add(groupBox);
+                return (StackPanel)box.Content;
             }
 
-            if (groupBox.Content is not StackPanel stackPanel)
-            {
-                stackPanel = new StackPanel();
-                groupBox.Content = stackPanel;
-            }
-
-            return stackPanel;
+            throw new InvalidOperationException($"GroupBox with header '{header}', has Content that is not of type {typeof(StackPanel).Name}");
         }
-
-        private void ParameterChanged(object? sender, PropertyChangedEventArgs e)
-        {
-            try
-            {
-                if (sender is BaseParameterControl parameter && !string.IsNullOrEmpty(e.PropertyName))
-                {
-                    var property = typeof(TriggerModel).GetProperty(parameter.ValueName);
-                    if (property != null)
-                    {
-                        var parameterProperty = parameter.GetType().GetProperty(e.PropertyName);
-                        if (parameterProperty != null)
-                        {
-                            var value = parameterProperty.GetValue(parameter);
-                            
-                            // Handle special cases for keybind parameters
-                            if (parameter is KeybindCaptureParameter keybindParam)
-                            {
-                                CurrentTriggerModel.KeybindCombination = keybindParam.KeybindCombination;
-                                CurrentTriggerModel.Key = keybindParam.ValueKey;
-                                CurrentTriggerModel.Modifiers = keybindParam.ValueModifiers;
-                            }
-                            else
-                            {
-                                property.SetValue(CurrentTriggerModel, value);
-                            }
-                        }
-                    }
-                }
-
-                UpdatePreview();
-                AnnounceEdited();
-            }
-            catch (Exception ex)
-            {
-                Log.WriteLine($"Error in ParameterChanged: {ex.Message}");
-            }
-        }
-
-        private string GenerateTriggerName(TriggerTypeEnum triggerType)
-        {
-            return $"{triggerType}Trigger_{DateTime.Now:HHmmss}";
-        }
-
-        private void UpdatePreview()
-        {
-            try
-            {
-                StringBuilder previewBuilder = new();
-                previewBuilder.AppendLine($"Trigger Type: {CurrentTriggerModelValue.TriggerType}");
-
-                switch (CurrentTriggerModelValue.TriggerType)
-                {
-                    case TriggerTypeEnum.Keybind:
-                        previewBuilder.AppendLine($"Keybind: {CurrentTriggerModelValue.KeybindCombination ?? "Not specified"}");
-                        previewBuilder.AppendLine($"Modifiers: {CurrentTriggerModelValue.Modifiers}");
-                        previewBuilder.AppendLine($"Key: {CurrentTriggerModelValue.Key}");
-                        break;
-
-                    case TriggerTypeEnum.AppLaunch:
-                    case TriggerTypeEnum.AppClose:
-                        previewBuilder.AppendLine($"Process Name: {CurrentTriggerModelValue.ProcessName ?? "Not specified"}");
-                        previewBuilder.AppendLine($"Executable Path: {CurrentTriggerModelValue.ExecutablePath ?? "Not specified"}");
-                        previewBuilder.AppendLine($"Monitor Child Processes: {CurrentTriggerModelValue.MonitorChildProcesses}");
-                        break;
-
-                    case TriggerTypeEnum.NetworkPort:
-                        previewBuilder.AppendLine($"IP Address: {CurrentTriggerModelValue.IPAddress}");
-                        previewBuilder.AppendLine($"Port: {CurrentTriggerModelValue.Port}");
-                        break;
-
-                    case TriggerTypeEnum.SystemEvent:
-                        previewBuilder.AppendLine($"Event Name: {CurrentTriggerModelValue.EventName ?? "Not specified"}");
-                        previewBuilder.AppendLine($"Event Source: {CurrentTriggerModelValue.EventSource ?? "Not specified"}");
-                        break;
-                }
-
-                previewBuilder.AppendLine($"\nTiming Configuration:");
-                previewBuilder.AppendLine($"Polling Interval: {CurrentTriggerModelValue.PollingIntervalMs}ms");
-                previewBuilder.AppendLine($"Timeout: {CurrentTriggerModelValue.TimeoutMs}ms");
-
-                if (CurrentTriggerModelValue.Conditions?.Length > 0)
-                {
-                    previewBuilder.AppendLine("\nConditions:");
-                    foreach (var condition in CurrentTriggerModelValue.Conditions)
-                    {
-                        previewBuilder.AppendLine($"  - {condition.ConditionType}: {GetConditionDescription(condition)}");
-                    }
-                }
-
-                if (CurrentTriggerModelValue.Actions?.Length > 0)
-                {
-                    previewBuilder.AppendLine($"\nActions: {CurrentTriggerModelValue.Actions.Length} configured");
-                }
-
-                TriggerPreviewTextBlock.Text = previewBuilder.ToString();
-            }
-            catch (Exception ex)
-            {
-                TriggerPreviewTextBlock.Text = $"Error generating preview: {ex.Message}";
-            }
-        }
-
-        private string GetConditionDescription(ConditionModel condition)
-        {
-            return condition.ConditionType switch
-            {
-                ConditionTypeEnum.ProcessRunning => $"Process '{condition.ProcessName}' is running",
-                ConditionTypeEnum.FileExists => $"File '{condition.FilePath}' exists",
-                _ => "Unknown condition"
-            };
-        }
-
-        private void TriggerTypeChanged(object? sender, PropertyChangedEventArgs e)
-        {
-            if (sender is TypeSelectParameter typeSelector && typeSelector.Selected is TriggerTypeEnum triggerType)
-            {
-                CurrentTriggerModel.TriggerType = triggerType;
-                TriggerNameTextBox.Text = GenerateTriggerName(triggerType);
-                LoadTriggerData();
-                AnnounceEdited();
-            }
-        }
-
-        private void TestTriggerButton_Click(object sender, RoutedEventArgs e)
-        {
-            ITrigger? triggerInstance = null;
-
-            try
-            {
-                triggerInstance = TriggerFactory.CreateTrigger(CurrentTriggerModelValue);
-
-                if (!triggerInstance.CanStart())
-                {
-                    MessageBox.Show("✗ Trigger configuration is invalid", "Trigger validation", MessageBoxButton.OK, MessageBoxImage.Warning);
-                }
-                else
-                {
-                    try
-                    {
-                        MessageBox.Show($"Actions executed {(triggerInstance.Execute() ? "with success" : "without complete success.")}.", "Actions Result", MessageBoxButton.OK, MessageBoxImage.Information);
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show($"Error during trigger's execution of actions:\n{ex.Message}", "Action Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Validation critically failed:\n{ex.Message}", "Trigger Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-            finally
-            {
-                triggerInstance?.Dispose();
-            }
-        }
-
-        private void SaveTriggerButton_Click(object sender, RoutedEventArgs e)
-        {
-            ITrigger? triggerInstance = null;
-            MessageBoxResult doSave = MessageBoxResult.No;
-
-            try
-            {
-                triggerInstance = TriggerFactory.CreateTrigger(CurrentTriggerModelValue);
-
-                if (!triggerInstance.CanStart())
-                {
-                    doSave = MessageBox.Show("✗ Trigger configuration is invalid\n\nDo you still want to save?", "Trigger validation", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-                }
-                else
-                {
-                    doSave = MessageBoxResult.Yes;
-                    Log.WriteLine("✓ Trigger configuration is valid");
-                }
-            }
-            catch (Exception ex)
-            {
-                doSave = MessageBox.Show($"Validation critically failed: {ex.Message}\n\nDo you still want to save?", "Trigger Error", MessageBoxButton.YesNo, MessageBoxImage.Error);
-            }
-            finally
-            {
-                triggerInstance?.Dispose();
-            }
-
-            if (MessageBoxResult.Yes == doSave)
-            {
-                AnnounceSave();
-            }
-        }
-
-        private void CancelTriggerButton_Click(object sender, RoutedEventArgs e) => AnnounceCancel();
 
         protected void AnnounceEdited()
         {
@@ -469,87 +381,147 @@ namespace AppManager.Config.EditorControls
 
         protected void AnnounceSave()
         {
-            OnSave?.Invoke(this, new InputEditEventArgs(CurrentTriggerModelValue));
+            OnSave?.Invoke(this, new InputEditEventArgs(CurrentTriggerModelValue.Clone()));
         }
 
-        private void AddActionButton_Click(object sender, RoutedEventArgs e)
+        private void TestTriggerButton_Click(object sender, RoutedEventArgs e)
         {
-            var newAction = new ActionModel
+            try
             {
-                AppName = ProfileManager.CurrentProfile.SelectedNav1List,
-                ActionType = ActionTypeEnum.Launch
-            };
+                MessageBox.Show("Trigger test functionality not yet implemented", "Test Result", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Test failed: {ex.Message}", "Test Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
 
-            CurrentTriggerModelValue.Actions ??= [];
-            CurrentTriggerModelValue.Actions = [..CurrentTriggerModelValue.Actions, newAction];
+        private void ValidateButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                var errors = new List<string>();
 
-            RefreshActionsListBox();
+                // Add trigger-specific validation logic here
+                if (CurrentTriggerModelValue.TriggerType == TriggerTypeEnum.Keybind && string.IsNullOrEmpty(CurrentTriggerModelValue.KeybindCombination))
+                {
+                    errors.Add("Keybind combination is required for keybind triggers");
+                }
+
+                if ((CurrentTriggerModelValue.TriggerType == TriggerTypeEnum.AppLaunch || CurrentTriggerModelValue.TriggerType == TriggerTypeEnum.AppClose) 
+                    && string.IsNullOrEmpty(CurrentTriggerModelValue.ProcessName) && string.IsNullOrEmpty(CurrentTriggerModelValue.ExecutablePath))
+                {
+                    errors.Add("Process name or executable path is required for app triggers");
+                }
+
+                var message = errors.Any() ?
+                    $"Validation failed:\n{string.Join("\n", errors)}" :
+                    "✓ Validation passed";
+
+                var icon = errors.Any() ? MessageBoxImage.Warning : MessageBoxImage.Information;
+                MessageBox.Show(message, "Validation Result", MessageBoxButton.OK, icon);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Validation failed: {ex.Message}", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void SaveButton_Click(object sender, RoutedEventArgs e)
+        {
+            AnnounceSave();
+        }
+
+        private void CancelButton_Click(object sender, RoutedEventArgs e)
+        {
+            AnnounceCancel();
+        }
+
+        private void TriggerTypeChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (sender is TypeSelectParameter tsp && tsp.Selected is TriggerTypeEnum typeEnum)
+            {
+                CurrentTriggerModelValue.TriggerType = typeEnum;
+
+                LoadTriggerData();
+
+                UpdatePreview();
+                AnnounceEdited();
+
+                return;
+            }
+
+            throw new InvalidOperationException($"{nameof(TriggerTypeChanged)}: {nameof(sender)} is not {nameof(TypeSelectParameter)} or {nameof(TypeSelectParameter.Selected)} is not {nameof(TriggerTypeEnum)}");
+        }
+
+        private void ParameterChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (sender is not BaseParameterControl) 
+            { 
+                throw new InvalidOperationException($"{nameof(ParameterChanged)}: {nameof(sender)} is not {nameof(BaseParameterControl)}"); 
+            }
+
+            switch (e.PropertyName)
+            {
+                case nameof(TriggerModel.TriggerType):
+                    TriggerTypeChanged(sender, e);
+                    break;
+
+                case nameof(TriggerModel.ProcessName):
+                    CurrentTriggerModelValue.ProcessName = (sender as ProcessParameter)!.Value;
+                    break;
+
+                case nameof(TriggerModel.ExecutablePath):
+                    CurrentTriggerModelValue.ExecutablePath = (sender as FilePathParameter)!.Value;
+                    break;
+
+                case nameof(TriggerModel.KeybindCombination):
+                    CurrentTriggerModelValue.KeybindCombination = (sender as KeybindCaptureParameter)!.KeybindCombination;
+                    break;
+
+                case nameof(TriggerModel.EventName):
+                    CurrentTriggerModelValue.EventName = (sender as StringParameter)!.Value;
+                    break;
+
+                case nameof(TriggerModel.EventSource):
+                    CurrentTriggerModelValue.EventSource = (sender as StringParameter)!.Value;
+                    break;
+
+                case nameof(TriggerModel.Port):
+                    CurrentTriggerModelValue.Port = (sender as IntegerParameter)!.Value;
+                    break;
+
+                case nameof(TriggerModel.IPAddress):
+                    CurrentTriggerModelValue.IPAddress = (sender as StringParameter)!.Value;
+                    break;
+
+                case nameof(TriggerModel.MonitorChildProcesses):
+                    CurrentTriggerModelValue.MonitorChildProcesses = (sender as BooleanParameter)!.Value;
+                    break;
+
+                case nameof(TriggerModel.PollingIntervalMs):
+                    CurrentTriggerModelValue.PollingIntervalMs = (sender as TimerParameter)!.Value;
+                    break;
+
+                case nameof(TriggerModel.TimeoutMs):
+                    CurrentTriggerModelValue.TimeoutMs = (sender as TimerParameter)!.Value;
+                    break;
+
+                case nameof(TriggerModel.Tags):
+                    CurrentTriggerModelValue.Tags = (sender as TagsParameter)!.Value;
+                    break;
+
+                case nameof(TriggerModel.Conditions):
+                    CurrentTriggerModelValue.Conditions = (sender as ConditionsParameter)!.Value;
+                    break;
+
+                case nameof(TriggerModel.Actions):
+                    CurrentTriggerModelValue.Actions = (sender as ActionsParameter)!.Value;
+                    break;
+            }
+
+            UpdatePreview();
             AnnounceEdited();
-        }
-
-        private void EditActionButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (e.OriginalSource is Button button && button.Tag is ModelListItem<ActionModel> actionModelListItem)
-            {
-                Log.WriteLine($"Edit action: {actionModelListItem.DisplayName}");
-
-                try
-                {
-                    var actionEditor = new ActionEditorControl(actionModelListItem.Model.Clone());
-
-                    actionEditor.OnSave += (s, updatedAction) =>
-                    {
-                        if (null == updatedAction.ActionModel)
-                        {
-                            return;
-                        }
-
-                        if (null != CurrentTriggerModelValue.Actions && actionModelListItem.Id < CurrentTriggerModelValue.Actions.Length)
-                        {
-                            CurrentTriggerModelValue.Actions[actionModelListItem.Id] = updatedAction.ActionModel;
-                            RefreshActionsListBox();
-                            AnnounceEdited();
-                            Log.WriteLine($"Action {actionModelListItem.DisplayName} updated successfully");
-                            ((MainWindow)Application.Current.MainWindow)?.HideOverlay();
-                        }
-                    };
-
-                    actionEditor.OnEdited += (s, args) =>
-                    {
-                        Log.WriteLine($"Action edited for {actionModelListItem.DisplayName}");
-                        AnnounceEdited();
-                    };
-
-                    actionEditor.OnCancel += (s, args) =>
-                    {
-                        Log.WriteLine($"Action editing cancelled for {actionModelListItem.DisplayName}");
-                        ((MainWindow)Application.Current.MainWindow)?.HideOverlay();
-                    };
-
-                    ((MainWindow)Application.Current.MainWindow)?.ShowOverlay(actionEditor);
-                }
-                catch (Exception ex)
-                {
-                    Log.WriteLine($"Error opening action editor: {ex.Message}");
-                    MessageBox.Show($"Error opening action editor: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-            }
-        }
-
-        private void RefreshActionsListBox()
-        {
-            ClearActions();
-            CurrentTriggerModelValue.Actions ??= [];
-
-            foreach (ActionModel action in CurrentTriggerModelValue.Actions)
-            {
-                ActionListItemsValue.Add(new ModelListItem<ActionModel>(CurrentTriggerModelValue.Actions.IndexOf(action), action));
-            }
-        }
-
-        public void ClearActions()
-        {
-            ActionListItemsValue.Clear();
         }
     }
 }

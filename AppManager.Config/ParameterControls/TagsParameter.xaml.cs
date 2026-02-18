@@ -96,7 +96,7 @@ namespace AppManager.Config.ParameterControls
             UpdateDisplayFromValue();
         }
 
-        public TagsParameter(Dictionary<string, string>? tags = null, PropertyChangedEventHandler? eventHandler = null, string? customValueName = null, string? headerText = null, string? labelText = null) : this()
+        public TagsParameter(Dictionary<string, string>? tags, PropertyChangedEventHandler? eventHandler = null, string? customValueName = null, string? headerText = null, string? labelText = null) : this()
         {
             if (tags is not null)
             {

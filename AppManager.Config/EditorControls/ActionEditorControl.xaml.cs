@@ -92,9 +92,7 @@ namespace AppManager.Config.EditorControls
             {
                 ActionParameters.Children.Clear();
 
-                ActionConditions.Content = new ConditionsParameter(CurrentActionModelValue.Conditions ?? []);
-
-                (ActionConditions.Content as ConditionsParameter)!.PropertyChanged += ParameterChanged;
+                ActionConditions.Content = new ConditionsParameter(CurrentActionModelValue.Conditions ?? [], ParameterChanged);
 
                 if (TypeSelectionGroupBox!.Content is TypeSelectParameter { Selected: ActionTypeEnum actionType })
                 {
@@ -387,7 +385,7 @@ namespace AppManager.Config.EditorControls
         }
 
 
-        private void ActionTypeComboBox_SelectionChanged(object sender, PropertyChangedEventArgs e)
+        private void ActionTypeComboBox_SelectionChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (sender is TypeSelectParameter tsp && tsp.Selected is ActionTypeEnum typeEnum)
             {
@@ -404,7 +402,7 @@ namespace AppManager.Config.EditorControls
             throw new InvalidOperationException($"{nameof(ActionTypeComboBox_SelectionChanged)}: {nameof(sender)} is not {nameof(TypeSelectParameter)} or {nameof(TypeSelectParameter.Selected)} is not {nameof(ActionTypeEnum)}");
         }
 
-        private void ParameterChanged(object sender, PropertyChangedEventArgs e)
+        private void ParameterChanged(object? sender, PropertyChangedEventArgs e)
         {
             if(sender is not BaseParameterControl) { throw new InvalidOperationException($"{nameof(ParameterChanged)}: {nameof(sender)} is not {nameof(BaseParameterControl)}"); }
             

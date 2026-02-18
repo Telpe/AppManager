@@ -7,6 +7,7 @@ using AppManager.Core.Utilities;
 using AppManager.Tests.TestUtilities;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 

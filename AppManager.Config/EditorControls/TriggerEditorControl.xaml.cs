@@ -53,8 +53,8 @@ namespace AppManager.Config.EditorControls
             {
                 // Initialize trigger type selector using TypeSelectParameter
                 TypeSelectionGroupBox!.Content = new TypeSelectParameter(typeof(TriggerTypeEnum), null, null, "Choose:");
-                (TypeSelectionGroupBox!.Content as TypeSelectParameter)!.PropertyChanged += TriggerTypeChanged;
                 (TypeSelectionGroupBox!.Content as TypeSelectParameter)!.Selected = CurrentTriggerModelValue.TriggerType;
+                (TypeSelectionGroupBox!.Content as TypeSelectParameter)!.PropertyChanged += TriggerTypeChanged;
 
                 LoadTriggerData();
             }
@@ -84,11 +84,11 @@ namespace AppManager.Config.EditorControls
             {
                 TriggerParameters.Children.Clear();
 
-                TriggerTags.Content = new TagsParameter(CurrentTriggerModelValue.Tags, ParameterChanged);
+                TriggerTags.Content = new TagsParameter(CurrentTriggerModelValue.Tags, ParameterChanged, nameof(TriggerModel.Tags));
 
-                TriggerConditions.Content = new ConditionsParameter(CurrentTriggerModelValue.Conditions, ParameterChanged);
+                TriggerConditions.Content = new ConditionsParameter(CurrentTriggerModelValue.Conditions, ParameterChanged, nameof(TriggerModel.Conditions));
 
-                TriggerActions.Content = new ActionsParameter(CurrentTriggerModelValue.Actions, ParameterChanged);
+                TriggerActions.Content = new ActionsParameter(CurrentTriggerModelValue.Actions, ParameterChanged, nameof(TriggerModel.Actions));
 
                 if (TypeSelectionGroupBox!.Content is TypeSelectParameter { Selected: TriggerTypeEnum triggerType })
                 {
@@ -309,12 +309,6 @@ namespace AppManager.Config.EditorControls
                             prop.Name);
                         break;
 
-                    case nameof(TriggerModel.Tags):
-                        UseParameterGroupBox("Tags:").Content = new TagsParameter(
-                            CurrentTriggerModelValue.Tags,
-                            ParameterChanged,
-                            prop.Name);
-                        break;
                 }
             }
         }

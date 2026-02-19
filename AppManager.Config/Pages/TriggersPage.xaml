@@ -35,8 +35,7 @@
 				</ComboBox.ItemTemplate>
 			</ComboBox>
 
-			<ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="3" HorizontalAlignment="Center" 
-VerticalAlignment="Center"  >
+			<ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="3" HorizontalAlignment="Center" VerticalAlignment="Center"  >
 				<DockPanel>
 					<StackPanel x:Name="GroupsStackPanel" DockPanel.Dock="Top" />
 

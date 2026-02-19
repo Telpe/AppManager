@@ -306,18 +306,12 @@ namespace AppManager.Config
                 }
             }
 
-            // Save window settings to settings file
-            var settings = SettingsManager.CurrentSettings;
-            if (settings != null)
-            {
-                settings.WindowWidth = this.Width;
-                settings.WindowHeight = this.Height;
-                settings.WindowLeft = this.Left;
-                settings.WindowTop = this.Top;
-                settings.WindowMaximized = this.WindowState == WindowState.Maximized;
-            }
+            SettingsManager.CurrentSettings.WindowWidth = this.Width;
+            SettingsManager.CurrentSettings.WindowHeight = this.Height;
+            SettingsManager.CurrentSettings.WindowLeft = this.Left;
+            SettingsManager.CurrentSettings.WindowTop = this.Top;
+            SettingsManager.CurrentSettings.WindowMaximized = this.WindowState == WindowState.Maximized;
 
-            // Save only settings
             SettingsManager.SaveSettings();
 
             e.Cancel = false;

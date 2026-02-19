@@ -1,6 +1,6 @@
 ﻿namespace AppManager.Core.Actions
 {
-    public enum ActionResult
+    public enum ActionResultEnum
     {
         Success,
         Failed,

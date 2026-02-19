@@ -18,7 +18,7 @@ namespace AppManager.Config.Pages
     public partial class TriggersPage : Page, IPageWithParameter
     {
         private string _selectedTagFilter = "All";
-        private TriggerModel[] NotSaved = [];
+        private Dictionary<string, TriggerModel> NotSaved = [];
         private object EditLock = new();
 
         public TriggersPage()
@@ -193,14 +193,7 @@ namespace AppManager.Config.Pages
         {
             try
             {
-                TriggerModel? editedTrigger = NotSaved.FirstOrDefault(t => t.Id == trigger.Id);
-
-                if (editedTrigger is not null)
-                {
-                    trigger = editedTrigger;
-                }
-
-                TriggerEditorControl triggerEditor = new(trigger.Clone());
+                TriggerEditorControl triggerEditor = new( (NotSaved.GetValueOrDefault(trigger.Id) ?? trigger).Clone() );
 
                 triggerEditor.OnCancel += OnTriggerCancel;
                 triggerEditor.OnEdited += OnTriggerEdited;
@@ -219,7 +212,7 @@ namespace AppManager.Config.Pages
         {
             lock (EditLock)
             {
-                return 0 < NotSaved.Length;
+                return 0 < NotSaved.Count;
             }
         }
 
@@ -229,7 +222,8 @@ namespace AppManager.Config.Pages
             {
                 if (sender is TriggerEditorControl editor)
                 {
-                    NotSaved = NotSaved.Where(a => editor.CurrentTriggerModel.Id != a.Id).ToArray();
+                    NotSaved.Remove(editor.CurrentTriggerModel.Id);
+                    ShowTriggerEditor(ProfileManager.CurrentProfile.Triggers.FirstOrDefault(a=> a.Id == editor.CurrentTriggerModel.Id) ?? new());
                 }
             }
         }
@@ -240,25 +234,23 @@ namespace AppManager.Config.Pages
             {
                 if (sender is TriggerEditorControl editor)
                 {
-                    bool notThere = true;
+                    int index = Array.FindIndex(
+                        ProfileManager.CurrentProfile.Triggers,
+                        t => t.Id == editor.CurrentTriggerModel.Id
+                    );
 
-                    for (int i = 0; i < ProfileManager.CurrentProfile.Triggers.Length; i++)
+                    if (-1 < index)
                     {
-                        if (ProfileManager.CurrentProfile.Triggers[i].Id == editor.CurrentTriggerModel.Id)
-                        {
-                            ProfileManager.CurrentProfile.Triggers[i] = editor.CurrentTriggerModel.Clone();
-                            notThere = false;
-                        }
+                        ProfileManager.CurrentProfile.Triggers[index] = editor.CurrentTriggerModel.Clone();
                     }
-
-                    if (notThere)
+                    else
                     {
-                        ProfileManager.CurrentProfile.Triggers = ProfileManager.CurrentProfile.Triggers.Append(editor.CurrentTriggerModel.Clone()).ToArray();
+                        ProfileManager.CurrentProfile.Triggers =  [..ProfileManager.CurrentProfile.Triggers, editor.CurrentTriggerModel.Clone()];
                     }
 
                     ProfileManager.SaveProfile();
 
-                    NotSaved = NotSaved.Where(a => editor.CurrentTriggerModel.Id != a.Id).ToArray();
+                    NotSaved.Remove(editor.CurrentTriggerModel.Id);
                 }
 
                 RefreshTriggerMenu();
@@ -271,21 +263,7 @@ namespace AppManager.Config.Pages
             {
                 if (sender is TriggerEditorControl editor)
                 {
-                    bool notThere = true;
-
-                    for (int i = 0; i < NotSaved.Length; i++)
-                    {
-                        if (NotSaved[i].Id == editor.CurrentTriggerModel.Id)
-                        {
-                            NotSaved[i] = editor.CurrentTriggerModel;
-                            notThere = false;
-                        }
-                    }
-
-                    if (notThere)
-                    {
-                        NotSaved = NotSaved.Append(editor.CurrentTriggerModel).ToArray();
-                    }
+                    NotSaved[editor.CurrentTriggerModel.Id] = editor.CurrentTriggerModel;
                 }
             }
         }

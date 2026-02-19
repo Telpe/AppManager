@@ -15,7 +15,7 @@ namespace AppManager.Config.ParameterControls
         private string _value = string.Empty;
         private string _originalKey = string.Empty;
 
-        public string Key
+        public string TagKey
         {
             get => _key;
             set
@@ -23,12 +23,12 @@ namespace AppManager.Config.ParameterControls
                 if (_key != value)
                 {
                     _key = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Key)));
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TagKey)));
                 }
             }
         }
 
-        public string Value
+        public string TagValue
         {
             get => _value;
             set
@@ -36,7 +36,7 @@ namespace AppManager.Config.ParameterControls
                 if (_value != value)
                 {
                     _value = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Value)));
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TagValue)));
                 }
             }
         }
@@ -54,7 +54,7 @@ namespace AppManager.Config.ParameterControls
             }
         }*/
 
-        public bool IsEmpty => string.IsNullOrEmpty(Key) && string.IsNullOrEmpty(Value);
+        public bool IsEmpty => string.IsNullOrEmpty(TagKey) && string.IsNullOrEmpty(TagValue);
         public bool CanDelete => !IsEmpty;
 
         public event PropertyChangedEventHandler? PropertyChanged;
@@ -62,19 +62,18 @@ namespace AppManager.Config.ParameterControls
 
     public partial class TagsParameter : BaseParameterControl
     {
-        private Dictionary<string, string> _value = new Dictionary<string, string>();
-        private ObservableCollection<TagItem> _displayItems = new ObservableCollection<TagItem>();
-        private bool _isUpdatingFromValue = false;
+        private Dictionary<string, string> TagsValue = new Dictionary<string, string>();
+        private readonly ObservableCollection<TagItem> _displayItems = new();
         private bool _isUpdatingFromDisplayItems = false;
 
         public Dictionary<string, string> Value
         {
-            get => _value;
+            get => TagsValue;
             set
             {
-                if (!_value.SequenceEqual(value))
+                if (!TagsValue.SequenceEqual(value))
                 {
-                    _value = value;
+                    TagsValue = value;
 
                     if (!_isUpdatingFromDisplayItems) { UpdateDisplayFromValue(); }
 
@@ -83,6 +82,7 @@ namespace AppManager.Config.ParameterControls
             }
         }
 
+        public ObservableCollection<TagItem> DisplayItems => _displayItems; 
 
         public TagsParameter()
         {
@@ -100,7 +100,7 @@ namespace AppManager.Config.ParameterControls
         {
             if (tags is not null)
             {
-                _value = new Dictionary<string, string>(tags);
+                TagsValue = new Dictionary<string, string>(tags);
             }
 
             if (headerText is not null)
@@ -131,12 +131,12 @@ namespace AppManager.Config.ParameterControls
             _displayItems.Clear();
 
             // Add existing items from the dictionary
-            foreach (var kvp in _value)
+            foreach (var kvp in TagsValue)
             {
                 var item = new TagItem
                 {
-                    Key = kvp.Key,
-                    Value = kvp.Value
+                    TagKey = kvp.Key,
+                    TagValue = kvp.Value
                 };
                 item.PropertyChanged += TagItem_PropertyChanged;
                 _displayItems.Add(item);
@@ -147,7 +147,7 @@ namespace AppManager.Config.ParameterControls
 
         private void TagItem_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            if (sender is TagItem && (e.PropertyName == nameof(TagItem.Key) || e.PropertyName == nameof(TagItem.Value)))
+            if (sender is TagItem && (e.PropertyName == nameof(TagItem.TagKey) || e.PropertyName == nameof(TagItem.TagValue)))
             {
                 UpdateValueFromDisplay();
                 EnsureEmptyItemAtEnd();
@@ -168,7 +168,7 @@ namespace AppManager.Config.ParameterControls
         {
             _isUpdatingFromDisplayItems = true;
 
-            Value = _displayItems.Where(a=> !a.IsEmpty).ToDictionary(item => item.Key, item => item.Value);
+            Value = _displayItems.Where(a=> !a.IsEmpty).ToDictionary(item => item.TagKey, item => item.TagValue);
 
             _isUpdatingFromDisplayItems = false;
         }
@@ -194,18 +194,18 @@ namespace AppManager.Config.ParameterControls
             {
                 var newKey = textBox.Text.Trim();
 
-                if (item.Key == newKey 
+                if (item.TagKey == newKey 
                     || RemovedItemIfEmpty(item))
                 { return; }
 
                 if (Value.ContainsKey(newKey))
                 {
-                    textBox.Text = item.Key;
+                    textBox.Text = item.TagKey;
                     // TODO: Show error message about duplicate keys
                     return;
                 }
 
-                item.Key = newKey;
+                item.TagKey = newKey;
             }
         }
 
@@ -218,7 +218,7 @@ namespace AppManager.Config.ParameterControls
                 if (RemovedItemIfEmpty(item))
                 { return; } 
 
-                item.Value = newValue;
+                item.TagValue = newValue;
             }
         }
 

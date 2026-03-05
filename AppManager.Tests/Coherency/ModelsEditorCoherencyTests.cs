@@ -64,6 +64,7 @@ namespace AppManager.Tests.Coherency
         }
 
         [TestMethod]
+        [TestCategory("PreRelease")]
         public void AvailableActionsAreSupported()
         {
             string[] notSupported = AvailableAreSupported(_availableActionTypes.Select(a => a.ToString()).ToArray(), _supportedActionTypes.Select(a => a.ToString()).ToArray() );
@@ -73,6 +74,7 @@ namespace AppManager.Tests.Coherency
         }
 
         [TestMethod]
+        [TestCategory("PreRelease")]
         public void SupportedActionsActuallyExists()
         {
             string[] notExisting = SupportedActuallyExists(_supportedActionTypes.Select(a => a.ToString()+"Action").ToArray(), _existingActionTypes);
@@ -82,6 +84,7 @@ namespace AppManager.Tests.Coherency
         }
 
         [TestMethod]
+        [TestCategory("PreRelease")]
         public void ExistingActionsAreAvailable()
         {
             string[] unavailableActions = ExistingAreAvailable(_existingActionTypes, typeof(ActionTypeEnum), ActionScratchLength);
@@ -93,6 +96,7 @@ namespace AppManager.Tests.Coherency
         }
 
         [TestMethod]
+        [TestCategory("PreRelease")]
         public void ActionModelImplementsRequiredInterfaces()
         {
             string[] missingInterfaces = ModelImplementsRequiredInterfaces(_existingActionTypes, typeof(ActionModel));
@@ -102,6 +106,7 @@ namespace AppManager.Tests.Coherency
         }
 
         [TestMethod]
+        [TestCategory("PreRelease")]
         public void ActionModelHasUselessInterfaces()
         {
             string[] extraInterfaces = ModelHasUselessInterfaces(typeof(ActionModel), typeof(ActionTypeEnum), ActionScratchLength);
@@ -113,6 +118,7 @@ namespace AppManager.Tests.Coherency
         }
 
         [TestMethod]
+        [TestCategory("PreRelease")]
         public void AvailableTriggersAreSupported()
         {
             string[] notSupported = AvailableAreSupported(_availableTriggerTypes.Select(a => a.ToString()).ToArray(), _supportedTriggerTypes.Select(a => a.ToString()).ToArray() );
@@ -122,6 +128,7 @@ namespace AppManager.Tests.Coherency
         }
 
         [TestMethod]
+        [TestCategory("PreRelease")]
         public void SupportedTriggersActuallyExists()
         {
             string[] notExisting = SupportedActuallyExists(_supportedTriggerTypes.Select(a => a.ToString()+"Trigger").ToArray(), _actualTriggerTypes);
@@ -131,6 +138,7 @@ namespace AppManager.Tests.Coherency
         }
 
         [TestMethod]
+        [TestCategory("PreRelease")]
         public void ExistingTriggersAreAvailable()
         {
             string[] unavailableTriggers = ExistingAreAvailable(_actualTriggerTypes, typeof(TriggerTypeEnum), TriggerScratchLength);
@@ -142,6 +150,7 @@ namespace AppManager.Tests.Coherency
         }
 
         [TestMethod]
+        [TestCategory("PreRelease")]
         public void TriggerModelImplementsRequiredInterfaces()
         {
             string[] missingInterfaces = ModelImplementsRequiredInterfaces(_actualTriggerTypes, typeof(TriggerModel));
@@ -151,6 +160,7 @@ namespace AppManager.Tests.Coherency
         }
 
         [TestMethod]
+        [TestCategory("PreRelease")]
         public void TriggerModelHasUselessInterfaces()
         {
             string[] extraInterfaces = ModelHasUselessInterfaces(typeof(TriggerModel), typeof(TriggerTypeEnum), TriggerScratchLength);
@@ -162,6 +172,7 @@ namespace AppManager.Tests.Coherency
         }
 
         [TestMethod]
+        [TestCategory("PreRelease")]
         public void AvailableConditionsAreSupported()
         {
             string[] notSupported = AvailableAreSupported(_availableConditionTypes.Select(a => a.ToString()).ToArray(), _supportedConditionTypes.Select(a => a.ToString()).ToArray() );
@@ -171,6 +182,7 @@ namespace AppManager.Tests.Coherency
         }
 
         [TestMethod]
+        [TestCategory("PreRelease")]
         public void SupportedConditionsActuallyExists()
         {
             string[] notExisting = SupportedActuallyExists(_supportedConditionTypes.Select(a => a.ToString()+"Condition").ToArray(), _actualConditionTypes);
@@ -180,6 +192,7 @@ namespace AppManager.Tests.Coherency
         }
 
         [TestMethod]
+        [TestCategory("PreRelease")]
         public void ExistingConditionsAreAvailable()
         {
             string[] unavailableConditions = ExistingAreAvailable(_actualConditionTypes, typeof(ConditionTypeEnum), ConditionScratchLength);
@@ -191,6 +204,7 @@ namespace AppManager.Tests.Coherency
         }
 
         [TestMethod]
+        [TestCategory("PreRelease")]
         public void ConditionModelImplementsRequiredInterfaces()
         {
             string[] missingInterfaces = ModelImplementsRequiredInterfaces(_actualConditionTypes, typeof(ConditionModel));
@@ -200,6 +214,7 @@ namespace AppManager.Tests.Coherency
         }
 
         [TestMethod]
+        [TestCategory("PreRelease")]
         public void ConditionModelHasUselessInterfaces()
         {
             string[] extraInterfaces = ModelHasUselessInterfaces(typeof(ConditionModel), typeof(ConditionTypeEnum), ConditionScratchLength);

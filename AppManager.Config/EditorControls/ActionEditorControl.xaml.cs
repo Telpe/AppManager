@@ -1,26 +1,22 @@
 ﻿using AppManager.Core.Actions;
-using AppManager.Core.Conditions;
 using AppManager.Core.Models;
-using AppManager.Core.Utilities;
 using AppManager.Config.Interfaces;
 using AppManager.Config.ParameterControls;
 using AppManager.Config.Utilities;
-using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
-using static System.Net.Mime.MediaTypeNames;
 using AppManager.Core.Actions.BringToFront;
 using AppManager.Core.Actions.Launch;
 using AppManager.Core.Actions.Minimize;
 using AppManager.Core.Actions.Close;
 using AppManager.Core.Actions.Focus;
 using AppManager.Core.Actions.Restart;
+using System.Text;
 
 namespace AppManager.Config.EditorControls
 {
@@ -92,7 +88,7 @@ namespace AppManager.Config.EditorControls
             {
                 ActionParameters.Children.Clear();
 
-                ActionConditions.Content = new ConditionsParameter(CurrentActionModelValue.Conditions ?? [], ParameterChanged);
+                ActionConditions.Content = new ConditionsParameter(CurrentActionModelValue.Conditions ?? [], ParameterChanged, nameof(ConditionalModel.Conditions));
 
                 if (TypeSelectionGroupBox!.Content is TypeSelectParameter { Selected: ActionTypeEnum actionType })
                 {
@@ -131,62 +127,43 @@ namespace AppManager.Config.EditorControls
         {
             try
             {
-                if (PreviewTextBlock == null)
-                {
-                    return;
-                }
+                if (PreviewTextBlock is null)
+                { return; }
 
-                var preview = $"Action Type: {CurrentActionModelValue.ActionType}\n" +
-                             $"App Name: {CurrentActionModelValue.AppName ?? "Not specified"}\n" +
-                             $"Window Title: {CurrentActionModelValue.WindowTitle ?? "Not specified"}\n";
+                var preview = new StringBuilder();
+                preview.AppendLine($"Action Type: {CurrentActionModelValue.ActionType}");
+                preview.AppendLine($"App Name: {CurrentActionModelValue.AppName ?? "Not specified"}");
+                preview.AppendLine($"Window Title: {CurrentActionModelValue.WindowTitle ?? "Not specified"}");
 
                 if (!string.IsNullOrEmpty(CurrentActionModelValue.ExecutablePath))
                 {
-                    preview += $"Executable: {CurrentActionModelValue.ExecutablePath}\n";
+                    preview.AppendLine($"Executable: {CurrentActionModelValue.ExecutablePath}");
                 }
 
                 if (!string.IsNullOrEmpty(CurrentActionModelValue.Arguments))
                 {
-                    preview += $"Arguments: {CurrentActionModelValue.Arguments}\n";
+                    preview.AppendLine($"Arguments: {CurrentActionModelValue.Arguments}");
                 }
 
-                preview += $"Force Operation: {CurrentActionModelValue.ForceOperation}\n" +
-                          $"Include Child Processes: {CurrentActionModelValue.IncludeChildProcesses}\n" +
-                          $"Include Similar Names: {CurrentActionModelValue.IncludeSimilarNames}\n" +
-                          $"Timeout: {CurrentActionModelValue.TimeoutMs}ms\n\n";
+                preview.AppendLine($"Force Operation: {CurrentActionModelValue.ForceOperation}");
+                preview.AppendLine($"Include Child Processes: {CurrentActionModelValue.IncludeChildProcesses}");
+                preview.AppendLine($"Include Similar Names: {CurrentActionModelValue.IncludeSimilarNames}");
+                preview.AppendLine($"Timeout: {CurrentActionModelValue.TimeoutMs}ms");
+                preview.AppendLine();
 
-                if (CurrentActionModelValue.Conditions?.Length > 0)
+                preview.Append(CurrentActionModelValue.Conditions?.Length.ToString() ?? "0");
+                preview.AppendLine(" Conditions:");
+                foreach (ConditionModel condition in CurrentActionModelValue.Conditions ?? [])
                 {
-                    preview += "Conditions:\n";
-                    foreach (var condition in CurrentActionModelValue.Conditions)
-                    {
-                        preview += $"  - {condition.ConditionType}: {GetConditionDescription(condition)}\n";
-                    }
-                }
-                else
-                {
-                    preview += "No conditions specified";
+                    preview.AppendLine($"  - {condition.ConditionType}: {condition.ConditionType.ToDescription()}");
                 }
 
-                PreviewTextBlock.Text = preview;
+                PreviewTextBlock.Text = preview.ToString();
             }
             catch (Exception ex)
             {
-                if (PreviewTextBlock != null)
-                {
-                    PreviewTextBlock.Text = $"Error generating preview: {ex.Message}";
-                }
+                PreviewTextBlock?.Text = $"Error generating preview: {ex.Message}";
             }
-        }
-
-        private string GetConditionDescription(ConditionModel condition)
-        {
-            return condition.ConditionType switch
-            {
-                ConditionTypeEnum.ProcessRunning => $"Process '{condition.ProcessName}' is running",
-                ConditionTypeEnum.FileExists => $"File '{condition.FilePath}' exists",
-                _ => "Unknown condition"
-            };
         }
 
 
@@ -200,9 +177,10 @@ namespace AppManager.Config.EditorControls
 
 
                         UseParameterGroupBox("App Name:").Content = new ProcessParameter(
-                            CurrentActionModel.AppName, 
+                            CurrentActionModel.AppName,
                             ParameterChanged,
-                            prop.Name);
+                            prop.Name)
+                            { Description=DescriptionHelper.GetDescription(prop) };
                         break;
 
                     case nameof(ActionModel.ExecutablePath):
@@ -210,7 +188,8 @@ namespace AppManager.Config.EditorControls
                         UseParameterGroupBox("Executable Path:").Content = new FilePathParameter(
                             CurrentActionModel.ExecutablePath, 
                             ParameterChanged,
-                            prop.Name);
+                            prop.Name)
+                            { Description = DescriptionHelper.GetDescription(prop) };
                         break;
 
                     case nameof(ActionModel.Arguments):
@@ -218,7 +197,8 @@ namespace AppManager.Config.EditorControls
                         UseParameterStackPanel("Arguments:").Children.Add(new ExeArgumentsParameter(
                             CurrentActionModel.WindowTitle,
                             ParameterChanged,
-                            prop.Name));
+                            prop.Name)
+                            { Description = DescriptionHelper.GetDescription(prop)} );
                         break;
 
                     case nameof(ActionModel.ForceOperation):
@@ -228,7 +208,8 @@ namespace AppManager.Config.EditorControls
                             ParameterChanged,
                             prop.Name,
                             "Advanced:",
-                            "Force Operation:"));
+                            "Force Operation:")
+                            { Description = DescriptionHelper.GetDescription(prop)} );
                         break;
 
                     case nameof(ActionModel.IncludeChildProcesses):
@@ -238,7 +219,8 @@ namespace AppManager.Config.EditorControls
                             ParameterChanged,
                             prop.Name,
                             "Advanced:",
-                            "Include Child Processes:"));
+                            "Include Child Processes:")
+                            { Description = DescriptionHelper.GetDescription(prop) });
                         break;
 
                     case nameof(ActionModel.IncludeSimilarNames):
@@ -248,7 +230,8 @@ namespace AppManager.Config.EditorControls
                             ParameterChanged,
                             prop.Name,
                             "Advanced:",
-                            "Include Similar Names:"));
+                            "Include Similar Names:")
+                            { Description = DescriptionHelper.GetDescription(prop) });
                         break;
 
                     case nameof(ActionModel.TimeoutMs):
@@ -256,7 +239,8 @@ namespace AppManager.Config.EditorControls
                         UseParameterGroupBox("Timeout (ms):").Content = new TimerParameter(
                             CurrentActionModel.TimeoutMs,
                             ParameterChanged,
-                            prop.Name);
+                            prop.Name)
+                            { Description = DescriptionHelper.GetDescription(prop) };
                         break;
 
                     case nameof(ActionModel.WindowTitle):
@@ -264,7 +248,8 @@ namespace AppManager.Config.EditorControls
                         UseParameterGroupBox("Window Title:").Content = new StringParameter(
                             CurrentActionModel.WindowTitle,
                             ParameterChanged,
-                            prop.Name);
+                            prop.Name)
+                            { Description = DescriptionHelper.GetDescription(prop) };
                         break;
 
                     

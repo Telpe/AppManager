@@ -31,8 +31,8 @@ namespace AppManager.Config.ParameterControls
 
         public ConditionsParameter()
         {
-            _headerText = "Conditions";
-            _labelText = String.Empty;
+            HeaderText = "Conditions";
+            LabelText = String.Empty;
 
             InitializeComponent();
             this.DataContext = this;
@@ -41,10 +41,10 @@ namespace AppManager.Config.ParameterControls
         public ConditionsParameter(ConditionModel[]? conditions, PropertyChangedEventHandler? eventHandler = null, string? customValueName = null, string? headerText = null, string? labelText = null) : this()
         {
             if (headerText is not null)
-            { _headerText = headerText; }
+            { HeaderText = headerText; }
 
             if (labelText is not null)
-            { _labelText = labelText; }
+            { LabelText = labelText; }
 
             if (customValueName is not null)
             { ValueName = customValueName; }

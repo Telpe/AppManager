@@ -25,8 +25,8 @@ namespace AppManager.Config.ParameterControls
 
         public BooleanParameter()
         {
-            _headerText = "Boolean Setting";
-            _labelText = "Option:";
+            HeaderText = "Boolean Setting";
+            LabelText = "Option:";
             ValueName = nameof(Value);
 
             InitializeComponent();
@@ -37,12 +37,12 @@ namespace AppManager.Config.ParameterControls
         {
             if (headerText != null)
             {
-                _headerText = headerText;
+                HeaderText = headerText;
             }
             
             if (labelText != null)
             {
-                _labelText = labelText;
+                LabelText = labelText;
             }
 
             if (customValueName != null)

@@ -1,5 +1,4 @@
 using AppManager.Core.Models;
-using AppManager.Core.Utilities;
 using AppManager.Config.EditorControls;
 using AppManager.Config.Interfaces;
 using System;
@@ -9,6 +8,7 @@ using System.Windows;
 using System.Windows.Controls;
 using AppManager.Config.Utilities;
 using AppManager.Core.Triggers;
+using System.Threading;
 
 namespace AppManager.Config.Pages
 {
@@ -19,7 +19,7 @@ namespace AppManager.Config.Pages
     {
         private string _selectedTagFilter = "All";
         private Dictionary<string, TriggerModel> NotSaved = [];
-        private object EditLock = new();
+        private readonly Lock EditLock = new();
 
         public TriggersPage()
         {

@@ -1,7 +1,6 @@
 ﻿using AppManager.Core.Models;
 using AppManager.Config.Interfaces;
 using AppManager.Config.Pages;
-using AppManager.Config.Utilities;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -11,6 +10,7 @@ using System.Linq;
 using System.Numerics;
 using System.Windows;
 using System.Windows.Controls;
+using AppManager.Config.Dialogs;
 
 namespace AppManager.Config
 {

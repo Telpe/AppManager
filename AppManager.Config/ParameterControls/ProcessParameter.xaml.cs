@@ -29,8 +29,8 @@ namespace AppManager.Config.ParameterControls
 
         public ProcessParameter()
         {
-            _headerText = "Process";
-            _labelText = "Select Process";
+            HeaderText = "Process";
+            LabelText = "Select Process";
             ValueName = nameof(Value);
 
             InitializeComponent();
@@ -49,8 +49,8 @@ namespace AppManager.Config.ParameterControls
 
             if(eventHandler is not null) { PropertyChanged += eventHandler; }
 
-            if(headerText is string headerTextTemp) { _headerText = headerTextTemp; }
-            if(labelText is string labelTextTemp) { _labelText = labelTextTemp; }
+            if(headerText is string headerTextTemp) { HeaderText = headerTextTemp; }
+            if(labelText is string labelTextTemp) { LabelText = labelTextTemp; }
         }
 
         private void UpdateProcessDisplay()

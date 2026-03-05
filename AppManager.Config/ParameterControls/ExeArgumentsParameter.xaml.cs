@@ -32,8 +32,8 @@ namespace AppManager.Config.ParameterControls
 
         public ExeArgumentsParameter()
         {
-            _labelText = "Arguments:";
-            _headerText = "Executable Arguments";
+            LabelText = "Arguments:";
+            HeaderText = "Executable Arguments";
             ValueName = nameof(Value);
 
             InitializeComponent();
@@ -44,12 +44,12 @@ namespace AppManager.Config.ParameterControls
         {
             if (headerText != null)
             {
-                _headerText = headerText;
+                HeaderText = headerText;
             }
             
             if (labelText != null)
             {
-                _labelText = labelText;
+                LabelText = labelText;
             }
 
             if (initialValue != null)

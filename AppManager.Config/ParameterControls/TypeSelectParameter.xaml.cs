@@ -31,8 +31,8 @@ namespace AppManager.Config.ParameterControls
 
         public TypeSelectParameter()
         {
-            _labelText = "Change:";
-            _headerText = "Select Type";
+            LabelText = "Change:";
+            HeaderText = "Select Type";
             ValueName = nameof(Selected);
 
             InitializeComponent();
@@ -48,12 +48,12 @@ namespace AppManager.Config.ParameterControls
             
             if (headerText != null)
             {
-                _headerText = headerText;
+                HeaderText = headerText;
             }
             
             if (labelText != null)
             {
-                _labelText = labelText;
+                LabelText = labelText;
             }
 
             if (customValueName != null)

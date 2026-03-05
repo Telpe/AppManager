@@ -8,11 +8,9 @@ namespace AppManager.Config.ParameterControls
 {
     public class BaseParameterControl : UserControl, INotifyPropertyChanged
     {
-        protected string _labelText = String.Empty;
-        protected string _headerText = String.Empty;
-
-
         public event PropertyChangedEventHandler? PropertyChanged;
+
+        public string Description { get; set; } = "No description";
 
         /// <summary>
         /// A custom name for the value, to be used on property changed events.<br/>
@@ -20,29 +18,9 @@ namespace AppManager.Config.ParameterControls
         /// </summary>
         public string ValueName { get; set; } = "Value";
 
-        public string LabelText
-        {
-            get => _labelText;
-            set
-            {
-                if (_labelText != value)
-                {
-                    _labelText = value;
-                }
-            }
-        }
+        public string LabelText { get; set; } = "Value";
 
-        public string HeaderText
-        {
-            get => _headerText;
-            set
-            {
-                if (_headerText != value)
-                {
-                    _headerText = value;
-                }
-            }
-        }
+        public string HeaderText { get; set; } = "Parameter";
 
         protected virtual void AnnouncePropertyChanged(string propertyName)
         {

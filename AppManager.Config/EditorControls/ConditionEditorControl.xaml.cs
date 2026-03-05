@@ -1,5 +1,4 @@
-﻿using AppManager.Core.Actions;
-using AppManager.Core.Conditions;
+﻿using AppManager.Core.Conditions;
 using AppManager.Core.Models;
 using AppManager.Config.Interfaces;
 using AppManager.Config.ParameterControls;
@@ -7,20 +6,10 @@ using AppManager.Config.Utilities;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace AppManager.Config.EditorControls
 {
@@ -145,47 +134,17 @@ namespace AppManager.Config.EditorControls
                     {
                         daysPanel.Children.Add(new BooleanParameter(
                             allowedDays.Contains(day),
-                            (s, e) => { 
-                                UpdateAllowedDays(); 
-                                AnnounceEdited(); 
+                            (s, e) =>
+                            {
+                                UpdateAllowedDays();
+                                AnnounceEdited();
                             },
                             prop.Name,
                             null,
-                            day.ToString()));
+                            day.ToString())
+                        { Description=DescriptionHelper.GetDescription(prop) });
                     }
 
-                    break;
-                /*
-                                case nameof(ConditionModel.ConditionType):
-
-                                    UseParameterGroupBox("Condition Type:").Content = new StringParameter(
-                                        ConditionModelValue.ConditionType.ToString(),
-                                        (s, e) =>
-                                        {
-                                            if (s is StringParameter { Value: string pv })
-                                            {
-                                                if (Enum.TryParse<ConditionTypeEnum>(pv, out var conditionType))
-                                                {
-                                                    ConditionModelValue.ConditionType = conditionType;
-                                                    AnnounceEdited();
-                                                }
-                                            }
-                                        },
-                                        prop.Name);
-                                    break;
-                */
-                case nameof(ConditionModel.CustomProperties):
-
-                    UseParameterGroupBox("Custom Properties:").Content = new StringParameter(
-                        ConditionModelValue.CustomProperties?.ToString(),
-                        (s, e) => {
-                            if (s is StringParameter { Value: string pv })
-                            {
-                                // Handle CustomProperties as needed
-                                AnnounceEdited();
-                            }
-                        },
-                        prop.Name);
                     break;
 
                 case nameof(ConditionModel.EndTime):
@@ -206,7 +165,8 @@ namespace AppManager.Config.EditorControls
                                 AnnounceEdited();
                             }
                         },
-                        prop.Name);
+                        prop.Name)
+                    { Description = DescriptionHelper.GetDescription(prop) };
                     break;
 
                 case nameof(ConditionModel.FilePath):
@@ -220,7 +180,8 @@ namespace AppManager.Config.EditorControls
                                 AnnounceEdited();
                             }
                         },
-                        prop.Name);
+                        prop.Name)
+                    { Description = DescriptionHelper.GetDescription(prop) };
                     break;
 
                 case nameof(ConditionModel.IncludeChildProcesses):
@@ -236,7 +197,8 @@ namespace AppManager.Config.EditorControls
                         },
                         prop.Name,
                         null,
-                        "Include child processes"));
+                        "Include child processes")
+                    { Description = DescriptionHelper.GetDescription(prop) });
                     break;
 
                 case nameof(ConditionModel.IPAddress):
@@ -252,7 +214,8 @@ namespace AppManager.Config.EditorControls
                         },
                         prop.Name,
                         null,
-                        "IP Address:"));
+                        "IP Address:")
+                    { Description = DescriptionHelper.GetDescription(prop) });
                     break;
                 /*
                                 case nameof(ConditionModel.IsNot):
@@ -284,7 +247,8 @@ namespace AppManager.Config.EditorControls
                         },
                         prop.Name,
                         null,
-                        "Max Minutes:"));
+                        "Max Minutes:")
+                    { Description = DescriptionHelper.GetDescription(prop) });
                     break;
 
                 case nameof(ConditionModel.MinSystemUptimeMinutes):
@@ -300,7 +264,8 @@ namespace AppManager.Config.EditorControls
                         },
                         prop.Name,
                         null,
-                        "Min Minutes:"));
+                        "Min Minutes:")
+                    { Description = DescriptionHelper.GetDescription(prop) });
                     break;
 
                 case nameof(ConditionModel.Port):
@@ -316,7 +281,8 @@ namespace AppManager.Config.EditorControls
                         },
                         prop.Name,
                         null,
-                        "Port:"));
+                        "Port:")
+                    { Description = DescriptionHelper.GetDescription(prop) });
                     break;
 
                 case nameof(ConditionModel.ProcessName):
@@ -332,7 +298,8 @@ namespace AppManager.Config.EditorControls
                         },
                         prop.Name,
                         null,
-                        "Name:"));
+                        "Name:")
+                    { Description = DescriptionHelper.GetDescription(prop) });
                     break;
 
                 case nameof(ConditionModel.StartTime):
@@ -353,7 +320,8 @@ namespace AppManager.Config.EditorControls
                                 AnnounceEdited();
                             }
                         },
-                        prop.Name);
+                        prop.Name)
+                    { Description = DescriptionHelper.GetDescription(prop) };
                     break;
 
                 case nameof(ConditionModel.TimeoutMs):
@@ -369,7 +337,8 @@ namespace AppManager.Config.EditorControls
                         },
                         prop.Name,
                         null,
-                        "Milliseconds:");
+                        "Milliseconds:")
+                    { Description = DescriptionHelper.GetDescription(prop) };
                     break;
 
                 case nameof(ConditionModel.WindowTitle):
@@ -383,7 +352,8 @@ namespace AppManager.Config.EditorControls
                                 AnnounceEdited();
                             }
                         },
-                        prop.Name );
+                        prop.Name )
+                    { Description = DescriptionHelper.GetDescription(prop) };
                     break;
             }
             
@@ -441,7 +411,7 @@ namespace AppManager.Config.EditorControls
 
         
 
-        private void ConditionTypeComboBox_SelectionChanged(object sender, PropertyChangedEventArgs e)
+        private void ConditionTypeComboBox_SelectionChanged(object? sender, PropertyChangedEventArgs e)
         {
             if (sender is TypeSelectParameter tsp && tsp.Selected is ConditionTypeEnum typeEnum)
             {

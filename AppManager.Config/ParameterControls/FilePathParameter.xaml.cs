@@ -31,8 +31,8 @@ namespace AppManager.Config.ParameterControls
 
         public FilePathParameter()
         {
-            _headerText = "File Path";
-            _labelText = "Select File";
+            HeaderText = "File Path";
+            LabelText = "Select File";
 
             InitializeComponent();
             this.DataContext = this;
@@ -43,8 +43,8 @@ namespace AppManager.Config.ParameterControls
         public FilePathParameter(string? filePath, PropertyChangedEventHandler? eventHandler = null, string? customValueName = null, string? headerText = null, string? labelText = null) : this()
         {
             if (filePath is not null) { _filePath = filePath; }
-            if (headerText is not null) { _headerText = headerText; }
-            if (labelText is not null) { _labelText = labelText; }
+            if (headerText is not null) { HeaderText = headerText; }
+            if (labelText is not null) { LabelText = labelText; }
 
             if (customValueName is not null) { ValueName = customValueName; }
 

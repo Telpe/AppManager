@@ -11,6 +11,7 @@
     d:DesignHeight="500" d:DesignWidth="600">
 
 	<StackPanel Orientation="Vertical" Margin="10">
+		
 		<GroupBox x:Name="TypeSelectionGroupBox" Header="Trigger Type" Margin="5"/>
 
 		<GroupBox x:Name="TriggerTags" Header="Tags:" Margin="5"/>

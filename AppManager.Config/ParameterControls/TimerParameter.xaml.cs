@@ -74,8 +74,8 @@ namespace AppManager.Config.ParameterControls
 
         public TimerParameter()
         {
-            _headerText = "Timespan:";
-            _labelText = "Duration:";
+            HeaderText = "Timespan:";
+            LabelText = "Duration:";
             ValueName = nameof(Value);
 
             InitializeComponent();
@@ -91,12 +91,12 @@ namespace AppManager.Config.ParameterControls
 
             if (headerText != null)
             {
-                _headerText = headerText;
+                HeaderText = headerText;
             }
 
             if (labelText != null)
             {
-                _labelText = labelText;
+                LabelText = labelText;
             }
 
             if (customValueName != null)

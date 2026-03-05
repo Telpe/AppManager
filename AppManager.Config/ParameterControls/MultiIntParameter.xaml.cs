@@ -51,8 +51,8 @@ namespace AppManager.Config.ParameterControls
 
         public MultiIntParameter()
         {
-            _labelText = "Values:";
-            _headerText = "Multi-Integer Parameter";
+            LabelText = "Values:";
+            HeaderText = "Multi-Integer Parameter";
             ValueName = nameof(Value);
 
             InitializeComponent();
@@ -65,12 +65,12 @@ namespace AppManager.Config.ParameterControls
         {
             if (headerText is string headerTextTemp)
             {
-                _headerText = headerTextTemp;
+                HeaderText = headerTextTemp;
             }
             
             if (labelText is string labelTextTemp)
             {
-                _labelText = labelTextTemp;
+                LabelText = labelTextTemp;
             }
 
             if (customValueName is string customValueNameTemp)

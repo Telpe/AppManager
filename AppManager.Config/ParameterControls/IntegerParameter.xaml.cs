@@ -77,8 +77,8 @@ namespace AppManager.Config.ParameterControls
 
         public IntegerParameter()
         {
-            _labelText = "Value:";
-            _headerText = "Integer Parameter";
+            LabelText = "Value:";
+            HeaderText = "Integer Parameter";
             ValueName = nameof(Value);
 
             InitializeComponent();
@@ -89,12 +89,12 @@ namespace AppManager.Config.ParameterControls
         {
             if (headerText is string headerTextTemp)
             {
-                _headerText = headerTextTemp;
+                HeaderText = headerTextTemp;
             }
             
             if (labelText is string labelTextTemp)
             {
-                _labelText = labelTextTemp;
+                LabelText = labelTextTemp;
             }
 
             if (customValueName is string customValueNameTemp)

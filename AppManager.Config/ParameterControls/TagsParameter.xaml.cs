@@ -1,3 +1,4 @@
+using AppManager.Config.ListItems;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -9,57 +10,6 @@ using System.Windows.Input;
 
 namespace AppManager.Config.ParameterControls
 {
-    public class TagItem : INotifyPropertyChanged
-    {
-        private string _key = string.Empty;
-        private string _value = string.Empty;
-        private string _originalKey = string.Empty;
-
-        public string TagKey
-        {
-            get => _key;
-            set
-            {
-                if (_key != value)
-                {
-                    _key = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TagKey)));
-                }
-            }
-        }
-
-        public string TagValue
-        {
-            get => _value;
-            set
-            {
-                if (_value != value)
-                {
-                    _value = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(TagValue)));
-                }
-            }
-        }
-
-        /*public string OriginalKey
-        {
-            get => _originalKey;
-            set
-            {
-                if (_originalKey != value)
-                {
-                    _originalKey = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(OriginalKey)));
-                }
-            }
-        }*/
-
-        public bool IsEmpty => string.IsNullOrEmpty(TagKey) && string.IsNullOrEmpty(TagValue);
-        public bool CanDelete => !IsEmpty;
-
-        public event PropertyChangedEventHandler? PropertyChanged;
-    }
-
     public partial class TagsParameter : BaseParameterControl
     {
         private Dictionary<string, string> TagsValue = new Dictionary<string, string>();
@@ -86,8 +36,8 @@ namespace AppManager.Config.ParameterControls
 
         public TagsParameter()
         {
-            _headerText = "Tags:";
-            _labelText = "Key-Value pairs:";
+            HeaderText = "Tags:";
+            LabelText = "Key-Value pairs:";
             ValueName = nameof(Value);
 
             InitializeComponent();
@@ -105,12 +55,12 @@ namespace AppManager.Config.ParameterControls
 
             if (headerText is not null)
             {
-                _headerText = headerText;
+                HeaderText = headerText;
             }
 
             if (labelText is not null)
             {
-                _labelText = labelText;
+                LabelText = labelText;
             }
 
             if (customValueName is not null)

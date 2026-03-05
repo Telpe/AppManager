@@ -34,7 +34,4 @@
   <ItemGroup>
     <EditorConfigFiles Remove="C:\Users\Arthonor\source\repos\telpe\AppManager\AppManager.Core\.editorconfig" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="C:\Users\Arthonor\source\repos\telpe\AppManager\AppManager.Core\.editorconfig" />
-  </ItemGroup>
 </Project>

@@ -11,7 +11,7 @@ namespace AppManager.Core.Actions.BringToFront
         [ParameterOrder(1)]
         string? AppName { get; set; }
         
-        [Description("The title of the window.")]
+        [Description("If the application has a certain window to grab. Leave blank for auto select.")]
         [ActionParameter("Window Title", IsRequired = false)]
         [ParameterOrder(2)]
         string? WindowTitle { get; set; }

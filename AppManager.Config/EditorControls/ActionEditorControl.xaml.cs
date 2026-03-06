@@ -148,7 +148,14 @@ namespace AppManager.Config.EditorControls
                 preview.AppendLine($"Force Operation: {CurrentActionModelValue.ForceOperation}");
                 preview.AppendLine($"Include Child Processes: {CurrentActionModelValue.IncludeChildProcesses}");
                 preview.AppendLine($"Include Similar Names: {CurrentActionModelValue.IncludeSimilarNames}");
-                preview.AppendLine($"Timeout: {CurrentActionModelValue.TimeoutMs}ms");
+
+                preview.Append($"Timeout: ");
+                if (-1 < CurrentActionModelValue.TimeoutMs) 
+                { 
+                    preview.AppendLine($"{CurrentActionModelValue.TimeoutMs}ms"); 
+                } 
+                else { preview.AppendLine("Off"); }
+
                 preview.AppendLine();
 
                 preview.Append(CurrentActionModelValue.Conditions?.Length.ToString() ?? "0");
@@ -249,7 +256,8 @@ namespace AppManager.Config.EditorControls
                             CurrentActionModel.WindowTitle,
                             ParameterChanged,
                             prop.Name)
-                            { Description = DescriptionHelper.GetDescription(prop) };
+                            { LabelText = AttributeHelper.GetCustomAttribute<ActionParameterAttribute>(prop)?.DisplayName ?? prop.Name,
+                            Description = DescriptionHelper.GetDescription(prop) };
                         break;
 
                     

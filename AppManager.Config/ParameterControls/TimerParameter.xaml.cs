@@ -7,7 +7,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
-using AppManager.Core.Utilities;
 
 namespace AppManager.Config.ParameterControls
 {
@@ -21,9 +20,9 @@ namespace AppManager.Config.ParameterControls
     public partial class TimerParameter : BaseParameterControl
     {
         private int TimerValue = MIN_VALUE;
-        private TimerEditMode _editMode = TimerEditMode.MinutesSecondsMilliseconds;
-        private bool _isUpdatingFields;
-        private Stopwatch? _holdTimer;
+        private TimerEditMode EditModeValue = TimerEditMode.MinutesSecondsMilliseconds;
+        private bool IsUpdatingFields;
+        private Stopwatch? HoldTimer;
         private Task? StepField;
         private TextBox? TextBoxToIncrement;
         private int CurrentIncrement = 0;
@@ -44,7 +43,7 @@ namespace AppManager.Config.ParameterControls
             }
             set
             {
-                if (_isUpdatingFields) { return; }
+                if (IsUpdatingFields) { return; }
 
                 int validatedValue = value < MIN_VALUE ? MIN_VALUE : (MAX_VALUE < value ? MAX_VALUE : value);
 
@@ -60,12 +59,12 @@ namespace AppManager.Config.ParameterControls
 
         public TimerEditMode EditMode
         {
-            get => _editMode;
+            get => EditModeValue;
             set
             {
-                if (_editMode != value)
+                if (EditModeValue != value)
                 {
-                    _editMode = value;
+                    EditModeValue = value;
                     UpdateModeVisibility();
                     UpdateFieldsFromValue();
                 }
@@ -121,7 +120,7 @@ namespace AppManager.Config.ParameterControls
 
         private void UpdateFieldsFromValue(int? aValue = null)
         {
-            _isUpdatingFields = true;
+            IsUpdatingFields = true;
 
             try
             {
@@ -150,8 +149,11 @@ namespace AppManager.Config.ParameterControls
                         MillisecondsMode3TextBox.Text = msMode3.ToString();
                         break;
                 }
+
+                TimerSlider.Value = (double)aValue;
+                RawValue.Text = $"{aValue} ms";
             }
-            finally { _isUpdatingFields = false; }
+            finally { IsUpdatingFields = false; }
         }
 
         private int GetValueFromFields()
@@ -162,7 +164,10 @@ namespace AppManager.Config.ParameterControls
             {
                 case TimerEditMode.Milliseconds:
                     if (int.TryParse(MillisecondsTextBox.Text, out int ms))
+                    {
                         newValue = ms;
+                    }
+
                     break;
                     
                 case TimerEditMode.SecondsMilliseconds:
@@ -232,7 +237,7 @@ namespace AppManager.Config.ParameterControls
 
         private void ArrowButton_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            if (_holdTimer is not null && _holdTimer.ElapsedMilliseconds < HOLD_INITIAL_DELAY)
+            if (HoldTimer is not null && HoldTimer.ElapsedMilliseconds < HOLD_INITIAL_DELAY)
             {
                 IncrementField();
             }
@@ -242,25 +247,28 @@ namespace AppManager.Config.ParameterControls
 
         private void ArrowButton_MouseLeave(object sender, MouseEventArgs e)
         {
-            if(_holdTimer is not null) 
+            if(HoldTimer is not null) 
             { 
                 StopHoldTimer(); 
             }
         }
 
-        
+        private void SliderChanged(object? sender, RoutedEventArgs eve)
+        {
+            Value = (int)TimerSlider.Value;
+        }
 
         private void StartHoldTimer()
         {
             
-            _holdTimer = new Stopwatch();
-            _holdTimer.Start();
+            HoldTimer = new Stopwatch();
+            HoldTimer.Start();
 
             StepField = new Task(() =>
             {
                 Thread.Sleep(HOLD_INITIAL_DELAY);
 
-                while (_holdTimer is not null)
+                while (HoldTimer is not null)
                 {
                     MainDispatcher.Invoke(() =>
                     {
@@ -275,8 +283,8 @@ namespace AppManager.Config.ParameterControls
 
         private void StopHoldTimer()
         {
-            _holdTimer?.Stop();
-            _holdTimer = null;
+            HoldTimer?.Stop();
+            HoldTimer = null;
             TextBoxToIncrement = null;
             CurrentIncrement = 0;
             StepField = null;

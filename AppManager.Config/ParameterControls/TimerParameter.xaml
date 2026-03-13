@@ -124,8 +124,8 @@
 
 		<!-- Current Value Display -->
 		<StackPanel Orientation="Horizontal" Grid.Row="3" Grid.Column="0">
-			<TextBlock Grid.Column="0" Text="Raw Value:" VerticalAlignment="Center" Margin="0,0,5,0"/>
-			<TextBox x:Name="RawValue" Grid.Column="1" Text="" Style="{StaticResource ReadOnlyLabelTextBoxStyle}" FontWeight="Bold"/>
+			<TextBlock Text="Raw Value:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+			<TextBox x:Name="RawValue" Text="" Style="{StaticResource ReadOnlyLabelTextBoxStyle}" FontWeight="Bold"/>
 		</StackPanel>
 
 		<TextBox Grid.Row="0" Grid.Column="1" Grid.RowSpan="5" Text="{Binding Description, Mode=OneTime}" Style="{StaticResource ReadOnlyDescriptionTextBoxStyle}"/>

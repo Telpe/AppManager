@@ -65,12 +65,12 @@ namespace AppManager.Core.Utilities
             }
         }
 
-        public static string ToShortString(Guid guid)
+        public static string GuidToShortString(Guid guid)
         {
             return Convert.ToBase64String(guid.ToByteArray())[0..^2].Replace('+', '-').Replace('/', '_');
         }
 
-        public static Guid FromShortString(string str)
+        public static Guid GuidFromShortString(string str)
         {
             str = str.Replace('_', '/').Replace('-', '+');
             return new Guid(Convert.FromBase64String(str + "=="));

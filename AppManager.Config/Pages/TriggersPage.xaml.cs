@@ -33,7 +33,7 @@ namespace AppManager.Config.Pages
             if (!string.IsNullOrEmpty(triggerId))
             {
                 var trigger = ProfileManager.CurrentProfile.Triggers.FirstOrDefault(t => t.Id == triggerId);
-                if (trigger != null)
+                if (trigger is not null)
                 {
                     ShowTriggerEditor(trigger);
                 }
@@ -108,7 +108,7 @@ namespace AppManager.Config.Pages
                     var groupPanel = new StackPanel();
                     foreach (var trigger in group.OrderBy(t => t.Id))
                     {
-                        var button = CreateTriggerButton(trigger);
+                        var button = BuildButtonLoadTrigger(trigger);
                         groupPanel.Children.Add(button);
                     }
 
@@ -122,7 +122,7 @@ namespace AppManager.Config.Pages
             {
                 foreach (var trigger in triggersWithoutTag.OrderBy(t => t.Id))
                 {
-                    var button = CreateTriggerButton(trigger);
+                    var button = BuildButtonLoadTrigger(trigger);
                     AnonymousStackPanel.Children.Add(button);
                 }
                 AnonymousGroup.Header = $"No '{_selectedTagFilter}' tag";
@@ -130,7 +130,7 @@ namespace AppManager.Config.Pages
             }
         }
 
-        private Button CreateTriggerButton(TriggerModel trigger)
+        private Button BuildButtonLoadTrigger(TriggerModel trigger)
         {
             var button = new Button
             {
@@ -141,7 +141,12 @@ namespace AppManager.Config.Pages
                 Padding = new Thickness(5)
             };
 
-            button.Click += TriggerButton_Click;
+            if (PageFrame.Content is TriggerEditorControl { CurrentTriggerModel: TriggerModel loadedModel } && loadedModel.Id == trigger.Id)
+            {
+                button.Style = (Style)FindResource("MenuItemSelectedHighlight");
+            }
+
+            button.Click += LoadTriggerButton_Click;
             return button;
         }
 
@@ -171,7 +176,7 @@ namespace AppManager.Config.Pages
             return displayName;
         }
 
-        private void TriggerButton_Click(object sender, RoutedEventArgs e)
+        private void LoadTriggerButton_Click(object sender, RoutedEventArgs e)
         {
             if (sender is Button button && button.Tag is TriggerModel trigger)
             {
@@ -183,7 +188,7 @@ namespace AppManager.Config.Pages
         {
             var newTrigger = new TriggerModel
             {
-                Id = Shared.ToShortString(Guid.NewGuid()),
+                Id = Shared.GuidToShortString(Guid.NewGuid()),
                 TriggerType = TriggerTypeEnum.Keybind
             };
             ShowTriggerEditor(newTrigger);
@@ -200,6 +205,7 @@ namespace AppManager.Config.Pages
                 triggerEditor.OnSave += OnTriggerSave;
 
                 PageFrame.Content = triggerEditor;
+                Dispatcher.BeginInvoke(() => RefreshTriggerMenu());
             }
             catch (Exception ex)
             {

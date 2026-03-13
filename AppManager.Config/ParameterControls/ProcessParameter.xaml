@@ -12,12 +12,15 @@
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto"/>
 			<RowDefinition Height="Auto"/>
-			<RowDefinition Height="Auto"/>
-			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="*"/>
 		</Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
 
-		<!-- Process Input Row -->
-		<Grid Grid.Row="1" Margin="0,0,0,5">
+        <!-- Process Input Row -->
+		<Grid Grid.Row="0" Grid.Column="0" Margin="0,0,0,5">
 			<Grid.ColumnDefinitions>
 				<ColumnDefinition Width="*"/>
 				<ColumnDefinition Width="Auto"/>
@@ -52,11 +55,19 @@
 		</Grid>
 
 		<!-- Status Display -->
-		<TextBlock Grid.Row="2" 
+		<TextBlock Grid.Row="1" 
+                   Grid.Column="0"
                    x:Name="ProcessStatusTextBlock"
                    Text="No process specified" 
                    FontSize="12" 
                    Foreground="Gray"
                    Margin="0,0,0,5"/>
-	</Grid>
+
+        <TextBox    Grid.Row="0"
+		    Grid.Column="1"
+		    Grid.RowSpan="3"
+			Style="{StaticResource ReadOnlyDescriptionTextBoxStyle}"
+		    Text="{Binding Description, Mode=OneTime}"
+		    Margin="0,0,0,0"/>
+    </Grid>
 </parametercontrols:BaseParameterControl>

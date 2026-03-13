@@ -17,7 +17,12 @@
 		</Style.Triggers>
 	</Style>
 
-	<!-- Parameter Control TextBox Styles -->
+    <Style x:Key="MenuItemSelectedHighlight" TargetType="Button">
+        <Setter Property="BorderBrush" Value="Blue"/>
+        <Setter Property="BorderThickness" Value="2"/>
+    </Style>
+
+    <!-- Parameter Control TextBox Styles -->
 	<Style x:Key="ReadOnlyLabelTextBoxStyle" TargetType="TextBox" BasedOn="{StaticResource SelectableTextBlockStyle}">
 		<Setter Property="Height" Value="25" />
 		<Setter Property="VerticalAlignment" Value="Top" />

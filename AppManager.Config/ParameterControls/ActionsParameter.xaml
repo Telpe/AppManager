@@ -10,17 +10,28 @@
                 d:DesignHeight="200" d:DesignWidth="400">
 
 	<Grid Margin="5">
-		<Grid.RowDefinitions>
-			<RowDefinition Height="Auto"/>
-			<RowDefinition Height="100"/>
-		</Grid.RowDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition MinHeight="25"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
 
-		<WrapPanel Grid.Row="0" Margin="0,0,0,5">
+        <WrapPanel Grid.Row="0" Grid.Column="0" Margin="0,0,0,5">
 			<Button Content="Add Action" Width="100" Height="25" 
                     Click="AddActionButton_Click"/>
-		</WrapPanel>
+        </WrapPanel>
 
-		<ListBox x:Name="ActionsListBox" Grid.Row="1">
+        <TextBox    Grid.Row="0"
+			Grid.Column="1"
+			Style="{StaticResource ReadOnlyLabelTextBoxStyle}"
+			Text="{Binding LabelText, Mode=OneTime}" 
+			Margin="0,0,3,0"/>
+
+        <ListBox x:Name="ActionsListBox" Grid.Row="1" Grid.Column="0">
 			<ListBox.ItemTemplate>
 				<DataTemplate>
 					<Grid>
@@ -38,5 +49,12 @@
 				</DataTemplate>
 			</ListBox.ItemTemplate>
 		</ListBox>
-	</Grid>
+
+        <TextBox    Grid.Row="1"
+					Grid.Column="1"
+					Grid.RowSpan="2"
+					Style="{StaticResource ReadOnlyDescriptionTextBoxStyle}"
+					Text="{Binding Description, Mode=OneTime}"
+					Margin="0,0,0,0"/>
+    </Grid>
 </parametercontrols:BaseParameterControl>

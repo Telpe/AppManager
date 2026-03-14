@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+	  <LangVersion>latest</LangVersion>
+	  <ImplicitUsings>disable</ImplicitUsings>
+	  <Nullable>enable</Nullable>
+	  <UseWindowsForms>false</UseWindowsForms>
+	  <UseWPF>false</UseWPF>
+	  <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AppManager.OsApi.Abstractions\AppManager.OsApi.Abstractions.csproj" />
+  </ItemGroup>
+
+</Project>

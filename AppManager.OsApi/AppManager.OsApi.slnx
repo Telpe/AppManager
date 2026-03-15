@@ -1,4 +1,0 @@
-<Solution>
-  <Project Path="AppManager.OsApi.Abstractions/AppManager.OsApi.Abstractions.csproj" />
-  <Project Path="AppManager.OsApi/AppManager.OsApi.csproj" />
-</Solution>

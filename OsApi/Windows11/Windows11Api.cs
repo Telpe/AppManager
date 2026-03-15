@@ -4,7 +4,7 @@ using System.Text;
 
 namespace AppManager.OsApi.Abstractions
 {
-    public interface IOsApi
+    internal class Windows11Api
     {
     }
 }

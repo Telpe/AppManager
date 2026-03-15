@@ -19,7 +19,7 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace AppManager.Core.Utilities
 {
-    public static partial class FileManager
+    public static class FileManager
     {
         public static readonly string[] ExecuteableExtensions = { ".bat", ".cmd", ".exe", ".msi" };
         private static readonly JsonSerializerOptions JsonOptions = new()
@@ -106,6 +106,7 @@ namespace AppManager.Core.Utilities
                                 ));
                         }
                     }
+
                 }
                 catch (Exception ex)
                 {
@@ -390,7 +391,16 @@ namespace AppManager.Core.Utilities
 #if DEBUG
         private static string GetAppManagerCoreDebugPath()
         {
-            return GetDefaultSearchPaths().Where(a => a.Contains(typeof(FileManager).Assembly.GetName().Name!)).First();
+            try
+            {
+                return GetDefaultSearchPaths().Where(a => a.Contains(typeof(FileManager).Assembly.GetName().Name!)).First();
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine($"Error getting AppManagerCore debug path: \n{ex.Message}");
+                return "";
+            }
+            
         }
 #endif
 
@@ -408,9 +418,9 @@ namespace AppManager.Core.Utilities
                 string[] otherPaths = AppDomain.CurrentDomain.BaseDirectory.Split(Path.DirectorySeparatorChar);
                 int iop = Array.IndexOf(otherPaths, "AppManager");
                 string basePath = Path.Combine(otherPaths.Where((a, i) => i <= iop).ToArray());
-                string devCorePath = Path.GetDirectoryName(FindExecutables("AppManager.Core.exe", [Path.Combine(basePath, "Core")], false, true).First())!;
-                string devSettingsPath = Path.GetDirectoryName(FindExecutables("AppManager.Config.exe", [Path.Combine(basePath, "Config")], false, true).First())!;
-                string devAppManagerPath = Path.GetDirectoryName(FindExecutables("AppManager.exe", [Path.Combine(basePath, "AppManager")], false, true).First())!;
+                string devCorePath = Path.GetDirectoryName(FindExecutables("AppManager.Core.exe", [Path.Combine(basePath, "AppManager.Core")], false, true).FirstOrDefault()) ?? throw new Exception("Could not find AppManager.Core debug directory, have you build all.");
+                string devSettingsPath = Path.GetDirectoryName(FindExecutables("AppManager.Config.exe", [Path.Combine(basePath, "AppManager.Config")], false, true).FirstOrDefault()) ?? throw new Exception("Could not find AppManager.Config debug directory, have you build all.");
+                string devAppManagerPath = Path.GetDirectoryName(FindExecutables("AppManager.exe", [Path.Combine(basePath, "AppManager")], false, true).FirstOrDefault()) ?? throw new Exception("Could not find AppManager debug directory, have you build all.");
 #endif
                 //var pathEnv = Environment.GetEnvironmentVariable("PATH")?.Split(Path.PathSeparator) ?? Array.Empty<string>();
                 DefaultSearchPaths = [

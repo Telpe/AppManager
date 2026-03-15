@@ -4,8 +4,6 @@
     <TargetFramework>net10.0-windows</TargetFramework>
     <LangVersion>14.0</LangVersion>
     <UseWPF>true</UseWPF>
-    <ImplicitUsings>disable</ImplicitUsings>
-    <Nullable>enable</Nullable>
     
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
@@ -25,8 +23,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AppManager\AppManager.csproj" />
-    <ProjectReference Include="..\AppManager.Core\AppManager.Core.csproj" />
-    <ProjectReference Include="..\AppManager.Config\AppManager.Config.csproj" />
+    <ProjectReference Include="..\Core\AppManager.Core.csproj" />
+    <ProjectReference Include="..\Config\AppManager.Config.csproj" />
   </ItemGroup>
 
   <ItemGroup>

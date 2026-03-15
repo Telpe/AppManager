@@ -2,14 +2,10 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows7.0</TargetFramework>
-    
-    <LangVersion>latest</LangVersion>
     <UseWPF>true</UseWPF>
     <SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
     <StartupObject>AppManager.Config.App</StartupObject>
     
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>disable</ImplicitUsings>
 
     <!-- Publish settings 
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
@@ -23,7 +19,7 @@
     <Description>Application Manager for Windows</Description>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\AppManager.Core\AppManager.Core.csproj" />
+    <ProjectReference Include="..\Core\AppManager.Core.csproj" />
   </ItemGroup>
 
 </Project>

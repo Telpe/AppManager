@@ -3,10 +3,6 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows7.0</TargetFramework>
-
-    <LangVersion>latest</LangVersion>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>disable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <!-- Publish settings 
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
@@ -15,7 +11,7 @@
     -->
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\AppManager.Core\AppManager.Core.csproj" />
+    <ProjectReference Include="..\Core\AppManager.Core.csproj" />
   </ItemGroup>
 
 </Project>

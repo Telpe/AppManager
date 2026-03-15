@@ -95,14 +95,16 @@ namespace AppManager.Core.Utilities
                             includeAllDirectories ? System.IO.SearchOption.AllDirectories : System.IO.SearchOption.TopDirectoryOnly
                             ));
                     }
-
-                    foreach (string ext in ExecuteableExtensions)
+                    else
                     {
-                        results.AddRange(Directory.GetFiles(
-                            basePath,
-                            slobbySearch ? $"*{appName}*{ext}" : $"{appName}{ext}",
-                            includeAllDirectories ? System.IO.SearchOption.AllDirectories : System.IO.SearchOption.TopDirectoryOnly
-                            ));
+                        foreach (string ext in ExecuteableExtensions)
+                        {
+                            results.AddRange(Directory.GetFiles(
+                                basePath,
+                                slobbySearch ? $"*{appName}*{ext}" : $"{appName}{ext}",
+                                includeAllDirectories ? System.IO.SearchOption.AllDirectories : System.IO.SearchOption.TopDirectoryOnly
+                                ));
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -406,8 +408,8 @@ namespace AppManager.Core.Utilities
                 string[] otherPaths = AppDomain.CurrentDomain.BaseDirectory.Split(Path.DirectorySeparatorChar);
                 int iop = Array.IndexOf(otherPaths, "AppManager");
                 string basePath = Path.Combine(otherPaths.Where((a, i) => i <= iop).ToArray());
-                string devCorePath = Path.GetDirectoryName(FindExecutables("AppManager.Core.exe", [Path.Combine(basePath, "AppManager.Core")], false, true).First())!;
-                string devSettingsPath = Path.GetDirectoryName(FindExecutables("AppManager.Config.exe", [Path.Combine(basePath, "AppManager.Config")], false, true).First())!;
+                string devCorePath = Path.GetDirectoryName(FindExecutables("AppManager.Core.exe", [Path.Combine(basePath, "Core")], false, true).First())!;
+                string devSettingsPath = Path.GetDirectoryName(FindExecutables("AppManager.Config.exe", [Path.Combine(basePath, "Config")], false, true).First())!;
                 string devAppManagerPath = Path.GetDirectoryName(FindExecutables("AppManager.exe", [Path.Combine(basePath, "AppManager")], false, true).First())!;
 #endif
                 //var pathEnv = Environment.GetEnvironmentVariable("PATH")?.Split(Path.PathSeparator) ?? Array.Empty<string>();

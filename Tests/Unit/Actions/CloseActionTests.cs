@@ -95,21 +95,11 @@ namespace AppManager.Tests.Unit.Actions
         [TestCategory("Actions")]
         public async Task ExecuteAsync_WithNonExistentProcess_ShouldReturnFalse()
         {
-            try
-            {
-                // Arrange
-                var model = TestDataBuilder.CreateBasicActionModel(ActionTypeEnum.Close, "nonexistentapp");
-                var action = new CloseAction(model);
+            var model = TestDataBuilder.CreateBasicActionModel(ActionTypeEnum.Close, "nonexistentapp");
+            var action = new CloseAction(model);
 
-                // Act
-                action.Execute();
-                Assert.IsTrue(true);
-            }
-            catch(Exception e)
-            {
-                // Assert
-                Assert.Fail($"{e.Message}");
-            }
+            action.Execute();
+            
         }
 
         [TestMethod]

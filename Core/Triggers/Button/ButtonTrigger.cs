@@ -5,7 +5,7 @@ using System.Windows.Controls;
 using AppManager.Core.Actions;
 using AppManager.Core.Models;
 
-namespace AppManager.Core.Triggers
+namespace AppManager.Core.Triggers.Button
 {
     public class ButtonTrigger : BaseTrigger, IButtonTrigger
     {

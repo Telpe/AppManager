@@ -3,6 +3,12 @@ using AppManager.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using AppManager.Core.Triggers.Keybind;
+using AppManager.Core.Triggers.Button;
+using AppManager.Core.Triggers.AppLaunched;
+using AppManager.Core.Triggers.AppClosed;
+using AppManager.Core.Triggers.SystemEvent;
+using AppManager.Core.Triggers.NetworkPort;
 
 namespace AppManager.Core.Triggers
 {

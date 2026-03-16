@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Text;
 using AppManager.Core.Models;
 
-namespace AppManager.Core.Conditions
+namespace AppManager.Core.Conditions.PreviousActionSucceeded
 {
-    public class PreviousActionSuccessCondition(ConditionModel model) : BaseCondition(model), IPreviousActionSuccessCondition
+    public class PreviousActionSucceededCondition(ConditionModel model) : BaseCondition(model), IPreviousActionSucceededCondition
     {
         public override ConditionTypeEnum ConditionType => ConditionTypeEnum.PreviousActionSuccess;
 
@@ -21,7 +21,7 @@ namespace AppManager.Core.Conditions
 
         public override ConditionModel ToModel()
         {
-            return ToConditionModel<IPreviousActionSuccessCondition>();
+            return ToConditionModel<IPreviousActionSucceededCondition>();
         }
     }
 }

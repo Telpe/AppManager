@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Management;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,23 +9,23 @@ using System.Collections.Generic;
 using AppManager.Core.Models;
 using System.IO;
 
-namespace AppManager.Core.Triggers
+namespace AppManager.Core.Triggers.AppLaunched
 {
-    internal class AppCloseTrigger : BaseTrigger, IAppCloseTrigger
+    internal class AppLaunchTrigger : BaseTrigger, IAppLaunchTrigger
     {
-        public override TriggerTypeEnum TriggerType => TriggerTypeEnum.AppClose;
+        public override TriggerTypeEnum TriggerType => TriggerTypeEnum.AppLaunch;
 
-        private ManagementEventWatcher? ProcessWatcherValue;
-        private CancellationTokenSource? CancellationTokenSourceValue;
+        private ManagementEventWatcher ProcessWatcherValue = new ManagementEventWatcher();
+        private CancellationTokenSource CancellationTokenSourceValue = new CancellationTokenSource();
 
         public string? ProcessName { get; set; }
         public string? ExecutablePath { get; set; }
         public bool? MonitorChildProcesses { get; set; }
         public Dictionary<string, object>? CustomProperties { get; set; }
 
-        public AppCloseTrigger(TriggerModel model) : base(model)
+        public AppLaunchTrigger(TriggerModel model) : base(model)
         {
-            Description = "Monitors for application close/exit events";
+            Description = "Monitors for application launch events";
             
             ProcessName = model.ProcessName;
             ExecutablePath = model.ExecutablePath;
@@ -43,36 +44,34 @@ namespace AppManager.Core.Triggers
 
             CancellationTokenSourceValue = new CancellationTokenSource();
 
-            // Use WMI to monitor process termination events
-            var query = new WqlEventQuery("SELECT * FROM Win32_ProcessStopTrace");
+            // Use WMI to monitor process creation events (most reliable method)
+            var query = new WqlEventQuery("SELECT * FROM Win32_ProcessStartTrace");
             ProcessWatcherValue = new ManagementEventWatcher(query);
-            ProcessWatcherValue.EventArrived += OnProcessStopped;
+            ProcessWatcherValue.EventArrived += OnProcessStarted;
                     
             ProcessWatcherValue.Start();
                     
-            Log.WriteLine($"App close trigger '{Name}' started monitoring for '{ProcessName}'");
+            Log.WriteLine($"App launch trigger '{Name}' started monitoring for '{ProcessName}'");
         }
 
         public override void Stop()
         {
             try
             {
-                CancellationTokenSourceValue?.Cancel();
-                if (ProcessWatcherValue != null)
-                {
-                    ProcessWatcherValue.Stop();
-                    ProcessWatcherValue.Dispose();
-                }
+                CancellationTokenSourceValue.Cancel();
                 
-                Log.WriteLine($"App close trigger '{Name}' stopped");
+                ProcessWatcherValue.Stop();
+                ProcessWatcherValue.Dispose();
+                
+                Log.WriteLine($"App launch trigger '{Name}' stopped");
             }
             catch (Exception ex)
             {
-                Log.WriteLine($"Error stopping app close trigger '{Name}': {ex.Message}");
+                Log.WriteLine($"Error stopping app launch trigger '{Name}': {ex.Message}");
             }
         }
 
-        private void OnProcessStopped(object sender, EventArrivedEventArgs e)
+        private void OnProcessStarted(object sender, EventArrivedEventArgs e)
         {
             try
             {
@@ -81,7 +80,7 @@ namespace AppManager.Core.Triggers
 
                 if (IsTargetProcess(processName))
                 {
-                    Log.WriteLine($"App close trigger '{Name}' detected close of '{processName}' (PID: {processId})");
+                    Log.WriteLine($"App launch trigger '{Name}' detected launch of '{processName}' (PID: {processId})");
                     
                     // Trigger the configured action
                     ActivateTrigger();
@@ -89,29 +88,29 @@ namespace AppManager.Core.Triggers
             }
             catch (Exception ex)
             {
-                Log.WriteLine($"Error processing app close event in trigger '{Name}': {ex.Message}");
+                Log.WriteLine($"Error processing app launch event in trigger '{Name}': {ex.Message}");
             }
         }
 
         private bool IsTargetProcess(string? processName)
         {
             if (string.IsNullOrEmpty(processName)){ return false; }
-            
+
+            bool isTargetProcess = false;
 
             // Check by process name
             if (!string.IsNullOrEmpty(ProcessName))
             {
-                return processName.Equals(ProcessName, StringComparison.OrdinalIgnoreCase) ||
-                       processName.StartsWith(ProcessName, StringComparison.OrdinalIgnoreCase);
+                isTargetProcess = processName.Equals(ProcessName, StringComparison.OrdinalIgnoreCase) || processName.StartsWith(ProcessName, StringComparison.OrdinalIgnoreCase);
             }
 
             // Check by executable path if provided
-            if (!string.IsNullOrEmpty(ExecutablePath))
+            if (!isTargetProcess && !string.IsNullOrEmpty(ExecutablePath))
             {
-                return processName.Contains(Path.GetFileNameWithoutExtension(ExecutablePath));
+                isTargetProcess = processName.Contains(Path.GetFileNameWithoutExtension(ExecutablePath));
             }
 
-            return false;
+            return isTargetProcess;
         }
 
         public override void Dispose()
@@ -123,7 +122,7 @@ namespace AppManager.Core.Triggers
 
         public override TriggerModel ToModel()
         {
-            return ToTriggerModel<IAppCloseTrigger>();
+            return ToTriggerModel<IAppLaunchTrigger>();
         }
     }
 }

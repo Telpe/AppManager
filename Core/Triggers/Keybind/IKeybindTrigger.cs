@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Windows.Input;
 
-namespace AppManager.Core.Triggers
+namespace AppManager.Core.Triggers.Keybind
 {
     public interface IKeybindTrigger
     {

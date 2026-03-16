@@ -1,10 +1,13 @@
 using AppManager.Core.Conditions;
+using AppManager.Core.Conditions.FileExists;
+using AppManager.Core.Conditions.PreviousActionSucceeded;
+using AppManager.Core.Conditions.ProcessIsRunning;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace AppManager.Core.Models
 {
-    public class ConditionModel : IFileExistsCondition, IProcessRunningCondition, IPreviousActionSuccessCondition
+    public class ConditionModel : IFileExistsCondition, IProcessIsRunningCondition, IPreviousActionSucceededCondition
     {
         public ConditionTypeEnum ConditionType { get; set; }
         public bool IsNot { get; set; } = false;

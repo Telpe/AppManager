@@ -1,5 +1,9 @@
+using System.ComponentModel;
+
 namespace AppManager.Core.Actions.Restart
 {
+    [Description("Parameters for restarting/relaunching an app action. \nMuch similar to a Close followed by a Launch.\nMay be removed for same reason.")]
+    [ActionCategory("Process Management")]
     public interface IRestartAction
     {
         string? AppName { get; set; }

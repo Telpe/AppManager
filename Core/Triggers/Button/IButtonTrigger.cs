@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace AppManager.Core.Triggers
+namespace AppManager.Core.Triggers.Button
 {
     public interface IButtonTrigger
     {

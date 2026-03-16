@@ -1,4 +1,4 @@
-﻿using AppManager.Core.Triggers;
+﻿using AppManager.Core.Triggers.Keybind;
 using System;
 using System.Collections.Generic;
 using System.Text;

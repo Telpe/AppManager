@@ -1,5 +1,6 @@
 using AppManager.Core.Actions;
 using AppManager.Core.Conditions;
+using AppManager.Core.Conditions.PreviousActionSucceeded;
 using AppManager.Core.Keybinds;
 using AppManager.Core.Models;
 using System;
@@ -153,7 +154,7 @@ namespace AppManager.Core.Triggers
         {
             foreach (var condition in action.Conditions)
             {
-                if (condition is PreviousActionSuccessCondition pasc)
+                if (condition is PreviousActionSucceededCondition pasc)
                 {
                     pasc.ActionSucceeded = actionSuccess;
                 }

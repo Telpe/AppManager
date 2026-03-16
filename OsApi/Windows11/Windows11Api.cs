@@ -7,9 +7,9 @@ using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using System.Windows.Forms;
+//using System.Windows.Forms;
 using System.Windows.Input;
-using System.Windows.Interop;
+//using System.Windows.Interop;
 
 namespace AppManager.OsApi.Windows11
 {

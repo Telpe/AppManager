@@ -1,3 +1,6 @@
+using AppManager.Core.Conditions.FileExists;
+using AppManager.Core.Conditions.PreviousActionSucceeded;
+using AppManager.Core.Conditions.ProcessIsRunning;
 using AppManager.Core.Models;
 using System;
 using System.Collections.Generic;
@@ -8,9 +11,9 @@ namespace AppManager.Core.Conditions
     {
         private static readonly Dictionary<ConditionTypeEnum, Func<ConditionModel, ICondition>> _conditionFactories = new Dictionary<ConditionTypeEnum, Func<ConditionModel, ICondition>>
         {
-            { ConditionTypeEnum.ProcessRunning, (model) => new ProcessRunningCondition(model) },
+            { ConditionTypeEnum.ProcessRunning, (model) => new ProcessIsRunningCondition(model) },
             { ConditionTypeEnum.FileExists, (model) => new FileExistsCondition(model) },
-            { ConditionTypeEnum.PreviousActionSuccess, (model) => new PreviousActionSuccessCondition(model) }
+            { ConditionTypeEnum.PreviousActionSuccess, (model) => new PreviousActionSucceededCondition(model) }
         };
 
         public static ICondition CreateCondition(ConditionModel model)

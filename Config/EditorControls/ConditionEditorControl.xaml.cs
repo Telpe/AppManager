@@ -10,6 +10,9 @@ using System.Linq;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
+using AppManager.Core.Conditions.FileExists;
+using AppManager.Core.Conditions.PreviousActionSucceeded;
+using AppManager.Core.Conditions.ProcessIsRunning;
 
 namespace AppManager.Config.EditorControls
 {
@@ -91,10 +94,10 @@ namespace AppManager.Config.EditorControls
                     break;
 
                 case ConditionTypeEnum.PreviousActionSuccess:
-                    return typeof(IPreviousActionSuccessCondition);
+                    return typeof(IPreviousActionSucceededCondition);
 
                 case ConditionTypeEnum.ProcessRunning:
-                    return typeof(IProcessRunningCondition);
+                    return typeof(IProcessIsRunningCondition);
 
                 case ConditionTypeEnum.SystemUptime:
                     //AddParametersFromInterface(typeof(ISystemUptimeCondition));

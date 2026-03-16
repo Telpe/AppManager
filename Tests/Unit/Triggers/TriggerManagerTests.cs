@@ -1,5 +1,6 @@
 using AppManager.Core.Models;
 using AppManager.Core.Triggers;
+using AppManager.Core.Triggers.Keybind;
 using AppManager.Tests.TestUtilities;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

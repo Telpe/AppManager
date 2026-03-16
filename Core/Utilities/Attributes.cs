@@ -28,6 +28,54 @@ namespace AppManager.Core.Utilities
         }
     }
 
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface, AllowMultiple = false)]
+    public class ConditionCategoryAttribute : Attribute
+    {
+        public string Category { get; }
+
+        public ConditionCategoryAttribute(string category)
+        {
+            Category = category;
+        }
+    }
+
+    public class ConditionParameterAttribute : Attribute
+    {
+        public string DisplayName { get; set; }
+        public bool IsRequired { get; set; }
+        public string? DefaultValue { get; set; }
+        public string? ValidationPattern { get; set; }
+
+        public ConditionParameterAttribute(string displayName)
+        {
+            DisplayName = displayName;
+        }
+    }
+
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Interface, AllowMultiple = false)]
+    public class TriggerCategoryAttribute : Attribute
+    {
+        public string Category { get; }
+
+        public TriggerCategoryAttribute(string category)
+        {
+            Category = category;
+        }
+    }
+
+    public class TriggerParameterAttribute : Attribute
+    {
+        public string DisplayName { get; set; }
+        public bool IsRequired { get; set; }
+        public string? DefaultValue { get; set; }
+        public string? ValidationPattern { get; set; }
+
+        public TriggerParameterAttribute(string displayName)
+        {
+            DisplayName = displayName;
+        }
+    }
+
     // Attribute with usage restrictions
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field, AllowMultiple = false)]
     public class ParameterOrderAttribute : Attribute

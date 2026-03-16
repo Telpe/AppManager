@@ -9,7 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
-namespace AppManager.Core.Triggers
+namespace AppManager.Core.Triggers.NetworkPort
 {
     internal class NetworkPortTrigger : BaseTrigger, INetworkPortTrigger
     {

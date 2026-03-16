@@ -391,16 +391,10 @@ namespace AppManager.Core.Utilities
 #if DEBUG
         private static string GetAppManagerCoreDebugPath()
         {
-            try
-            {
-                return GetDefaultSearchPaths().Where(a => a.Contains(typeof(FileManager).Assembly.GetName().Name!)).First();
-            }
-            catch(Exception ex)
-            {
-                Console.WriteLine($"Error getting AppManagerCore debug path: \n{ex.Message}");
-                return "";
-            }
-            
+            string assemblyName = typeof(FileManager).Assembly.GetName().Name ?? throw new Exception("Error getting AppManagerCore debug assembly name.");
+            assemblyName = assemblyName.Replace('.', Path.DirectorySeparatorChar);
+            string[] defaultPaths = GetDefaultSearchPaths();
+            return defaultPaths.Where(a => a.Contains(assemblyName)).FirstOrDefault() ?? throw new Exception($"Error getting AppManagerCore debug path");
         }
 #endif
 

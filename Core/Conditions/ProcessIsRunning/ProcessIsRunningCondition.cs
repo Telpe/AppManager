@@ -1,15 +1,15 @@
 using AppManager.Core.Models;
 using AppManager.Core.Utilities;
 
-namespace AppManager.Core.Conditions
+namespace AppManager.Core.Conditions.ProcessIsRunning
 {
-    public class ProcessRunningCondition : BaseCondition, IProcessRunningCondition
+    public class ProcessIsRunningCondition : BaseCondition, IProcessIsRunningCondition
     {
         public override ConditionTypeEnum ConditionType => ConditionTypeEnum.ProcessRunning;
         public override string Description { get; set; } = "Checks if a specific process is currently running";
         public string? ProcessName { get; set; }
 
-        public ProcessRunningCondition(ConditionModel model) : base(model)
+        public ProcessIsRunningCondition(ConditionModel model) : base(model)
         {
             ProcessName = model.ProcessName;
         }
@@ -38,7 +38,7 @@ namespace AppManager.Core.Conditions
 
         public override ConditionModel ToModel()
         {
-            return ToConditionModel<IProcessRunningCondition>();
+            return ToConditionModel<IProcessIsRunningCondition>();
         }
     }
 }

@@ -8,7 +8,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace AppManager.Core.Triggers
+namespace AppManager.Core.Triggers.SystemEvent
 {
     internal class SystemEventTrigger : BaseTrigger, ISystemEventTrigger
     {

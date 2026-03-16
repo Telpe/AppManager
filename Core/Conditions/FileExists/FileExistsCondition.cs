@@ -3,7 +3,7 @@ using AppManager.Core.Utilities;
 using System;
 using System.IO;
 
-namespace AppManager.Core.Conditions
+namespace AppManager.Core.Conditions.FileExists
 {
     public class FileExistsCondition(ConditionModel model) : BaseCondition(model) , IFileExistsCondition
     {

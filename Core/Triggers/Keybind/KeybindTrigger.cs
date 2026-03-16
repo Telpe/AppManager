@@ -13,7 +13,7 @@ using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Threading;
 
-namespace AppManager.Core.Triggers
+namespace AppManager.Core.Triggers.Keybind
 {
     public class KeybindTrigger : BaseTrigger, IKeybindTrigger
     {

@@ -12,6 +12,7 @@ using System.Diagnostics;
 using System.Timers;
 using System.Windows;
 using System.Windows.Input;
+using AppManager.Core;
 
 namespace AppManager.Config
 {
@@ -36,6 +37,7 @@ namespace AppManager.Config
 
         static App()
         {
+            if (!Dependencies.Initialized) { throw new Exception("Core Dependencies not initialized."); }
             // Load version from version.json file
             Version = FileManager.LoadVersion();
             Log.WriteLine($"AppManager Config Version: {Version}");

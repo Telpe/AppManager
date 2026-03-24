@@ -1,4 +1,5 @@
 ﻿global using AppManager.Core.Utilities;
+using AppManager.Core;
 using AppManager.Core.Actions;
 using AppManager.Core.Models;
 using System;
@@ -15,6 +16,12 @@ namespace AppManager
     /// </summary>
     public partial class App : Application
     {
+        static App()
+        {
+            // Initialize core dependencies before any instance of App is created
+            if (!Dependencies.Initialized) { throw new Exception("Core Dependencies not initialized."); }
+        }
+
         public App()
         {
             if (Shared.ShouldITerminateBringingOtherToFront())

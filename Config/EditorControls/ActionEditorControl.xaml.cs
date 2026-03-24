@@ -339,11 +339,13 @@ namespace AppManager.Config.EditorControls
                 var canExecute = ActionFactory.CreateAction(CurrentActionModelValue).Execute();
 
                 var result = canExecute ? "✓ Action can be executed" : "✗ Action cannot be executed";
+                
                 MessageBox.Show(result, "Test Result", MessageBoxButton.OK,
                     canExecute ? MessageBoxImage.Information : MessageBoxImage.Warning);
             }
             catch (Exception ex)
             {
+                Log.WriteLine($"Action test failed for ActionType: {CurrentActionModelValue.ActionType}, \nAppName: {CurrentActionModelValue.AppName}, \nWindowTitle: {CurrentActionModelValue.WindowTitle}\nError: {ex.Message}\n{ex.StackTrace}\n");
                 MessageBox.Show($"Test failed: {ex.Message}", "Test Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }

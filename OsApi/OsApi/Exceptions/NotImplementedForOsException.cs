@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace AppManager.OsApi.Abstractions
+namespace AppManager.OsApi.Exceptions
 {
     public class NotImplementedForOsException : Exception
     {

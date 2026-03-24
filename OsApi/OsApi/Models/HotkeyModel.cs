@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace AppManager.OsApi.Abstractions.Models
+namespace AppManager.OsApi.Models
 {
     public struct HotkeyModel
     {

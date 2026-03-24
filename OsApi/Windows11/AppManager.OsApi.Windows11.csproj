@@ -4,8 +4,8 @@
 		
 	</PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Abstractions\AppManager.OsApi.Abstractions.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+	  <ProjectReference Include="..\OsApi\AppManager.OsApi.csproj" />
+	</ItemGroup>
 
 </Project>

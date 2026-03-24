@@ -1,4 +1,5 @@
 ﻿using AppManager.OsApi.Abstractions;
+using AppManager.OsApi.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;

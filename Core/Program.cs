@@ -1,16 +1,17 @@
 ﻿global using AppManager.Core.Utilities;
 using AppManager.Core.Actions;
+using AppManager.Core.Keybinds;
 using AppManager.Core.Models;
 using AppManager.Core.Triggers;
+using Microsoft.Win32;
 using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Windows.Forms;
-using AppManager.Core.Keybinds;
-using System.Windows.Threading;
-using Microsoft.Win32;
+using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Windows.Forms;
+using System.Windows.Threading;
 
 namespace AppManager.Core
 {

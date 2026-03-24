@@ -1,0 +1,39 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v10.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v10.0": {
+      "AppManager.OsApi.Windows11/1.0.0": {
+        "dependencies": {
+          "AppManager.OsApi": "1.0.0"
+        },
+        "runtime": {
+          "AppManager.OsApi.Windows11.dll": {}
+        }
+      },
+      "AppManager.OsApi/1.0.0": {
+        "runtime": {
+          "AppManager.OsApi.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "AppManager.OsApi.Windows11/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "AppManager.OsApi/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

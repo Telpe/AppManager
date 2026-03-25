@@ -28,9 +28,9 @@ namespace AppManager.OsApi.Tests.Integration
             IntPtr invalidHandle = IntPtr.Zero;
 
             // Act & Assert - Should not throw exceptions
-            Assert.IsFalse(api.WindowIsMinimized(invalidHandle));
-            Assert.IsFalse(api.WindowRestore(invalidHandle));
-            Assert.IsFalse(api.WindowShow(invalidHandle));
+            Assert.ThrowsException<Exception>(() => { api.Window.IsMinimized(invalidHandle); });
+            Assert.ThrowsException<Exception>(() => { api.Window.Restore(invalidHandle); });
+            Assert.ThrowsException<Exception>(() => { api.Window.Focus(invalidHandle); });
             Assert.IsFalse(api.WindowSetForeground(invalidHandle));
             Assert.IsFalse(api.WindowSetPosition(invalidHandle, api.HWND_TOPMOST, 0, 0, 100, 100, api.SWP_NOMOVE));
             

@@ -2,6 +2,7 @@ using AppManager.OsApi.Interfaces;
 using AppManager.OsApi.Windows11;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -150,7 +151,7 @@ namespace AppManager.OsApi.Tests.Windows11
 
                 // Minimize the window first to set up test conditions
                 _api.WindowSetState(mainWindowHandle, (int)ShowWindowEnum.Minimize);
-                Thread.Sleep(4000); // Wait for minimize to complete
+                Thread.Sleep(2000); // Wait for minimize to complete
 
                 Debug.WriteLine("Window should be minimized");
                 Assert.IsTrue(_api.Window.IsMinimized(mainWindowHandle), "Window is not minimized");
@@ -158,10 +159,10 @@ namespace AppManager.OsApi.Tests.Windows11
                 // Act - Bring window to front using the provided logic
                 Debug.WriteLine("Bring to Front");
                 Assert.IsTrue(BringWindowToFrontImpl(mainWindowHandle), "Failed to bring window to front");
+                Thread.Sleep(2000);
 
-                // Verify the window is now visible and in foreground
-                bool isMinimized = _api.Window.IsMinimized(mainWindowHandle);
-                Assert.IsFalse(isMinimized, "Window should not be minimized after bringing to front");
+                Assert.IsFalse(_api.Window.IsMinimized(mainWindowHandle), "Window should not be minimized after bringing to front");
+                Assert.IsFalse(_api.Window.IsMaximized(mainWindowHandle), "Window should not be maximized after bringing to front");
             }
             catch(Exception ex) 
             {
@@ -303,7 +304,7 @@ namespace AppManager.OsApi.Tests.Windows11
         }
 
         [TestMethod]
-        public void WindowIsMinimized_WithInvalidHandle_ShouldReturnFalse()
+        public void WindowIsMinimized_WithInvalidHandle_ShouldThrow()
         {
             IntPtr invalidHandle = IntPtr.Zero;
 

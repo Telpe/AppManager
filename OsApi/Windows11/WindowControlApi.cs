@@ -11,80 +11,75 @@ namespace AppManager.OsApi.Windows11
     {
         public bool IsMinimized(IntPtr windowHandle)
         {
-            return User32Api.IsIconic(windowHandle);
+            bool result = User32Api.IsIconic(windowHandle);
+            ThrowIfInvalidErrorHandle();
+
+            return result;
         }
 
         public bool IsMaximized(IntPtr windowHandle)
         {
-            return User32Api.IsZoomed(windowHandle);
+            bool result = User32Api.IsZoomed(windowHandle);
+            ThrowIfInvalidErrorHandle();
+
+            return result;
         }
 
         public bool IsHidden(IntPtr windowHandle)
         {
-            return !User32Api.IsWindowVisible(windowHandle);
+            bool result = !User32Api.IsWindowVisible(windowHandle);
+            ThrowIfInvalidErrorHandle();
+
+            return result;
         }
 
         public void SetDefaultState(IntPtr windowHandle)
         {
             if (!User32Api.ShowWindow(windowHandle, ShowWindowEnum.ShowDefault))
             {
-                int errorCode = Marshal.GetLastPInvokeError();
-                string message = new Win32Exception(errorCode).Message;
-                throw new Exception($"Error ({errorCode}): {message}");
+                ThrowLastError();
             }
         }
         public void Hide(IntPtr windowHandle)
         {
             if (!User32Api.ShowWindow(windowHandle, ShowWindowEnum.Hide))
             {
-                int errorCode = Marshal.GetLastPInvokeError();
-                string message = new Win32Exception(errorCode).Message;
-                throw new Exception($"Error ({errorCode}): {message}");
+                ThrowLastError();
             }
         }
         public void Minimize(IntPtr windowHandle)
         {
             if (!User32Api.ShowWindow(windowHandle, ShowWindowEnum.Minimize))
             {
-                int errorCode = Marshal.GetLastPInvokeError();
-                string message = new Win32Exception(errorCode).Message;
-                throw new Exception($"Error ({errorCode}): {message}");
+                ThrowLastError();
             }
         }
         public void ForceMinimize(IntPtr windowHandle)
         {
             if (!User32Api.ShowWindow(windowHandle, ShowWindowEnum.ForceMinimize))
             {
-                int errorCode = Marshal.GetLastPInvokeError();
-                string message = new Win32Exception(errorCode).Message;
-                throw new Exception($"Error ({errorCode}): {message}");
+                ThrowLastError();
             }
         }
         public void Maximize(IntPtr windowHandle)
         {
             if (!User32Api.ShowWindow(windowHandle, ShowWindowEnum.ShowMaximized))
             {
-                int errorCode = Marshal.GetLastPInvokeError();
-                string message = new Win32Exception(errorCode).Message;
-                throw new Exception($"Error ({errorCode}): {message}");
+                ThrowLastError();
             }
         }
         public void Normalize(IntPtr windowHandle)
         {
             if (!User32Api.ShowWindow(windowHandle, ShowWindowEnum.ShowNormal))
             {
-                int errorCode = Marshal.GetLastPInvokeError();
-                string message = new Win32Exception(errorCode).Message;
-                throw new Exception($"Error ({errorCode}): {message}");
+                ThrowLastError();
             }
         }
         public void Restore(IntPtr windowHandle)
         {
             if (!User32Api.ShowWindow(windowHandle, ShowWindowEnum.Restore))
             {
-                int errorCode = Marshal.GetLastPInvokeError();
-                string message = new Win32Exception(errorCode).Message;
-                throw new Exception($"Error ({errorCode}): {message}");
+                ThrowLastError();
             }
         }
         public void SetFullScreen(IntPtr windowHandle)
@@ -94,10 +89,22 @@ namespace AppManager.OsApi.Windows11
         {
             if (!User32Api.ShowWindow(windowHandle, ShowWindowEnum.Show))
             {
-                int errorCode = Marshal.GetLastPInvokeError();
-                string message = new Win32Exception(errorCode).Message;
-                throw new Exception($"Error ({errorCode}): {message}");
+                ThrowLastError();
             }
+        }
+
+        private void ThrowIfInvalidErrorHandle()
+        {
+            if (1400 == Marshal.GetLastPInvokeError())
+            {
+                ThrowLastError(1400);
+            }
+        }
+
+        private void ThrowLastError(int? error = null)
+        {
+            error ??= Marshal.GetLastPInvokeError();
+            throw new Exception($"Win32 error ({error}): {new Win32Exception((int)error).Message}");
         }
     }
 }

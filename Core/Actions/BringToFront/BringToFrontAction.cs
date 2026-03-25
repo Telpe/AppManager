@@ -72,15 +72,15 @@ namespace AppManager.Core.Actions.BringToFront
                 IntPtr mainWindowHandle = OSAPI.Current.GetProcessMainWindowHandle(targetProcess);
 
                 // If window is minimized, restore it first
-                if (OSAPI.Current.WindowIsMinimized(mainWindowHandle))
+                if (OSAPI.Current.Window.IsMinimized(mainWindowHandle))
                 {
-                    OSAPI.Current.WindowRestore(mainWindowHandle);
+                    OSAPI.Current.Window.Restore(mainWindowHandle);
                 }
                 else
                 {
-                    OSAPI.Current.WindowShow(mainWindowHandle);
+                    OSAPI.Current.Window.Focus(mainWindowHandle);
                 }
-
+/*
                 // Make window topmost temporarily
                 OSAPI.Current.WindowSetPosition(mainWindowHandle, OSAPI.Current.HWND_TOPMOST, 0, 0, 0, 0, OSAPI.Current.SWP_NOMOVE | OSAPI.Current.SWP_NOSIZE);
                 
@@ -89,7 +89,7 @@ namespace AppManager.Core.Actions.BringToFront
                 
                 // Wait a moment, then remove topmost flag
                 Thread.Sleep(CoreConstants.StandardUIDelay);
-                OSAPI.Current.WindowSetPosition(mainWindowHandle, OSAPI.Current.HWND_NOTOPMOST, 0, 0, 0, 0, OSAPI.Current.SWP_NOMOVE | OSAPI.Current.SWP_NOSIZE);
+                OSAPI.Current.WindowSetPosition(mainWindowHandle, OSAPI.Current.HWND_NOTOPMOST, 0, 0, 0, 0, OSAPI.Current.SWP_NOMOVE | OSAPI.Current.SWP_NOSIZE);*/
                 Log.WriteLine($"Successfully brought to front: {AppName}");
                 return true;
             }

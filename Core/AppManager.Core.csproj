@@ -2,26 +2,18 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows7.0</TargetFramework>
-    
     <UseWindowsForms>true</UseWindowsForms>
-    
     <ApplicationManifest>app.manifest</ApplicationManifest>
-	
-
-    <!-- Publish settings 
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-    <PublishReadyToRun>true</PublishReadyToRun>
-    <PublishSingleFile>true</PublishSingleFile>
-	
-    -->
   </PropertyGroup>
   
   <ItemGroup>
     <PackageReference Include="System.Management" Version="9.0.10" />
   </ItemGroup>
+  
   <ItemGroup>
     <FrameworkReference Include="Microsoft.WindowsDesktop.App" />
   </ItemGroup>
+  
   <ItemGroup>
     <None Update="version.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -30,18 +22,27 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-  <ItemGroup>
-    <EditorConfigFiles Remove="C:\Users\Arthonor\source\repos\telpe\AppManager\Core\.editorconfig" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="OsApi\**\*">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
+  
   <ItemGroup>
     <Reference Include="AppManager.OsApi">
       <HintPath>..\OsApi\Windows11\bin\Release\net10.0\AppManager.OsApi.dll</HintPath>
-	  <Private>false</Private>
+      <Private>false</Private>
     </Reference>
   </ItemGroup>
+  
+  <Target Name="CopyOsApiFiles" BeforeTargets="BeforeBuild">
+    <ItemGroup>
+      <OsApiBinFiles Include="..\OsApi\Windows11\bin\Release\net10.0\*.dll" />
+    </ItemGroup>
+
+	<Copy SourceFiles="@(OsApiBinFiles)"
+		DestinationFolder="$(ProjectDir)OsApi\"
+		SkipUnchangedFiles="true" />
+
+    <ItemGroup>
+      <None Include="OsApi\**\*">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+  </Target>
 </Project>

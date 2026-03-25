@@ -1,0 +1,44 @@
+using AppManager.Core.Conditions.FileExists;
+using AppManager.Core.Conditions.PreviousActionSucceeded;
+using AppManager.Core.Conditions.ProcessIsRunning;
+using AppManager.Core.Models;
+using System;
+using System.Collections.Generic;
+
+namespace AppManager.Core.Conditions
+{
+    public static class ConditionFactory
+    {
+        private static readonly Dictionary<ConditionTypeEnum, Func<ConditionModel, ICondition>> _conditionFactories = new Dictionary<ConditionTypeEnum, Func<ConditionModel, ICondition>>
+        {
+            { ConditionTypeEnum.ProcessRunning, (model) => new ProcessIsRunningCondition(model) },
+            { ConditionTypeEnum.FileExists, (model) => new FileExistsCondition(model) },
+            { ConditionTypeEnum.PreviousActionSuccess, (model) => new PreviousActionSucceededCondition(model) }
+        };
+
+        public static ICondition CreateCondition(ConditionModel model)
+        {
+            if (_conditionFactories.TryGetValue(model.ConditionType, out var factory))
+            {
+                return factory(model);
+            }
+
+            throw new NotSupportedException($"Condition type {model.ConditionType} is not supported");
+        }
+
+        public static bool IsConditionTypeSupported(ConditionTypeEnum conditionType)
+        {
+            return _conditionFactories.ContainsKey(conditionType);
+        }
+
+        public static void SetConditionFactory(ConditionTypeEnum conditionType, Func<ConditionModel, ICondition> factoryFunc)
+        {
+            _conditionFactories[conditionType] = factoryFunc;
+        }
+
+        public static IEnumerable<ConditionTypeEnum> GetSupportedConditionTypes()
+        {
+            return _conditionFactories.Keys;
+        }
+    }
+}

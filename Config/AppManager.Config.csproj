@@ -1,14 +1,22 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows7.0</TargetFramework>
     <UseWPF>true</UseWPF>
+    <SupportedOSPlatformVersion>7.0</SupportedOSPlatformVersion>
+    <StartupObject>AppManager.Config.App</StartupObject>
+    
+
     <!-- Publish settings 
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <PublishReadyToRun>true</PublishReadyToRun>
     <PublishSingleFile>true</PublishSingleFile>
     -->
+    <!-- Additional metadata -->
+    <Product>AppManager.Config</Product>
+    <Company>Telpe</Company>
+    <Copyright>Telpe</Copyright>
+    <Description>Application Manager for Windows</Description>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Core\AppManager.Core.csproj" />

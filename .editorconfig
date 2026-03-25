@@ -3,6 +3,13 @@ root = true
 
 # C# files
 [*.cs]
+# Disable primary constructor suggestions globally
+dotnet_style_prefer_primary_constructors = false
+csharp_style_prefer_primary_constructors = false
+dotnet_diagnostic.IDE0290.severity = none
+
+# Disable other constructor-related suggestions
+dotnet_diagnostic.IDE0021.severity = none  # Use expression body for constructors
 
 #### Core EditorConfig Options ####
 

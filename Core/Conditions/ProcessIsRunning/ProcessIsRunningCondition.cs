@@ -1,0 +1,44 @@
+using AppManager.Core.Models;
+using AppManager.Core.Utilities;
+
+namespace AppManager.Core.Conditions.ProcessIsRunning
+{
+    public class ProcessIsRunningCondition : BaseCondition, IProcessIsRunningCondition
+    {
+        public override ConditionTypeEnum ConditionType => ConditionTypeEnum.ProcessRunning;
+        public override string Description { get; set; } = "Checks if a specific process is currently running";
+        public string? ProcessName { get; set; }
+
+        public ProcessIsRunningCondition(ConditionModel model) : base(model)
+        {
+            ProcessName = model.ProcessName;
+        }
+
+        public override bool Execute()
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(ProcessName))
+                {
+                    LogConditionResult(false, "No process name specified");
+                    return false;
+                }
+
+                bool isRunning = ProcessManager.IsProcessRunning(ProcessName);
+
+                //LogConditionResult(isRunning, $"Process '{ProcessName}' running: {isRunning}");
+                return isRunning;
+            }
+            catch (System.Exception ex)
+            {
+                LogConditionResult(false, $"Error checking process: '{ProcessName}'\n{ex.Message}");
+                return false;
+            }
+        }
+
+        public override ConditionModel ToModel()
+        {
+            return ToConditionModel<IProcessIsRunningCondition>();
+        }
+    }
+}

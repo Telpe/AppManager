@@ -1,11 +1,10 @@
 using AppManager.Core.Actions;
 using AppManager.Core.Conditions;
 using AppManager.Core.Conditions.PreviousActionSucceeded;
-using AppManager.Core.Keybinds;
 using AppManager.Core.Models;
+using AppManager.OsApi;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -93,7 +92,7 @@ namespace AppManager.Core.Triggers
 
         protected async void ExecuteActionsAsync()
         {
-            Log.WriteLine($"Thread id: {GlobalKeyboardHook.CurrentThreadId}");
+            Log.WriteLine($"Thread id: {OSAPI.Current.CurrentThreadId}");
             if (!CanExecute()) { return; }
 
             bool actionSuccess;

@@ -1,13 +1,12 @@
 ﻿using AppManager.OsApi.Interfaces;
+using AppManager.OsApi.Windows11.Imports;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
-using System.Text;
 
-namespace AppManager.OsApi.Windows11
+namespace AppManager.OsApi.Windows11.GUI
 {
-    public class WindowControlApi : IWindowControl
+    public class WindowControl : IWindowControl
     {
         public bool IsMinimized(IntPtr windowHandle)
         {
@@ -33,6 +32,7 @@ namespace AppManager.OsApi.Windows11
             return result;
         }
 
+
         public void SetDefaultState(IntPtr windowHandle)
         {
             if (!User32Api.ShowWindow(windowHandle, ShowWindowEnum.ShowDefault))
@@ -40,6 +40,7 @@ namespace AppManager.OsApi.Windows11
                 ThrowLastError();
             }
         }
+
         public void Hide(IntPtr windowHandle)
         {
             if (!User32Api.ShowWindow(windowHandle, ShowWindowEnum.Hide))
@@ -82,18 +83,77 @@ namespace AppManager.OsApi.Windows11
                 ThrowLastError();
             }
         }
-        public void SetFullScreen(IntPtr windowHandle)
-        {
-        }
-        public void Focus(IntPtr windowHandle)
+        public void Show(IntPtr windowHandle)
         {
             if (!User32Api.ShowWindow(windowHandle, ShowWindowEnum.Show))
             {
                 ThrowLastError();
             }
         }
+        public void SetFullScreen(IntPtr windowHandle)
+        {
+            throw new NotImplementedException("Full screen mode is not implemented yet.");
+        }
 
-        private void ThrowIfInvalidErrorHandle()
+
+        public void Focus(IntPtr windowHandle)
+        {
+            IntPtr fg = User32Api.GetForegroundWindow();
+
+            if (IsHidden(windowHandle)) 
+            { User32Api.ShowWindow(windowHandle, ShowWindowEnum.ShowNoActivate); }
+
+            if (IsMinimized(windowHandle))
+            { Restore(windowHandle); }
+
+            if (!User32Api.SetForegroundWindow(windowHandle) || User32Api.GetForegroundWindow() != windowHandle)
+            {
+                ForceFocus(windowHandle, fg);
+            }
+        }
+
+        public void ForceFocus(IntPtr windowHandle, IntPtr? fallbackWindow = null)
+        {
+            IntPtr fg = User32Api.GetForegroundWindow();
+            uint fgThread = User32Api.GetWindowThreadProcessId(fg, IntPtr.Zero);
+            uint appThread = User32Api.GetWindowThreadProcessId(windowHandle, IntPtr.Zero);
+
+            User32Api.AttachThreadInput(fgThread, appThread, true);
+
+            User32Api.SetForegroundWindow(windowHandle);
+
+            User32Api.AttachThreadInput(fgThread, appThread, false);
+
+            if (User32Api.GetForegroundWindow() != windowHandle)
+            {
+                if (fallbackWindow is not null) 
+                { Show(fallbackWindow.Value); }
+
+                ThrowLastError(); 
+            }
+        }
+
+        public bool SetPosition(IntPtr windowHandle, IntPtr insertAfter, int x, int y, int width, int height, uint flags)
+        {
+            return User32Api.SetWindowPos(windowHandle, insertAfter, x, y, width, height, flags);
+        }
+
+
+
+
+
+        public int ShutdownBlockReasonCreate(IntPtr windowHandle, string reason)
+        {
+            return User32Api.ShutdownBlockReasonCreate(windowHandle, reason);
+        }
+
+        public int ShutdownBlockReasonDestroy(IntPtr windowHandle)
+        {
+            return User32Api.ShutdownBlockReasonDestroy(windowHandle);
+        }
+
+
+        private static void ThrowIfInvalidErrorHandle()
         {
             if (1400 == Marshal.GetLastPInvokeError())
             {
@@ -101,7 +161,7 @@ namespace AppManager.OsApi.Windows11
             }
         }
 
-        private void ThrowLastError(int? error = null)
+        private static void ThrowLastError(int? error = null)
         {
             error ??= Marshal.GetLastPInvokeError();
             throw new Exception($"Win32 error ({error}): {new Win32Exception((int)error).Message}");

@@ -17,7 +17,7 @@ namespace AppManager.OsApi.Tests.Integration
             // Assert - Basic functionality
             Assert.IsNotNull(api);
             Assert.IsTrue(api.CurrentThreadId > 0);
-            Assert.IsNotNull(api.KeyEvent);
+            Assert.IsNotNull(api.Input.KeyEvent);
         }
 
         [TestMethod]
@@ -27,16 +27,14 @@ namespace AppManager.OsApi.Tests.Integration
             IOsApi api = OsApiLoader.Load();
             IntPtr invalidHandle = IntPtr.Zero;
 
-            // Act & Assert - Should not throw exceptions
             Assert.ThrowsException<Exception>(() => { api.Window.IsMinimized(invalidHandle); });
             Assert.ThrowsException<Exception>(() => { api.Window.Restore(invalidHandle); });
             Assert.ThrowsException<Exception>(() => { api.Window.Focus(invalidHandle); });
-            Assert.IsFalse(api.WindowSetForeground(invalidHandle));
-            Assert.IsFalse(api.WindowSetPosition(invalidHandle, api.HWND_TOPMOST, 0, 0, 100, 100, api.SWP_NOMOVE));
+            Assert.IsFalse(api.Window.SetPosition(invalidHandle, api.HWND_TOPMOST, 0, 0, 100, 100, api.SWP_NOMOVE));
             
             // Shutdown methods might return success even with invalid handles
-            int result1 = api.ShutdownBlockReasonCreate(invalidHandle, "Test");
-            int result2 = api.ShutdownBlockReasonDestroy(invalidHandle);
+            int result1 = api.Window.ShutdownBlockReasonCreate(invalidHandle, "Test");
+            int result2 = api.Window.ShutdownBlockReasonDestroy(invalidHandle);
             Assert.IsTrue(result1 >= 0);
             Assert.IsTrue(result2 >= 0);
         }

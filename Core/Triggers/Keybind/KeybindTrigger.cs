@@ -1,14 +1,12 @@
-using AppManager.Core.Actions;
 using AppManager.Core.Keybinds;
 using AppManager.Core.Models;
-using AppManager.Core.Utilities;
+using AppManager.OsApi;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Threading;
@@ -56,6 +54,9 @@ namespace AppManager.Core.Triggers.Keybind
 
         public override void Start()
         {
+
+
+
             lock (MessageListenerAndRegisteredHotkeysLock)
             {
                 uint modifiers = ConvertToHotkeyModifiers(TargetModifiers);
@@ -71,17 +72,26 @@ namespace AppManager.Core.Triggers.Keybind
                     throw new InvalidOperationException($"The keybind combination {TargetModifiers} + {TargetKey} is already registered by another KeybindTrigger.");
                 }
 
+                OSAPI.Current.Input.
+                    (OnKeyboardPressed);
+
+
+
                 StopMessageListener();
 
                 MessageListener = new Thread(() => MessageListenerLoop((HotkeyModel[])RegisteredHotkeys.Clone()));
 
                 MessageListener.Start();
 
-                while (null == MessageListenerNativeThreadId)
+
+                Stopwatch waitedTime = Stopwatch.StartNew();
+
+                while (null == MessageListenerNativeThreadId && waitedTime.ElapsedMilliseconds < 3000)
                 {
                     Task.Delay(CoreConstants.MinimalSyncDelay).Wait();
                 }
-                
+
+                waitedTime.Stop();
             }
 
             Log.WriteLine($"Keybind trigger '{Name}' started for {TargetModifiers} + {TargetKey} with ID {MyHotkeyId}");
@@ -100,7 +110,7 @@ namespace AppManager.Core.Triggers.Keybind
             Message msg = new();
             int msgState = 0;
 
-            MessageListenerNativeThreadId = GlobalKeyboardHook.CurrentThreadId;
+            MessageListenerNativeThreadId = OSAPI.Current.CurrentThreadId;
 
             while ((msgState = GlobalKeyboardHook.GetMessage(ref msg, IntPtr.Zero, 0, 0)) != 0)
             {
@@ -255,10 +265,25 @@ namespace AppManager.Core.Triggers.Keybind
             bool winPressed = Keyboard.IsKeyDown(System.Windows.Input.Key.LWin) || Keyboard.IsKeyDown(System.Windows.Input.Key.RWin);
 
             ModifierKeys currentModifiers = ModifierKeys.None;
-            if (ctrlPressed) currentModifiers |= ModifierKeys.Control;
-            if (altPressed) currentModifiers |= ModifierKeys.Alt;
-            if (shiftPressed) currentModifiers |= ModifierKeys.Shift;
-            if (winPressed) currentModifiers |= ModifierKeys.Windows;
+            if (ctrlPressed)
+            {
+                currentModifiers |= ModifierKeys.Control;
+            }
+
+            if (altPressed)
+            {
+                currentModifiers |= ModifierKeys.Alt;
+            }
+
+            if (shiftPressed)
+            {
+                currentModifiers |= ModifierKeys.Shift;
+            }
+
+            if (winPressed)
+            {
+                currentModifiers |= ModifierKeys.Windows;
+            }
 
             ModifiersPressedValue = currentModifiers == TargetModifiers;
 

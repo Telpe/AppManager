@@ -1,11 +1,8 @@
-using AppManager.Core.Actions;
 using AppManager.Core.Models;
-using AppManager.Core.Utilities;
+using AppManager.OsApi;
 using System;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 
 namespace AppManager.Core.Actions.Minimize
 {
@@ -18,11 +15,6 @@ namespace AppManager.Core.Actions.Minimize
         public bool? IncludeSimilarNames { get; set; }
         public string? WindowTitle { get; set; }
 
-        [return: MarshalAs(UnmanagedType.Bool)]
-        [LibraryImport("user32.dll", StringMarshalling = StringMarshalling.Utf16, SetLastError = true)]
-        public static partial bool ShowWindow(IntPtr hWnd, int nCmdShow);
-
-        private const int SW_MINIMIZE = 6;
         private Process[] TargetProcessesValue = Array.Empty<Process>();
 
         public MinimizeAction(ActionModel model) : base(model)
@@ -55,15 +47,18 @@ namespace AppManager.Core.Actions.Minimize
 
             foreach (var process in processes)
             {
-                IntPtr mainWindowHandle = process.MainWindowHandle;
+                IntPtr mainWindowHandle = OSAPI.Current.GetProcessMainWindowHandle(process);
                             
                 if (mainWindowHandle == IntPtr.Zero)
                 {
                     Log.WriteLine($"No main window found for process: {process.ProcessName}");
                     continue;
                 }
-                            
-                if (ShowWindow(mainWindowHandle, SW_MINIMIZE))
+
+                OSAPI.Current.Window.Minimize(mainWindowHandle);
+
+
+                if (OSAPI.Current.Window.IsMinimized(mainWindowHandle))
                 {
                     Log.WriteLine($"Successfully minimized window for: {process.ProcessName}");
                     successCount++;
@@ -73,6 +68,8 @@ namespace AppManager.Core.Actions.Minimize
                     Log.WriteLine($"Failed to minimize window for: {process.ProcessName}");
                 }
             }
+            
+            Log.WriteLine($"Minimized {successCount} windows");
 
             return 0 < successCount;
         }

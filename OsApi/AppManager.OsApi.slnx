@@ -1,7 +1,5 @@
 <Solution>
   <Project Path="Windows11/AppManager.OsApi.Windows11.csproj" Id="2f020d63-e4d9-4a92-8907-98cbe2d07b02" />
-  <Folder Name="/OsApi.Tests/">
-    <Project Path="OsApi.Tests/AppManager.OsApi.Tests.csproj" />
-  </Folder>
+  <Project Path="OsApi.Tests/AppManager.OsApi.Tests.csproj" />
   <Project Path="OsApi/AppManager.OsApi.csproj" />
 </Solution>

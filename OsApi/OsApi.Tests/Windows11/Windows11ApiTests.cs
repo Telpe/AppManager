@@ -2,7 +2,6 @@ using AppManager.OsApi.Interfaces;
 using AppManager.OsApi.Windows11;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -150,7 +149,7 @@ namespace AppManager.OsApi.Tests.Windows11
                 }
 
                 // Minimize the window first to set up test conditions
-                _api.WindowSetState(mainWindowHandle, (int)ShowWindowEnum.Minimize);
+                _api.Window.Minimize(mainWindowHandle);
                 Thread.Sleep(2000); // Wait for minimize to complete
 
                 Debug.WriteLine("Window should be minimized");
@@ -286,7 +285,7 @@ namespace AppManager.OsApi.Tests.Windows11
         public void KeyEvent_ShouldNotBeNull()
         {
             // Act & Assert
-            Assert.IsNotNull(_api.KeyEvent);
+            Assert.IsNotNull(_api.Input.KeyEvent);
         }
 
         [TestMethod]
@@ -331,14 +330,10 @@ namespace AppManager.OsApi.Tests.Windows11
         [TestMethod]
         public void WindowSetForeground_WithInvalidHandle_ShouldReturnFalse()
         {
-            // Arrange
             IntPtr invalidHandle = IntPtr.Zero;
 
-            // Act
-            bool result = _api.WindowSetForeground(invalidHandle);
+            Assert.ThrowsException<Exception>(()=>{ _api.Window.Focus(invalidHandle); });
 
-            // Assert
-            Assert.IsFalse(result);
         }
 
         [TestMethod]
@@ -348,7 +343,7 @@ namespace AppManager.OsApi.Tests.Windows11
             IntPtr invalidHandle = IntPtr.Zero;
 
             // Act
-            bool result = _api.WindowSetPosition(invalidHandle, _api.HWND_TOPMOST, 0, 0, 100, 100, _api.SWP_NOMOVE);
+            bool result = _api.Window.SetPosition(invalidHandle, _api.HWND_TOPMOST, 0, 0, 100, 100, _api.SWP_NOMOVE);
 
             // Assert
             Assert.IsFalse(result);
@@ -362,7 +357,7 @@ namespace AppManager.OsApi.Tests.Windows11
             string reason = "Test reason";
 
             // Act
-            int result = _api.ShutdownBlockReasonCreate(invalidHandle, reason);
+            int result = _api.Window.ShutdownBlockReasonCreate(invalidHandle, reason);
 
             // Assert
             // Note: This might succeed or fail depending on the OS implementation
@@ -376,7 +371,7 @@ namespace AppManager.OsApi.Tests.Windows11
             IntPtr invalidHandle = IntPtr.Zero;
 
             // Act
-            int result = _api.ShutdownBlockReasonDestroy(invalidHandle);
+            int result = _api.Window.ShutdownBlockReasonDestroy(invalidHandle);
 
             // Assert
             // Note: This might succeed or fail depending on the OS implementation

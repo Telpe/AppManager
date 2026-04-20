@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Text;
+﻿using System.Runtime.InteropServices;
 
-namespace AppManager.OsApi.Windows11
+namespace AppManager.OsApi.Windows11.Imports
 {
     public partial class Kernel32Api
     {

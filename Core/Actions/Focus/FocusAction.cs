@@ -1,11 +1,7 @@
-using AppManager.Core.Actions;
 using AppManager.Core.Models;
-using AppManager.Core.Utilities;
+using AppManager.OsApi;
 using System;
 using System.Diagnostics;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 
 namespace AppManager.Core.Actions.Focus
 {
@@ -17,21 +13,6 @@ namespace AppManager.Core.Actions.Focus
 
         public bool? IncludeSimilarNames { get; set; }
         public string? WindowTitle { get; set; }
-
-        [return: MarshalAs(UnmanagedType.Bool)]
-        [LibraryImport("user32.dll", StringMarshalling = StringMarshalling.Utf16, SetLastError = true)]
-        public static partial bool SetForegroundWindow(IntPtr hWnd);
-
-        [return: MarshalAs(UnmanagedType.Bool)]
-        [LibraryImport("user32.dll", StringMarshalling = StringMarshalling.Utf16, SetLastError = true)]
-        public static partial bool ShowWindow(IntPtr hWnd, int nCmdShow);
-
-        [return: MarshalAs(UnmanagedType.Bool)]
-        [LibraryImport("user32.dll", StringMarshalling = StringMarshalling.Utf16, SetLastError = true)]
-        public static partial bool IsIconic(IntPtr hWnd);
-
-        private const int SW_RESTORE = 9;
-        private const int SW_SHOW = 5;
 
         public FocusAction(ActionModel model) : base(model)
         {
@@ -54,24 +35,16 @@ namespace AppManager.Core.Actions.Focus
                 requireMainWindow: true,
                 WindowTitle) ?? throw new Exception($"No process found to focus: {AppName}");
             
-            IntPtr mainWindowHandle = process.MainWindowHandle;
-                
+            IntPtr mainWindowHandle = OSAPI.Current.GetProcessMainWindowHandle(process);
+
             if (mainWindowHandle == IntPtr.Zero)
             {
                 throw new Exception($"No main window found for process: {process.ProcessName}");
             }
 
-            // If window is minimized, restore it first
-            if (IsIconic(mainWindowHandle))
-            {
-                ShowWindow(mainWindowHandle, SW_RESTORE);
-            }
-            else
-            {
-                ShowWindow(mainWindowHandle, SW_SHOW);
-            }
+            OSAPI.Current.Window.Focus(mainWindowHandle);
 
-            if (SetForegroundWindow(mainWindowHandle))
+            if (true)// TODO: Verify if the window is now focused (may require additional logic to check foreground window)
             {
                 Log.WriteLine($"Successfully focused window for: {AppName}");
                 return true;

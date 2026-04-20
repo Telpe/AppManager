@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace AppManager.OsApi.Windows11
+﻿namespace AppManager.OsApi.Windows11.GUI
 {
     public enum ShowWindowEnum : int
     {

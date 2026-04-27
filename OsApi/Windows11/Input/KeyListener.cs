@@ -1,6 +1,8 @@
-﻿using AppManager.OsApi.Models;
+﻿using AppManager.OsApi.Interfaces;
+using AppManager.OsApi.Models;
 using AppManager.OsApi.Windows11.Imports;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -8,56 +10,85 @@ using System.Threading.Tasks;
 
 namespace AppManager.OsApi.Windows11.Input
 {
-    public class KeyListener
+    public class KeyListener : IKeyListener
     {
-        private static uint? MessageListenerNativeThreadId;
+        private uint? MessageListenerNativeThreadId;
         private Thread? MessageListener;
-        private object MessageListenerAndRegisteredHotkeysLock = new object();
+        private Lock MessageListenerAndRegisteredHotkeysLock = new();
         private HotkeyModel[] RegisteredHotkeysValue = [];
-        public HotkeyModel[] RegisteredHotkeys
+        private Action<HotkeyModel>[] RegisteredHandlersValue = [];
+        public Dictionary<HotkeyModel, Action<HotkeyModel>> RegisteredHotkeys
         {
             get
             {
-                lock (MessageListenerAndRegisteredHotkeysLock)
+                lock(MessageListenerAndRegisteredHotkeysLock)
                 {
-                    return (HotkeyModel[])RegisteredHotkeysValue.Clone();
+                    return RegisteredHotkeysValue.Zip(RegisteredHandlersValue).ToDictionary();
                 }
             }
         }
-        private Action<HotkeyModel>? HotkeyEvent;
 
-        public KeyListener(Action<HotkeyModel> HotkeyRecievedAction)
-        {
-            HotkeyEvent = HotkeyRecievedAction;
-        }
-
-        public void AddHotkey(HotkeyModel hotkey)
+        public void AddHotkey(HotkeyModel hotkey, Action<HotkeyModel> handler, bool delayStart = false)
         {
             lock (MessageListenerAndRegisteredHotkeysLock)
             {
-                if (!RegisteredHotkeysValue.Any(a => a.MainKey == hotkey.MainKey && a.Modifiers == hotkey.Modifiers))
+                if (!RegisteredHotkeysValue.Any(a => a.Equals(hotkey)))
                 {
-                    hotkey.Id = RegisteredHotkeysValue.Length;
                     RegisteredHotkeysValue = [..RegisteredHotkeysValue, hotkey];
+                    RegisteredHandlersValue = [..RegisteredHandlersValue, handler];
+
+                    if (!delayStart)
+                    { StartListening(); }
                 }
                 else
                 {
                     throw new InvalidOperationException($"The keybind combination {hotkey.Modifiers} + {hotkey.MainKey} is already registered by another KeybindTrigger.");
                 }
-
-                StartListening();
             }
 
-            Debug.WriteLine($"Keybind id {hotkey.Id} started with {hotkey.Modifiers} + {hotkey.MainKey}");
+            Debug.WriteLine($"Keybind {hotkey} started");
         }
 
-        public void StartListening()
+        public void RemoveHotkey(HotkeyModel hotkey)
+        {
+            lock (MessageListenerAndRegisteredHotkeysLock)
+            {
+                int index = RegisteredHotkeysValue.IndexOf(hotkey);
+
+                if (-1 < index)
+                {
+                    int newLength = RegisteredHotkeysValue.Length - 1;
+
+                    HotkeyModel[] rHotkey = new HotkeyModel[newLength];
+                    Action<HotkeyModel>[] rHandler = new Action<HotkeyModel>[newLength];
+
+                    Array.ConstrainedCopy(RegisteredHotkeysValue, 0, rHotkey, 0, index);
+                    Array.ConstrainedCopy(RegisteredHandlersValue, 0, rHandler, 0, index);
+
+                    Array.ConstrainedCopy(RegisteredHotkeysValue, index + 1, rHotkey, index, newLength - index);
+                    Array.ConstrainedCopy(RegisteredHandlersValue, index + 1, rHandler, index, newLength - index);
+
+                    RegisteredHotkeysValue = rHotkey;
+                    RegisteredHandlersValue = rHandler;
+
+                    if (0 < RegisteredHotkeysValue.Length)
+                    { StartListening(); }
+                    else
+                    { StopListening(); }
+                }
+            
+            }
+
+            Debug.WriteLine($"Keybind stopped {hotkey}");
+        }
+
+        private void StartListening()
         {
             lock (MessageListenerAndRegisteredHotkeysLock)
             {
                 StopListening();
 
-                MessageListener = new Thread(() => MessageListenerLoop((HotkeyModel[])RegisteredHotkeysValue.Clone()));
+                MessageListener = new Thread(() => MessageListenerLoop((HotkeyModel[])RegisteredHotkeysValue.Clone(), (Action<HotkeyModel>[])RegisteredHandlersValue.Clone()));
 
                 MessageListener.Start();
 
@@ -75,14 +106,17 @@ namespace AppManager.OsApi.Windows11.Input
             
         }
 
-        private void MessageListenerLoop(HotkeyModel[] registeredKeys)
+        private void MessageListenerLoop(HotkeyModel[] registeredKeys, Action<HotkeyModel>[] registeredHandlers)
         {
             Thread.CurrentThread.IsBackground = true;
 
-
-            foreach (HotkeyModel hotkey in registeredKeys)
             {
-                User32Api.RegisterHotKey(hotkey.HWnd, hotkey.Id, (uint)KeyboardHookConstants.ModifiersToWindowsModifiers(hotkey.Modifiers), (uint)KeyboardHookConstants.KeyToDixMap[hotkey.MainKey]);
+                int hotkeyId = 0;
+                foreach (HotkeyModel hotkey in registeredKeys)
+                {
+                    User32Api.RegisterHotKey(IntPtr.Zero, hotkeyId, (uint)KeyboardHookConstants.ModifiersToWindowsModifiers(hotkey.Modifiers), (uint)KeyboardHookConstants.KeyToDixMap[hotkey.MainKey]);
+                    hotkeyId++;
+                }
             }
 
             FormMessage msg = new();
@@ -102,8 +136,9 @@ namespace AppManager.OsApi.Windows11.Input
                     {
                         Task.Run(() =>
                         {
-                            HotkeyEvent?.Invoke(registeredKeys.Where(a => a.Id == hotkeyId).First());
+                            registeredHandlers[hotkeyId].Invoke(registeredKeys[hotkeyId]);
                         });
+                        
                     }
                     catch (Exception ex)
                     {
@@ -113,15 +148,15 @@ namespace AppManager.OsApi.Windows11.Input
                 }
             }
 
-            foreach (HotkeyModel hotkey in registeredKeys)
+            for(int i = 0; i < registeredKeys.Length; i++)
             {
-                User32Api.UnregisterHotKey(hotkey.HWnd, hotkey.Id);
+                User32Api.UnregisterHotKey(IntPtr.Zero, i);
             }
 
             Debug.WriteLine($"MessageListener thread ended.");
         }
 
-        public void StopListening()
+        private void StopListening()
         {
             lock (MessageListenerAndRegisteredHotkeysLock)
             {

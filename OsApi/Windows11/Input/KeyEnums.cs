@@ -138,8 +138,8 @@ namespace AppManager.OsApi.Windows11.Input
         RightAlt = 0xA5,
         LeftShift = 0xA0,
         RightShift = 0xA1,
-        LWin = 0x5B,
-        RWin = 0x5C,
+        LeftWin = 0x5B,
+        RightWin = 0x5C,
         ContextMenu = 0x5D,
         Paragraph = 0xB6,
     }

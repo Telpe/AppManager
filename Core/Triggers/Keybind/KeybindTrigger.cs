@@ -1,14 +1,9 @@
 using AppManager.Core.Keybinds;
 using AppManager.Core.Models;
 using AppManager.OsApi;
+using AppManager.OsApi.Models;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using System.Windows.Input;
 using System.Windows.Threading;
 
 namespace AppManager.Core.Triggers.Keybind
@@ -17,23 +12,10 @@ namespace AppManager.Core.Triggers.Keybind
     {
         public override TriggerTypeEnum TriggerType => TriggerTypeEnum.Keybind;
 
-        //private GlobalKeyboardHook? GlobalKeyboardHookValue;
-        private static uint? MessageListenerNativeThreadId;
         private Dispatcher CurrentDispatcherValue = System.Windows.Threading.Dispatcher.CurrentDispatcher;
-        protected Key TargetKey { get => Key ?? System.Windows.Input.Key.None; }
-        protected ModifierKeys TargetModifiers { get => Modifiers ?? ModifierKeys.None; }
+        protected HotkeyModel TargetKey { get => Key ?? OsApi.Models.Key.None; }
         private bool KeyPressedValue;
         private bool ModifiersPressedValue;
-        private static Thread? MessageListener;
-        private static object MessageListenerAndRegisteredHotkeysLock = new object();
-        private static HotkeyModel[] RegisteredHotkeysValue = [];
-        public static HotkeyModel[] RegisteredHotkeys { get => RegisteredHotkeysValue; }
-        //private static int NextHotkeyId = 1;
-        private int MyHotkeyId = -1;
-
-        public Key? Key { get; set; }
-        public ModifierKeys? Modifiers { get; set; }
-        public string? KeybindCombination { get; set; }
         public Dictionary<string, object>? CustomProperties { get; set; }
 
         public KeybindTrigger(TriggerModel model) : base(model)
@@ -55,123 +37,27 @@ namespace AppManager.Core.Triggers.Keybind
         public override void Start()
         {
 
-
-
-            lock (MessageListenerAndRegisteredHotkeysLock)
-            {
                 uint modifiers = ConvertToHotkeyModifiers(TargetModifiers);
                 uint vk = ConvertToVirtualKey(TargetKey);
 
-                if (!RegisteredHotkeys.Any(a=> a.Key == vk && a.Mods == modifiers))
-                {
-                    MyHotkeyId = RegisteredHotkeysValue.Length;
-                    RegisteredHotkeysValue = [..RegisteredHotkeysValue, new HotkeyModel(IntPtr.Zero, MyHotkeyId, modifiers, vk, this, CurrentDispatcherValue)];
-                }
-                else
-                {
-                    throw new InvalidOperationException($"The keybind combination {TargetModifiers} + {TargetKey} is already registered by another KeybindTrigger.");
-                }
+                var hk = new OsApi.Models.HotkeyModel(Enum.Parse(typeof(OsApi.Models.ModifierKey), modifiers), vk);
 
-                OSAPI.Current.Input.
+
+                OSAPI.Current.Input.KeyListener.AddHotkey(TargetKey, OnKeyboardPressed);
                     (OnKeyboardPressed);
 
-
-
-                StopMessageListener();
-
-                MessageListener = new Thread(() => MessageListenerLoop((HotkeyModel[])RegisteredHotkeys.Clone()));
-
-                MessageListener.Start();
-
-
-                Stopwatch waitedTime = Stopwatch.StartNew();
-
-                while (null == MessageListenerNativeThreadId && waitedTime.ElapsedMilliseconds < 3000)
-                {
-                    Task.Delay(CoreConstants.MinimalSyncDelay).Wait();
-                }
-
-                waitedTime.Stop();
-            }
 
             Log.WriteLine($"Keybind trigger '{Name}' started for {TargetModifiers} + {TargetKey} with ID {MyHotkeyId}");
         }
 
-        private void MessageListenerLoop(HotkeyModel[] registeredKeys)
-        {
-            Thread.CurrentThread.IsBackground = true;
-            
-
-            foreach (HotkeyModel hotkey in registeredKeys)
-            {
-                GlobalKeyboardHook.RegisterHotKey(hotkey.HWnd, hotkey.Id, hotkey.Mods, hotkey.Key);
-            }
-
-            Message msg = new();
-            int msgState = 0;
-
-            MessageListenerNativeThreadId = OSAPI.Current.CurrentThreadId;
-
-            while ((msgState = GlobalKeyboardHook.GetMessage(ref msg, IntPtr.Zero, 0, 0)) != 0)
-            {
-                Log.WriteLine($"Message received: {msg.Msg}, State: {msgState}");
-                if (msg.Msg == KeyboardHookConstants.WM_HOTKEY)
-                {
-                    int hotkeyId = msg.WParam.ToInt32();
-                    Log.WriteLine($"Hotkey pressed with ID: {hotkeyId}");
-
-                    try
-                    {
-                        HotkeyModel hotkey = registeredKeys.Where(a => a.Id == hotkeyId).First();
-
-                        Log.WriteLine($"Hotkey pressed: {hotkey.Mods} + {hotkey.Key}");
-                        
-                        _ = hotkey.Dispatcher.InvokeAsync(hotkey.Trigger.ActivateTrigger);
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.WriteLine($"Error processing hotkey ID {hotkeyId}: {ex.Message}");
-                    }
-
-                }
-            }
-
-            foreach (HotkeyModel hotkey in registeredKeys)
-            {
-                GlobalKeyboardHook.UnregisterHotKey(hotkey.HWnd, hotkey.Id);
-            } 
-
-            Log.WriteLine($"MessageListener thread ended.");
-        }
+        
 
         public override void Stop()
         {
-            StopMessageListener();
+            OSAPI.Current.Input.KeyListener.RemoveHotkey(TargetKey);
         }
 
-        protected static void StopMessageListener()
-        {
-            lock (MessageListenerAndRegisteredHotkeysLock)
-            {
-                if (MessageListener != null && MessageListener.IsAlive)
-                {
-                    if (null != MessageListenerNativeThreadId) 
-                    {
-                        GlobalKeyboardHook.PostThreadMessage((int)MessageListenerNativeThreadId, KeyboardHookConstants.WM_QUIT, IntPtr.Zero, IntPtr.Zero);
-                        MessageListener.Join(TimeSpan.FromSeconds(3));
-                    }
-                    
-                    if (MessageListener.IsAlive)
-                    {
-                        Log.WriteLine("Warning: MessageListener thread did not terminate in a timely manner.\nTrying interrupt");
-                        MessageListener.Interrupt();
-                    }
-
-                    MessageListener = null;
-                    MessageListenerNativeThreadId = null;
-                }
-            }
-        }
+        
 
         private void Cleanup()
         {
@@ -215,7 +101,7 @@ namespace AppManager.Core.Triggers.Keybind
             return KeyboardHookConstants.KeyToDixMap[key];
         }
 
-        private void OnKeyboardPressed(object sender, GlobalKeyboardHookEventArgs? e)
+        private void OnKeyboardPressed(HotkeyModel keyCombo)
         {
             if (e == null) { return; }
             try

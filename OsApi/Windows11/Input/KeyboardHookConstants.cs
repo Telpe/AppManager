@@ -10,12 +10,6 @@ namespace AppManager.OsApi.Windows11.Input
         public const int LlkhfAltdown = (KfAltdown >> 8);
 
         public const uint WM_QUIT = 0x0012;
-
-        public const int MOD_ALT = 0x0001;
-        public const int MOD_CONTROL = 0x0002;
-        public const int MOD_SHIFT = 0x0004;
-        public const int MOD_WIN = 0x0008;
-        public const int MOD_NOREPEAT = 0x4000;
         public const int WM_HOTKEY = 0x0312;
         public const int DSIX = 0x49;
         public const int F_KEY = 0x46;        // Virtual key code for F key
@@ -174,10 +168,10 @@ namespace AppManager.OsApi.Windows11.Input
             // Modifier keys
             { Key.LeftShift, WindowsKey.LeftShift },
             { Key.LeftCtrl, WindowsKey.LeftCtrl },
-            { Key.LeftOs, WindowsKey.LWin },
+            { Key.LeftOs, WindowsKey.LeftWin },
             { Key.LeftAlt, WindowsKey.LeftAlt },
             { Key.RightAlt, WindowsKey.RightAlt },
-            { Key.RightOs, WindowsKey.RWin },
+            { Key.RightOs, WindowsKey.RightWin },
             { Key.RightCtrl, WindowsKey.RightCtrl },
             { Key.RightShift, WindowsKey.RightShift }
         };

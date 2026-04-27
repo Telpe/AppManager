@@ -3,7 +3,7 @@ using System.Threading;
 
 namespace AppManager.OsApi.Events
 {
-    public class ObservableEvent<TSender, TArgs>
+    public class ObservableHotkeyEvent<TSender, TArgs>
     {
         private event TypedEvent<TSender, TArgs>? HandlersValue;
         private int CountValue;
@@ -16,8 +16,8 @@ namespace AppManager.OsApi.Events
 
         public int Count { get => CountValue; }
 
-        public static ObservableEvent<TSender, TArgs> operator +(
-            ObservableEvent<TSender, TArgs> evt,
+        public static ObservableHotkeyEvent<TSender, TArgs> operator +(
+            ObservableHotkeyEvent<TSender, TArgs> evt,
             TypedEvent<TSender, TArgs> handler)
         {
             // 1. Delegate combine via CompareExchange-loop
@@ -38,8 +38,8 @@ namespace AppManager.OsApi.Events
             return evt;
         }
 
-        public static ObservableEvent<TSender, TArgs> operator -(
-            ObservableEvent<TSender, TArgs> evt,
+        public static ObservableHotkeyEvent<TSender, TArgs> operator -(
+            ObservableHotkeyEvent<TSender, TArgs> evt,
             TypedEvent<TSender, TArgs> handler)
         {
             // 1. Delegate remove via CompareExchange-loop

@@ -282,13 +282,6 @@ namespace AppManager.OsApi.Tests.Windows11
         }
 
         [TestMethod]
-        public void KeyEvent_ShouldNotBeNull()
-        {
-            // Act & Assert
-            Assert.IsNotNull(_api.Input.KeyEvent);
-        }
-
-        [TestMethod]
         public void GetProcessMainWindowHandle_WithValidProcess_ShouldReturnHandle()
         {
             // Arrange

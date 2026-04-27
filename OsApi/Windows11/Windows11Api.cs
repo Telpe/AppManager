@@ -28,7 +28,7 @@ namespace AppManager.OsApi.Windows11
 
         public Windows11Api() 
         {
-            Input.KeyEvent.CountChangedEvent += KeyEventChangedCount;
+            
         }
 
         public IntPtr GetProcessMainWindowHandle(Process process)

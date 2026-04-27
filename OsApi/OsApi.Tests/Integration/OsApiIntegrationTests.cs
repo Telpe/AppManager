@@ -17,7 +17,6 @@ namespace AppManager.OsApi.Tests.Integration
             // Assert - Basic functionality
             Assert.IsNotNull(api);
             Assert.IsTrue(api.CurrentThreadId > 0);
-            Assert.IsNotNull(api.Input.KeyEvent);
         }
 
         [TestMethod]

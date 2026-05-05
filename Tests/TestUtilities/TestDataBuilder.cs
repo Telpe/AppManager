@@ -1,12 +1,11 @@
+using System;
+using System.Collections.Generic;
 using AppManager.Core.Actions;
 using AppManager.Core.Conditions;
 using AppManager.Core.Models;
 using AppManager.Core.Triggers;
 using AppManager.Core.Utilities;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Printing;
+using AppManager.OsApi.Models;
 
 namespace AppManager.Tests.TestUtilities
 {
@@ -47,8 +46,7 @@ namespace AppManager.Tests.TestUtilities
             {
                 TriggerType = triggerType,
                 Inactive = false,
-                Key = triggerType == TriggerTypeEnum.Keybind ? System.Windows.Input.Key.F12 : null,
-                Modifiers = triggerType == TriggerTypeEnum.Keybind ? System.Windows.Input.ModifierKeys.Control : null,
+                Keybind = triggerType == TriggerTypeEnum.Keybind ? new HotkeyModel(ModifierKey.Control, Key.F12) : null,
                 Actions = [CreateBasicActionModel()]
             };
         }

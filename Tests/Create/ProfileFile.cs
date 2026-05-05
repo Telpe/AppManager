@@ -1,17 +1,13 @@
 ﻿using AppManager.Core.Actions;
-using AppManager.Core.Actions.Close;
-using AppManager.Core.Actions.Launch;
 using AppManager.Core.Models;
 using AppManager.Core.Utilities;
 using AppManager.Tests.TestUtilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 using AppManager.Core.Triggers;
-using System.Windows.Input;
+using AppManager.OsApi.Models;
 
 namespace AppManager.Tests.Create
 {
@@ -39,8 +35,7 @@ namespace AppManager.Tests.Create
                 {
                     TriggerType = TriggerTypeEnum.Keybind,
                     Id = $"discord_trigger_{i}",
-                    Key = Key.F1 + (i - 1),
-                    Modifiers = ModifierKeys.Control,
+                    Keybind = new HotkeyModel(ModifierKey.Control, Key.F1 + (i - 1)),
                     Actions = new[] { TestDataBuilder.CreateBasicActionModel(ActionTypeEnum.Launch, "Discord") },
                     Tags = new Dictionary<string, string> { { "AppName", "Discord" } }
                 };

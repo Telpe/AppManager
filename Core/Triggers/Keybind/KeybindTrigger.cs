@@ -1,4 +1,3 @@
-using AppManager.Core.Keybinds;
 using AppManager.Core.Models;
 using AppManager.OsApi;
 using AppManager.OsApi.Models;
@@ -12,66 +11,65 @@ namespace AppManager.Core.Triggers.Keybind
     {
         public override TriggerTypeEnum TriggerType => TriggerTypeEnum.Keybind;
 
-        private Dispatcher CurrentDispatcherValue = System.Windows.Threading.Dispatcher.CurrentDispatcher;
-        protected HotkeyModel TargetKey { get => Key ?? OsApi.Models.Key.None; }
-        private bool KeyPressedValue;
-        private bool ModifiersPressedValue;
+        private Dispatcher V_CurrentDispatcherValue = System.Windows.Threading.Dispatcher.CurrentDispatcher;
+
+        private HotkeyModel V_Keybind;
+        public HotkeyModel? Keybind 
+        { 
+            get 
+            {
+                if (Key.None == V_Keybind.MainKey) 
+                { return null; }
+                return V_Keybind;
+            }
+            set 
+            { 
+                if(V_Running){ throw new InvalidOperationException("Error, can not change keybind while trigger is running"); }
+                V_Keybind = value ?? new HotkeyModel(Key.None);
+            } 
+        }
+
+        public string? KeybindCombination { get; set; }
         public Dictionary<string, object>? CustomProperties { get; set; }
+
+        protected bool V_Running = false;
+        public bool Running { get => V_Running; }
 
         public KeybindTrigger(TriggerModel model) : base(model)
         {
-            Description = "Monitors global keyboard shortcuts with high compatibility using GlobalKeyboardHook";
-            
-            KeybindCombination = model.KeybindCombination;
-            CustomProperties = model.CustomProperties ?? new Dictionary<string, object>();
+            Description = "Monitors global keyboard shortcuts.";
 
-            Key = model.Key;
-            Modifiers = model.Modifiers;
+            Keybind = model.Keybind;
+            KeybindCombination = model.KeybindCombination;
+
         }
 
         protected override bool CanStartTrigger()
         {
-            return TargetKey != System.Windows.Input.Key.None;
+            return V_Keybind.MainKey != Key.None && !Running;
         }
 
         public override void Start()
         {
+            if (V_Running) { throw new InvalidOperationException($"Trigger {TriggerType.ToString()} can not Start when Running."); }
 
-                uint modifiers = ConvertToHotkeyModifiers(TargetModifiers);
-                uint vk = ConvertToVirtualKey(TargetKey);
+            V_Running = true;
 
-                var hk = new OsApi.Models.HotkeyModel(Enum.Parse(typeof(OsApi.Models.ModifierKey), modifiers), vk);
+            OSAPI.Current.Input.KeyListener.AddHotkey(V_Keybind, OnKeyboardPressed);
 
-
-                OSAPI.Current.Input.KeyListener.AddHotkey(TargetKey, OnKeyboardPressed);
-                    (OnKeyboardPressed);
-
-
-            Log.WriteLine($"Keybind trigger '{Name}' started for {TargetModifiers} + {TargetKey} with ID {MyHotkeyId}");
+            Log.WriteLine($"Keybind trigger '{Name}' started for {V_Keybind.ToString()}");
         }
 
         
 
         public override void Stop()
         {
-            OSAPI.Current.Input.KeyListener.RemoveHotkey(TargetKey);
+            OSAPI.Current.Input.KeyListener.RemoveHotkey(V_Keybind);
+
+            V_Running = false;
         }
 
-        
-
-        private void Cleanup()
-        {
-            lock (MessageListenerAndRegisteredHotkeysLock)
-            {
-                StopMessageListener();
-                RegisteredHotkeysValue = [];
-                MyHotkeyId = -1;
-            }
-
-            KeyPressedValue = false;
-            ModifiersPressedValue = false;
-        }
-
+/*
         private uint ConvertToHotkeyModifiers(ModifierKeys modifiers)
         {
             uint result = KeyboardHookConstants.MOD_NOREPEAT;
@@ -100,48 +98,19 @@ namespace AppManager.Core.Triggers.Keybind
         {
             return KeyboardHookConstants.KeyToDixMap[key];
         }
-
+*/
         private void OnKeyboardPressed(HotkeyModel keyCombo)
         {
-            if (e == null) { return; }
             try
             {
-                var pressedKey = e.KeyboardData.Key;
-                var isKeyDown = e.KeyboardState == KeyboardState.KeyDown;
-                var isKeyUp = e.KeyboardState == KeyboardState.KeyUp;
-
-                // Check if this is our target key
-                if (pressedKey == TargetKey)
-                {
-                    if (isKeyDown)
-                    {
-                        KeyPressedValue = true;
-                        CheckForShortcutActivation();
-                    }
-                    else if (isKeyUp)
-                    {
-                        KeyPressedValue = false;
-                    }
-                }
-                // Check for modifier keys
-                else if (KeyboardHookConstants.IsModifierKey(pressedKey))
-                {
-                    if (isKeyDown)
-                    {
-                        UpdateModifierState();
-                    }
-                    else if (isKeyUp)
-                    {
-                        UpdateModifierState();
-                    }
-                }
+                V_CurrentDispatcherValue.Invoke(ActivateTrigger);
             }
             catch (Exception ex)
             {
                 Log.WriteLine($"Error handling keyboard event in keybind trigger '{Name}': {ex.Message}");
             }
         }
-
+/*
         private void UpdateModifierState()
         {
             // Check current modifier state using Keyboard class
@@ -178,25 +147,12 @@ namespace AppManager.Core.Triggers.Keybind
                 CheckForShortcutActivation();
             }
         }
-
-        private void CheckForShortcutActivation()
-        {
-            if (KeyPressedValue && ModifiersPressedValue)
-            {
-                Log.WriteLine($"Shortcut trigger '{Name}' activated");
-
-                // Trigger the configured action
-                ActivateTrigger();
-
-                // Reset state to prevent multiple activations
-                KeyPressedValue = false;
-                ModifiersPressedValue = false;
-            }
-        }
+*/
+        
 
         public override void Dispose()
         {
-            Cleanup();
+            Stop();
             base.Dispose();
         }
 

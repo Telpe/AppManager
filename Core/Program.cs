@@ -1,15 +1,12 @@
 ﻿global using AppManager.Core.Utilities;
 using AppManager.Core.Actions;
-using AppManager.Core.Keybinds;
 using AppManager.Core.Models;
 using AppManager.Core.Triggers;
+using AppManager.OsApi;
 using Microsoft.Win32;
 using System;
-using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Windows.Forms;
 using System.Windows.Threading;
 
@@ -34,7 +31,7 @@ namespace AppManager.Core
             SystemEvents.SessionEnding += OnSessionEnding;
             MainDispatcher.ShutdownStarted += (s, args) =>
             {
-                Log.WriteLine($"Dispatcher ShutdownStarted...({GlobalKeyboardHook.CurrentThreadId})");
+                Log.WriteLine($"Dispatcher ShutdownStarted...({OSAPI.Current.CurrentThreadId})");
                 Application.Exit();
                 MainDispatcher.Thread.Join(4000);
             };
@@ -44,7 +41,7 @@ namespace AppManager.Core
                 Log.OpenStream();
             }
 
-            Log.WriteLine($"Main thread id: {GlobalKeyboardHook.CurrentThreadId}");
+            Log.WriteLine($"Main thread id: {OSAPI.Current.CurrentThreadId}");
             Log.WriteLine($"Version: {FileManager.LoadVersion()}");
 
             InitializeFileWatchers();
@@ -161,7 +158,7 @@ namespace AppManager.Core
 
             MainDispatcher.InvokeAsync(() =>
             {
-                Log.WriteLine($"Settings file changed thread id: {GlobalKeyboardHook.CurrentThreadId}");
+                Log.WriteLine($"Settings file changed thread id: {OSAPI.Current.CurrentThreadId}");
                 try
                 {
                     string lastProfile = SettingsManager.CurrentSettings.LastUsedProfileName;
@@ -205,7 +202,7 @@ namespace AppManager.Core
 
             MainDispatcher.InvokeAsync(() =>
             {
-                Log.WriteLine($"Profile file changed thread id: {GlobalKeyboardHook.CurrentThreadId}");
+                Log.WriteLine($"Profile file changed thread id: {OSAPI.Current.CurrentThreadId}");
                 try
                 {
                     Log.WriteLine($"Profile file change detected: {e.FullPath}");
@@ -301,7 +298,9 @@ namespace AppManager.Core
             try
             {
                 if (!File.Exists(filePath))
+                {
                     return null;
+                }
 
                 using var md5 = System.Security.Cryptography.MD5.Create();
                 using var stream = File.OpenRead(filePath);
@@ -327,10 +326,10 @@ namespace AppManager.Core
                 {
                     form.Show();
 
-                    GlobalKeyboardHook.ShutdownBlockReasonCreate(form.Handle, "App Manager needs a bit cleaning up.");
+                    OSAPI.Current.Window.ShutdownBlockReasonCreate(form.Handle, "App Manager needs a bit cleaning up.");
                     Application.Exit();
                     MainDispatcher.Thread.Join(4000);
-                    GlobalKeyboardHook.ShutdownBlockReasonDestroy(form.Handle);
+                    OSAPI.Current.Window.ShutdownBlockReasonDestroy(form.Handle);
                 }
             }
             catch (Exception ex)
@@ -343,7 +342,7 @@ namespace AppManager.Core
         {
             try
             {
-                Log.WriteLine($"ExitCleanup...({GlobalKeyboardHook.CurrentThreadId})");
+                Log.WriteLine($"ExitCleanup...({OSAPI.Current.CurrentThreadId})");
 
                 SystemEvents.SessionEnding -= OnSessionEnding;
                 

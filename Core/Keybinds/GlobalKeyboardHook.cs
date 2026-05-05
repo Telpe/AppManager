@@ -1,11 +1,4 @@
-﻿using System;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+﻿using System.Runtime.CompilerServices;
 using System.Windows.Input;
 
 [assembly: DisableRuntimeMarshalling]
@@ -18,7 +11,7 @@ namespace AppManager.Core.Keybinds
 
         // EDT: Replaced VkSnapshot(int) with RegisteredKeys(Key[])
         public static Key[]? RegisteredKeys;
-
+/*
         // EDT: Added an optional parameter (registeredKeys) that accepts keys to restict
         // the logging mechanism.
         /// <summary>
@@ -130,7 +123,7 @@ namespace AppManager.Core.Keybinds
             }
 
             return fEatKeyStroke ? (IntPtr)1 : CallNextHookEx(IntPtr.Zero, nCode, wParam, lParam);
-        }
+        }*/
 
     }
 }

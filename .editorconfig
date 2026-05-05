@@ -20,7 +20,7 @@ tab_width = 4
 
 # New line preferences
 end_of_line = crlf
-insert_final_newline = false
+insert_final_newline = true
 
 #### .NET Code Actions ####
 
@@ -36,7 +36,7 @@ dotnet_search_reference_assemblies = true
 
 # Organize usings
 dotnet_separate_import_directive_groups = false
-dotnet_sort_system_directives_first = false
+dotnet_sort_system_directives_first = true
 file_header_template = unset
 
 # this. and Me. preferences
@@ -211,23 +211,45 @@ csharp_space_between_square_brackets = false
 csharp_preserve_single_line_blocks = true
 csharp_preserve_single_line_statements = true
 
-#### Naming styles ####
-
+# ============================================
 # Naming rules
+# ============================================
 
+# Interfaces must begin with I
 dotnet_naming_rule.interface_should_be_begins_with_i.severity = suggestion
 dotnet_naming_rule.interface_should_be_begins_with_i.symbols = interface
 dotnet_naming_rule.interface_should_be_begins_with_i.style = begins_with_i
 
+# Types (class, struct, interface, enum) must be PascalCase
 dotnet_naming_rule.types_should_be_pascal_case.severity = suggestion
 dotnet_naming_rule.types_should_be_pascal_case.symbols = types
 dotnet_naming_rule.types_should_be_pascal_case.style = pascal_case
 
+# Non-field members (properties, events, methods) must be PascalCase
 dotnet_naming_rule.non_field_members_should_be_pascal_case.severity = suggestion
 dotnet_naming_rule.non_field_members_should_be_pascal_case.symbols = non_field_members
 dotnet_naming_rule.non_field_members_should_be_pascal_case.style = pascal_case
 
-# Symbol specifications
+
+# Style: V_ + PascalCase
+dotnet_naming_style.v_field_style.capitalization = pascal_case
+dotnet_naming_style.v_field_style.required_prefix = V_
+dotnet_naming_style.v_field_style.required_suffix = 
+
+# Symbol group: private + protected fields
+dotnet_naming_symbols.private_protected_fields.applicable_kinds = field
+dotnet_naming_symbols.private_protected_fields.applicable_accessibilities = private, protected
+dotnet_naming_symbols.private_protected_fields.required_modifiers = 
+
+# Rule: apply V_ style to private + protected fields
+dotnet_naming_rule.fields_must_be_v_prefix.symbols = private_protected_fields
+dotnet_naming_rule.fields_must_be_v_prefix.style = v_field_style
+dotnet_naming_rule.fields_must_be_v_prefix.severity = warning
+
+
+# ============================================
+# Symbol specifications (existing, kept)
+# ============================================
 
 dotnet_naming_symbols.interface.applicable_kinds = interface
 dotnet_naming_symbols.interface.applicable_accessibilities = public, internal, private, protected, protected_internal, private_protected
@@ -241,9 +263,6 @@ dotnet_naming_symbols.non_field_members.applicable_kinds = property, event, meth
 dotnet_naming_symbols.non_field_members.applicable_accessibilities = public, internal, private, protected, protected_internal, private_protected
 dotnet_naming_symbols.non_field_members.required_modifiers = 
 
-# Private fields beginning with underscore should be renamed to have 'Stored' suffix with capital first letter
-dotnet_naming_rule.private_fields_underscore_should_be_stored_suffix.severity = error
-dotnet_naming_rule.private_fields_underscore_should_be_stored_suffix.symbols = private_fields_underscore
-dotnet_naming_rule.private_fields_underscore_should_be_stored_suffix.style = stored_suffix_style
+
 
 

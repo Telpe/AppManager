@@ -1,13 +1,11 @@
-using System;
 using System.Collections.Generic;
-using System.Windows.Input;
+using AppManager.OsApi.Models;
 
 namespace AppManager.Core.Triggers.Keybind
 {
     public interface IKeybindTrigger
     {
-        Key? Key { get; set; }
-        ModifierKeys? Modifiers { get; set; }
+        HotkeyModel? Keybind { get; set; }
         string? KeybindCombination { get; set; }
         Dictionary<string, object>? CustomProperties { get; set; }
     }

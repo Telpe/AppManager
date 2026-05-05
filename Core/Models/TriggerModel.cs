@@ -5,10 +5,10 @@ using AppManager.Core.Triggers.Button;
 using AppManager.Core.Triggers.Keybind;
 using AppManager.Core.Triggers.NetworkPort;
 using AppManager.Core.Triggers.SystemEvent;
+using AppManager.OsApi.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Windows.Input;
 
 namespace AppManager.Core.Models
 {
@@ -18,8 +18,7 @@ namespace AppManager.Core.Models
         public string Id { get; set; } = string.Empty;
 
         // Shortcut-specific parameters
-        public Key? Key { get; set; }
-        public ModifierKeys? Modifiers { get; set; }
+        public HotkeyModel? Keybind { get; set; }
         public string? KeybindCombination { get; set; }
         
         // App monitoring parameters
@@ -52,8 +51,7 @@ namespace AppManager.Core.Models
             {
                 TriggerType = TriggerType,
                 Id = Id,
-                Key = Key,
-                Modifiers = Modifiers,
+                Keybind = Keybind,
                 KeybindCombination = KeybindCombination,
                 ProcessName = ProcessName,
                 ExecutablePath = ExecutablePath,

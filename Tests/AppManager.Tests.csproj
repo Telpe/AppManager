@@ -37,4 +37,10 @@
     <Folder Include="Unit\Triggers\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="AppManager.OsApi">
+      <HintPath>..\Core\OsApi\AppManager.OsApi.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>
